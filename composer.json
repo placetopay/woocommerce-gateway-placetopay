@@ -1,11 +1,11 @@
 {
 	"name": "placetopay/gateway-method",
-	"description": "Plugin for integrate PlaceToPay gateway with your shop woocomerce",
+	"description": "Plugin for integrate PlacetoPay gateway with your shop woocomerce",
 	"type": "plugin",
 	"license": "MIT",
 	"authors": [
 		{
-			"name": "PlaceToPay",
+			"name": "PlacetoPay",
 			"email": "dev@placetopay.com"
 		},
 		{
@@ -15,7 +15,7 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"PlaceToPay\\": "src/"
+			"PlacetoPay\\": "src/"
 		}
 	},
 	"require": {

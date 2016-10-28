@@ -1,15 +1,15 @@
 <?php
 /**
- * @package PlaceToPay/GatewayMethod
+ * @package PlacetoPay/WoocommerceGatewayPlacetoPay
  * @version 0.0.1
  */
 
 /*
-Plugin Name: WooCommerce PlaceToPay Gateway
+Plugin Name: WooCommerce PlacetoPay Gateway
 Plugin URI: después :P
-Description: Plugin for integrate PlaceToPay gateway with your shop woocommerce
+Description: Plugin for integrate PlacetoPay gateway with your shop woocommerce
 Version: 0.0.1
-Author: PlaceToPay
+Author: PlacetoPay
 Author URI: https://www.placetopay.com/
 Developer: Cristian Salazar
 */
@@ -20,20 +20,13 @@ if( !defined( 'ABSPATH' ) ) {
 
 
 /**
- * Return instance of \PlaceToPay\GatewayMethod
+ * Return instance of \PlacetoPay\WoocommerceGatewayPlacetoPay
  *
- * @return \PlaceToPay\GatewayMethod
+ * @return \PlacetoPay\WoocommerceGatewayPlacetoPay
  */
 function wc_gateway_placetopay() {
-    static $plugin;
-
-    if( !isset( $plugin ) ) {
-        require_once( __DIR__ . '/vendor/autoload.php' );
-
-        $plugin = new \PlaceToPay\GatewayMethod( '0.0.1', __FILE__ );
-    }
-
-    return $plugin;
+    require_once( __DIR__ . '/vendor/autoload.php' );
+    return \PlacetoPay\WoocommerceGatewayPlacetoPay::getInstance( '0.0.1', __FILE__ );
 }
 
 add_action( 'plugins_loaded', 'wc_gateway_placetopay', 0 );
