@@ -6,17 +6,26 @@ if( !defined( 'ABSPATH' ) ) {
 }
 
 use \WC_Order;
+use \WC_Payment_Gateway;
 use Dnetix\Redirection\PlacetoPay;
+use Dnetix\Redirection\Validators\Currency;
 
 /**
- *
+ * @package \PlacetoPay
  */
-class GatewayMethod extends \WC_Payment_Gateway {
+class GatewayMethod extends WC_Payment_Gateway {
 
+    /**
+     * Instance of placetopay to manage the connection with the webservice
+     * @var \Dnetix\Redirection\PlacetoPay
+     */
+    private $placetopay;
 
-    // login 6dd490faf9cb87a9862245da41170ff2
-    // tranKey: 024h1IlD
-
+    /**
+     * Transactional key for connection with web services placetopay
+     * @var string
+     */
+    private $tran_key;
 
     /**
      * Constructor
@@ -24,33 +33,15 @@ class GatewayMethod extends \WC_Payment_Gateway {
     function __construct() {
         $this->configPaymentMethod();
         $this->init();
+        $this->initPlacetoPay();
     }
 
 
     /**
-     * Configuraction initial
-     *
-     * @return void
-     */
-    public function init() {
-        add_action( 'placetopay_init', [ $this, 'successfulRequest' ]);
-        add_action( 'woocommerce_receipt_placetopay', [ $this, 'receiptPage' ]);
-        add_action( 'woocommerce_api_' . strtolower( get_class( $this ) ), [ $this, 'checkResponse' ]);
-
-        if( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
-            add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ &$this, 'process_admin_options' ]);
-            return;
-        }
-
-        add_action( 'woocommerce_update_options_payment_gateways', [ &$this, 'process_admin_options' ]);
-    }
-
-
-    /**
-     * Set the configuration for parent class \WC_Payment_Gateway
-     *
-     * @return void
-     */
+    * Set the configuration for parent class \WC_Payment_Gateway
+    *
+    * @return void
+    */
     public function configPaymentMethod() {
         $this->id                   = 'placetopay';
         $this->method_title         = __( 'PlacetoPay', 'woocommerce-gateway-placetopay' );
@@ -69,9 +60,30 @@ class GatewayMethod extends \WC_Payment_Gateway {
         $this->redirect_page_id = $this->get_option( 'redirect_page_id' );
         $this->endpoint 		= $this->get_option( 'endpoint' );
         $this->form_method 		= $this->get_option( 'form_method' );
-        // $this->currency 		= ($this->is_valid_currency() ) ? get_woocommerce_currency():'USD';
 
-        // dd( $this );
+        $this->currency 		= get_woocommerce_currency();
+        $this->currency         = Currency::isValidCurrency( $this->currency ) ? $this->currency : Currency::CUR_COP;
+    }
+
+
+    /**
+     * Configuraction initial
+     *
+     * @return void
+     */
+    public function init() {
+        $className = str_replace( "\\", "_",  strtolower( get_class( $this ) ) );
+
+        add_action( 'placetopay_init', [ $this, 'successfulRequest' ]);
+        add_action( 'woocommerce_receipt_placetopay', [ $this, 'receiptPage' ]);
+        add_action( 'woocommerce_api_' . $className, [ $this, 'checkResponse' ]);
+
+        if( version_compare( WOOCOMMERCE_VERSION, '2.0.0', '>=' ) ) {
+            add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, [ &$this, 'process_admin_options' ]);
+            return;
+        }
+
+        add_action( 'woocommerce_update_options_payment_gateways', [ &$this, 'process_admin_options' ]);
     }
 
 
@@ -95,6 +107,48 @@ class GatewayMethod extends \WC_Payment_Gateway {
      */
     public function process_payment( $orderId ) {
         $order = new WC_Order( $orderId );
+
+        $ref = $order->order_key . '-' . time();
+        $productinfo = "Order $order_id";
+
+        $req = [
+            'buyer' => [
+                'name'      => $order->billing_first_name,
+                'surname'   => $order->billing_last_name,
+                'email'     => $order->billing_email
+            ],
+            'payment' => [
+                'reference'     => $ref,
+                'description'   => $productinfo,
+                'amount'        => [
+                    'currency' => $this->currency,
+                    'total'    => floatval( $order->order_total )
+                ],
+            ],
+            'expiration'    => date( 'c', strtotime( '+2 days' ) ),
+            'returnUrl'     => 'http://localhost:3000/response?reference=' . $ref,
+            'ipAddress'     => $_SERVER[ 'REMOTE_ADDR' ],
+            'userAgent'     => $_SERVER[ 'HTTP_USER_AGENT' ],
+        ];
+
+        try {
+            $res = $this->placetopay->request( $req );
+
+            if( $res->isSuccessful() ) {
+                // Redirect the client to the processUrl or display it on the JS extension
+                // $res->processUrl();
+                dd( $res->processUrl() );
+            } else {
+                // There was some error so check the message
+                // $res->status()->message();
+            }
+
+            var_dump( $res );
+
+        } catch( \Exception $ex ) {
+            var_dump( $ex->getMessage() );
+        }
+
 
         if( $this->form_method == 'GET' ) {
             $placetopayArgs = $this->getArgs( $orderId );
@@ -637,11 +691,11 @@ class GatewayMethod extends \WC_Payment_Gateway {
      * also the url that will be used for the service
      * @return \PlacetoPay
      */
-    private function placetopay() {
-        return new PlacetoPay([
+    private function initPlacetoPay() {
+        $this->placetopay = new PlacetoPay([
             'login'     => $this->login,
             'tranKey'   => $this->tran_key,
-            'url'       => getenv( 'P2P_URL' ),
+            'url'       => 'http://redirection.dnetix.co/',
         ]);
     }
 }
