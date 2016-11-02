@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: PayU Latam Woocommerce R1\n"
+"Project-Id-Version: PlacetoPay Woocommerce R1\n"
 "POT-Creation-Date: 2014-06-07 09:24-0500\n"
 "PO-Revision-Date: 2014-06-07 09:25-0500\n"
 "Last-Translator: Jairo Ivan Rondon Mejia <jairo@thecodeisintheair.com>\n"
@@ -17,8 +17,8 @@ msgstr ""
 
 #: ../src/GatewayMethod.php:42
 #: ../src/GatewayMethod.php:243
-msgid "PayU Latam"
-msgstr "PayU Latinoamérica"
+msgid "PlacetoPay"
+msgstr "PlacetoPay"
 
 #: ../src/GatewayMethod.php:43
 #: ../src/GatewayMethod.php:244
@@ -30,20 +30,20 @@ msgid "Enable/Disable"
 msgstr "Activo/Inactivo"
 
 #: ../src/GatewayMethod.php:144
-msgid "Enable PayU Latam Payment Module."
-msgstr "Activar Método de Pago PayU Latinoamérica."
+msgid "Enable PlacetoPay Payment Module."
+msgstr "Activar Método de Pago PlacetoPay."
 
 #: ../src/GatewayMethod.php:146
 msgid "Show in the Payment List as a payment option"
-msgstr "Mostrar PayU Latinoamérica en la lista de métodos de pago."
+msgstr "Mostrar PlacetoPay en la lista de métodos de pago."
 
 #: ../src/GatewayMethod.php:149
 msgid "Title:"
 msgstr "Titulo"
 
 #: ../src/GatewayMethod.php:151
-msgid "PayU Latam Online Payments"
-msgstr "Pagos en linea PayU Latinoamérica "
+msgid "PlacetoPay Online Payments"
+msgstr "Pagos en linea PlacetoPay "
 
 #: ../src/GatewayMethod.php:152
 msgid "This controls the title which the user sees during checkout."
@@ -55,11 +55,11 @@ msgstr "Descripción"
 
 #: ../src/GatewayMethod.php:158
 msgid ""
-"Pay securely by Credit or Debit Card or Internet Banking through PayU Latam "
+"Pay securely by Credit or Debit Card or Internet Banking through PlacetoPay "
 "Secure Servers."
 msgstr ""
 "Pague con tarjeta de crédito, debito o transacción bancaria de forma segura "
-"a través de los servidores seguros de PayU Latinoamérica."
+"a través de los servidores seguros de PlacetoPay."
 
 #: ../src/GatewayMethod.php:159
 msgid "This controls the description which the user sees during checkout."
@@ -71,8 +71,8 @@ msgstr "ID del Vendedor"
 
 #: ../src/GatewayMethod.php:165
 #: ../src/GatewayMethod.php:177
-msgid "Given to Merchant by PayU Latam"
-msgstr "Identificación del vendedor promocionada por PayU Latinoamérica"
+msgid "Given to Merchant by PlacetoPay"
+msgstr "Identificación del vendedor promocionada por PlacetoPay"
 
 #: ../src/GatewayMethod.php:169
 msgid "Account ID"
@@ -80,11 +80,11 @@ msgstr "ID de la Cuenta"
 
 #: ../src/GatewayMethod.php:171
 msgid ""
-"Some Countrys (Brasil, Mexico) require this ID, Gived to you by PayU Latam "
+"Some Countrys (Brasil, Mexico) require this ID, Gived to you by PlacetoPay "
 "on regitration."
 msgstr ""
 "Algunos Países (Brasil, Mexico) requieren esta información proporcionada por "
-"PayU Latinoamérica."
+"PlacetoPay."
 
 #: ../src/GatewayMethod.php:175
 msgid "ApiKey"
@@ -95,13 +95,13 @@ msgid "TEST Mode"
 msgstr "Modo de Pruebas"
 
 #: ../src/GatewayMethod.php:183
-msgid "Enable PayU Latam TEST Transactions."
-msgstr "Habilita las transacciones de prueba en PayU Latinoamérica"
+msgid "Enable PlacetoPay TEST Transactions."
+msgstr "Habilita las transacciones de prueba en PlacetoPay"
 
 #: ../src/GatewayMethod.php:185
-msgid "Tick to run TEST Transaction on the PayU Latam platform"
+msgid "Tick to run TEST Transaction on the PlacetoPay platform"
 msgstr ""
-"Activar para hacer transacciones de prueba con la plataforma de PayU "
+"Activar para hacer transacciones de prueba con la plataforma de PlacetoPay "
 "Latinoamérica."
 
 #: ../src/GatewayMethod.php:189
@@ -125,8 +125,8 @@ msgid "Gateway Language"
 msgstr "Idioma de la plataforma"
 
 #: ../src/GatewayMethod.php:207
-msgid "PayU Latam Gateway Language "
-msgstr "Idioma que desea para la plataforma de PayU Latinoamérica"
+msgid "PlacetoPay Gateway Language "
+msgstr "Idioma que desea para la plataforma de PlacetoPay"
 
 #: ../src/GatewayMethod.php:211
 msgid "Form Method"
@@ -159,31 +159,31 @@ msgstr "Pagina de regreso"
 
 #: ../src/GatewayMethod.php:267
 msgid ""
-"Thank you for your order, please click the button below to pay with PayU "
+"Thank you for your order, please click the button below to pay with PlacetoPay "
 "Latam."
 msgstr ""
 "Gracias por su orden, por favor seleccione el botón abajo para pagar con "
-"PayU Latinoamérica."
+"PlacetoPay."
 
 #: ../src/GatewayMethod.php:348
 msgid ""
-"Thank you for your order. We are now redirecting you to PayU Latam to make "
+"Thank you for your order. We are now redirecting you to PlacetoPay to make "
 "payment."
 msgstr ""
-"Gracias por su Orden, Lo estamos redireccionando a la plataforma de PayU "
+"Gracias por su Orden, Lo estamos redireccionando a la plataforma de PlacetoPay "
 "Latinoamérica para realizar el pago."
 
 #: ../src/GatewayMethod.php:376
-msgid "Pay via PayU Latam"
-msgstr "Pagar con PayU Latinoamérica."
+msgid "Pay via PlacetoPay"
+msgstr "Pagar con PlacetoPay."
 
 #: ../src/GatewayMethod.php:376
 msgid "Cancel order &amp; restore cart"
 msgstr "Cancelar Orden y restaurar el carro de compra"
 
 #: ../src/GatewayMethod.php:432
-msgid "PayU Latam Request Failure"
-msgstr "Fallo la petición a PayU Latinoamérica"
+msgid "PlacetoPay Request Failure"
+msgstr "Fallo la petición a PlacetoPay"
 
 #: ../src/GatewayMethod.php:482
 msgid "Payment error: Amounts do not match (Amount "
@@ -196,9 +196,9 @@ msgstr "Error al pagar: Cantidades no coinciden (Cantidad "
 #: ../src/GatewayMethod.php:705
 #: ../src/GatewayMethod.php:707
 #, php-format
-msgid "Validation error: PayU Latam amounts do not match (gross %s)."
+msgid "Validation error: PlacetoPay amounts do not match (gross %s)."
 msgstr ""
-"Error de Validación: La cantidad pagada en PayU Latinoamérica  no coincide "
+"Error de Validación: La cantidad pagada en PlacetoPay  no coincide "
 "(Cantidad %s)."
 
 #: ../src/GatewayMethod.php:499
@@ -208,13 +208,13 @@ msgstr ""
 #: ../src/GatewayMethod.php:719
 #: ../src/GatewayMethod.php:720
 #, php-format
-msgid "Validation error: Payment in PayU Latam comes from another id (%s)."
-msgstr "Error de Validación: El pago en PayU fue hecho a otro Vendedor (%s)."
+msgid "Validation error: Payment in PlacetoPay comes from another id (%s)."
+msgstr "Error de Validación: El pago en PlacetoPay fue hecho a otro Vendedor (%s)."
 
 #: ../src/GatewayMethod.php:508
 #: ../src/GatewayMethod.php:618
-msgid "Payer PayU Latam email"
-msgstr "Correo Electrónico del comprador en PayU Latinoamérica"
+msgid "Payer PlacetoPay email"
+msgstr "Correo Electrónico del comprador en PlacetoPay"
 
 #: ../src/GatewayMethod.php:510
 #: ../src/GatewayMethod.php:620
@@ -237,14 +237,14 @@ msgstr "Metodo de Pago Usado"
 #: ../src/GatewayMethod.php:519
 #: ../src/GatewayMethod.php:629
 #: ../src/GatewayMethod.php:745
-msgid "PayU Latam payment approved"
-msgstr "Pago Aprobado por PayU Latinoamérica"
+msgid "PlacetoPay payment approved"
+msgstr "Pago Aprobado por PlacetoPay"
 
 #: ../src/GatewayMethod.php:520
 #: ../src/GatewayMethod.php:630
 #: ../src/GatewayMethod.php:746
-msgid "PayU Latam Payment Approved"
-msgstr "Pago Aprobado por PayU Latinoamérica"
+msgid "PlacetoPay Payment Approved"
+msgstr "Pago Aprobado por PlacetoPay"
 
 #: ../src/GatewayMethod.php:526
 #: ../src/GatewayMethod.php:527
@@ -260,7 +260,7 @@ msgstr "Pago Pendiente: %s"
 #: ../src/GatewayMethod.php:640
 #: ../src/GatewayMethod.php:756
 msgid "Payment complete."
-msgstr "Pago Completado en PayU Latinoamérica"
+msgstr "Pago Completado en PlacetoPay"
 
 #: ../src/GatewayMethod.php:557
 #: ../src/GatewayMethod.php:562
@@ -268,15 +268,15 @@ msgstr "Pago Completado en PayU Latinoamérica"
 #: ../src/GatewayMethod.php:648
 #: ../src/GatewayMethod.php:764
 #, php-format
-msgid "Payment rejected via PayU Latam. Error type: %s"
-msgstr "Pago Rechazado por PayU Latinoamérica. Tipo de error: %s"
+msgid "Payment rejected via PlacetoPay. Error type: %s"
+msgstr "Pago Rechazado por PlacetoPay. Tipo de error: %s"
 
 #: ../src/GatewayMethod.php:558
 #: ../src/GatewayMethod.php:649
 #: ../src/GatewayMethod.php:765
 #, php-format
-msgid "Payment rejected via PayU Latam. Error type: %s."
-msgstr "Pago Rechazado por PayU Latinoamérica. Tipo de error: %s"
+msgid "Payment rejected via PlacetoPay. Error type: %s."
+msgstr "Pago Rechazado por PlacetoPay. Tipo de error: %s"
 
 #: ../src/GatewayMethod.php:584
 #: ../src/GatewayMethod.php:694
@@ -292,13 +292,13 @@ msgstr "Error al pagar: Las cantidades no coinciden (cantidad "
 #: ../src/GatewayMethod.php:654
 #: ../src/GatewayMethod.php:769
 #: ../src/GatewayMethod.php:770
-msgid "Payment rejected via PayU Latam."
-msgstr "Pago Rechazado por PayU Latinoamérica."
+msgid "Payment rejected via PlacetoPay."
+msgstr "Pago Rechazado por PlacetoPay."
 
 #: ../src/GatewayMethod.php:728
 #, fuzzy
-msgid "PayU Latam Client email"
-msgstr "Correo Electrónico del comprador en PayU Latinoamérica"
+msgid "PlacetoPay Client email"
+msgstr "Correo Electrónico del comprador en PlacetoPay"
 
 #: ../src/GatewayMethod.php:734
 #, fuzzy
@@ -337,5 +337,5 @@ msgstr "Peso Mexicano"
 msgid "Perubian New Sol"
 msgstr "Nuevo Sol Peruano"
 
-#~ msgid "Payment rejected via PayU Latam. Error type: %s."
-#~ msgstr "Pago Rechazado por PayU Latinoamérica. Tipo de error: %s"
+#~ msgid "Payment rejected via PlacetoPay. Error type: %s."
+#~ msgstr "Pago Rechazado por PlacetoPay. Tipo de error: %s"

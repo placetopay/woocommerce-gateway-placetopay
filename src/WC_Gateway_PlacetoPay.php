@@ -9,7 +9,7 @@ if( !defined( 'ABSPATH' ) ) {
 /**
  * @package \PlacetoPay;
  */
-class WoocommerceGatewayPlacetoPay {
+class WC_Gateway_PlacetoPay {
 
     /**
      * Plugin version.
@@ -34,7 +34,7 @@ class WoocommerceGatewayPlacetoPay {
 
     /**
      * Unique instance of self
-     * @var \WoocommerceGatewayPlacetoPay
+     * @var \WC_Gateway_PlacetoPay
      */
     private static $instance = null;
 
@@ -51,6 +51,8 @@ class WoocommerceGatewayPlacetoPay {
             return null;
 
         add_filter( 'woocommerce_payment_gateways', [ $this, 'addPlacetoPayGatewayMethod' ]);
+        add_filter( 'plugin_action_links_' . plugin_basename( $file ), [ $this, 'actionLinksPlacetopay' ]);
+
         $this->version = $version;
         // Paths
         $this->plugin_path = trailingslashit( plugin_dir_path( $file ) );
@@ -62,7 +64,7 @@ class WoocommerceGatewayPlacetoPay {
 
     /**
      * Method to implement a singleton pattern
-     * @return \WoocommerceGatewayPlacetoPay
+     * @return \WC_Gateway_PlacetoPay
      */
     public static function getInstance( $version = null, $file = null ) {
         if( !self::$instance instanceof self )
@@ -92,6 +94,24 @@ class WoocommerceGatewayPlacetoPay {
         }
 
         return true;
+    }
+
+
+    /**
+     * Add the links to show aside of the plugin
+     * @param  array $links
+     * @return array
+     */
+    public function actionLinksPlacetopay( $links ) {
+        $customLinks = [
+            'settings' => sprintf(
+                '<a href="%s">%s</a>',
+                admin_url( 'admin.php?page=wc-settings&tab=checkout&section=placetopay' ),
+                __( 'Settings', 'woocommerce-gateway-placetopay' )
+            )
+        ];
+
+        return array_merge($links, $customLinks);
     }
 
 

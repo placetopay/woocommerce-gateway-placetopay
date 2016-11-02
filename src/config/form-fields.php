@@ -57,21 +57,6 @@ return [
         'description' 	=> __('Tick to run TEST Transaction on the PlacetoPay platform', 'woocommerce-gateway-placetopay' ),
         'desc_tip' 		=> true
     ],
-    // 'placetopay_language' => [
-    //     'title' 		=> __('Gateway Language', 'woocommerce-gateway-placetopay' ),
-    //     'type' 			=> 'select',
-    //     'options' 		=> ['ES' => 'ES', 'EN' => 'EN', 'PT' => 'PT' ],
-    //     'description' 	=> __('PlacetoPay Gateway Language ', 'woocommerce-gateway-placetopay' ),
-    //     'desc_tip' 		=> true
-    // ),
-    'form_method' => [
-        'title' 		=> __('Form Method', 'woocommerce-gateway-placetopay' ),
-        'type' 			=> 'select',
-        'default' 		=> 'POST',
-        'options' 		=> [ 'POST' => 'POST', 'GET' => 'GET' ],
-        'description' 	=> __('Checkout form submition method ', 'woocommerce-gateway-placetopay' ),
-        'desc_tip' 		=> true
-    ],
     'redirect_page_id' => [
         'title' 		=> __('Return Page', 'woocommerce-gateway-placetopay' ),
         'type' 			=> 'select',
