@@ -23,6 +23,15 @@ class GatewayMethod extends WC_Payment_Gateway {
     const SESSION_REQ_ID = 'placetopay_request_id';
 
     /**
+     * PlacetoPay uri endpoint via wordpress for the notification of the service
+     * 0 => namespace
+     * 1 => route
+     *
+     * @var array
+     */
+    const PAYMENT_ENDPOINT = [ 'placetopay-payment/v2', '/callback/' ];
+
+    /**
      * Instance of placetopay to manage the connection with the webservice
      * @var \Dnetix\Redirection\PlacetoPay
      */
@@ -58,15 +67,22 @@ class GatewayMethod extends WC_Payment_Gateway {
 
         // Init settings
         $this->initFormFields();
+        $this->settings[ 'endpoint' ] = home_url( '/wp-json/' ) . implode( '', self::PAYMENT_ENDPOINT );
 
+        $this->endpoint 		= $this->settings[ 'endpoint' ];
         $this->testmode         = $this->get_option( 'testmode' );
         $this->title            = $this->get_option( 'title' );
         $this->description 		= $this->get_option( 'description' );
         $this->login 		    = $this->get_option( 'login' );
         $this->tran_key         = $this->get_option( 'tran_key' );
         $this->redirect_page_id = $this->get_option( 'redirect_page_id' );
-        $this->endpoint 		= $this->get_option( 'endpoint' );
         $this->form_method 		= $this->get_option( 'form_method' );
+
+        $this->msg_approved		= $this->get_option( 'msg_approved' );
+        $this->msg_declined		= $this->get_option( 'msg_declined' );
+        $this->msg_cancel 		= $this->get_option( 'msg_cancel' );
+        $this->msg_pending		= $this->get_option( 'msg_pending' );
+
         $this->currency 		= get_woocommerce_currency();
         $this->currency         = Currency::isValidCurrency( $this->currency ) ? $this->currency : Currency::CUR_COP;
         $this->debug            = 'no';
@@ -88,6 +104,14 @@ class GatewayMethod extends WC_Payment_Gateway {
         add_action( 'woocommerce_receipt_' . $this->id, [ $this, 'receiptPage' ]);
         add_action( 'woocommerce_api_' . $this->getClassName( true ), [ $this, 'checkResponse' ]);
         add_action( 'placetopay_init', [ $this, 'successfulRequest' ]);
+
+        // Register endpoint for placetopay
+        add_action( 'rest_api_init', function() {
+            register_rest_route( self::PAYMENT_ENDPOINT[ 0 ], self::PAYMENT_ENDPOINT[ 1 ], [
+                'methods' => 'POST',
+                'callback' => [ $this, 'endpointPlacetoPay' ]
+            ]);
+        } );
 
         if( $this->enabled === 'yes' )
             add_action( 'woocommerce_before_checkout_form', [ $this, 'checkoutMessage' ], 5 );
@@ -114,6 +138,31 @@ class GatewayMethod extends WC_Payment_Gateway {
 
 
     /**
+     * Endpoint for the notification of PlacetoPay
+     * @param  \WP_REST_Request $params  Params given by route endpoint
+     * @return void
+     */
+    public function endpointPlacetoPay( \WP_REST_Request $req ) {
+        $data = $req->get_params();
+
+        if( !empty( $data[ 'signature' ] ) && !empty( $data[ 'requestId' ] ) ) {
+            $notification = new \Dnetix\Redirection\Message\Notification( $data, $this->tran_key );
+
+            if( !$notification->isValidNotification() )
+                return; // $notification->makeSignature();
+
+            $transactionInfo = $this->placetopay->query( $notification->requestId() );
+            $this->returnProcess([ 'key' => $data[ 'reference' ] ], $transactionInfo, true );
+
+            return [ 'success' => true ];
+        }
+
+        return null;
+        die();
+    }
+
+
+    /**
      * Process the payment for a order
      *
      * @param  int $orderId
@@ -132,11 +181,11 @@ class GatewayMethod extends WC_Payment_Gateway {
         //For wooCoomerce 2.0
         $redirectUrl = add_query_arg( 'wc-api', $this->getClassName(), $redirectUrl );
         $redirectUrl = add_query_arg( 'order_id', $orderId, $redirectUrl );
-        $redirectUrl = add_query_arg( '', $this->endpoint, $redirectUrl );
+        // $redirectUrl = add_query_arg( '', $this->endpoint, $redirectUrl );
 
         $req = [
             'expiration'=> date( 'c', strtotime( '+2 days' ) ),
-            'returnUrl' => $redirectUrl . 'key=' . $ref,
+            'returnUrl' => $redirectUrl . '&key=' . $ref,
             'ipAddress' => ( new RemoteAddress() )->getIpAddress(),
             'userAgent' => $_SERVER[ 'HTTP_USER_AGENT' ],
             'buyer'     => [
@@ -278,27 +327,11 @@ class GatewayMethod extends WC_Payment_Gateway {
     public function successfulRequest( $req ) {
         global $woocommerce;
 
-        // {
-        //   "status": {
-        //     "status": "APPROVED",
-        //     "message": "",
-        //     "reason": "",
-        //     "date": "2016-09-15T13:49:01-05:00"
-        //   },
-        //   "requestId": 58,
-        //   "reference": “ORDER-1000”,
-        //   "signature": “feb3e7cc76939c346f9640573a208662f30704ab”
-        // }
-
-        // Callback when the service is sending the datas to the notificationUrl
-        if( !empty( $req[ 'signature' ] ) && !empty( $req[ 'requestId' ] ) ) {
-            $transactionInfo = $this->placetopay->query( $req[ 'requestId' ] );
-            $this->confirmationProcess( $req, $transactionInfo );
-
-        } else {
-            // When the user is returned to the page specificated by redirectUrl
+        // When the user is returned to the page specificated by redirectUrl
+        if( !empty( $req[ 'key' ] ) && !empty( $req[ 'wc-api' ] ) ) {
             $requestId = WC()->session->get( self::SESSION_REQ_ID );
             $transactionInfo = $this->placetopay->query( $requestId );
+
             $this->returnProcess( $req, $transactionInfo );
         }
 
@@ -316,87 +349,103 @@ class GatewayMethod extends WC_Payment_Gateway {
     /**
      * Process page of response
      *
-     * @param  array $req
+     *
+     * @param  array $req             Rename for $_REQUEST
+     * @param  array $transactionInfo Information of transaction in placetopay
+     * @param  boolean $isCallback    Define if is notification or return request
+     *
      * @return void
      */
-    public function returnProcess( $req, $transactionInfo ) {
+    public function returnProcess( $req, $transactionInfo, $isCallback = false ) {
         global $woocommerce;
 
         $order = $this->getOrder( $req );
         $statusEnt = $transactionInfo->status();
-
-        $state = $req[ 'transactionState' ];
-
-        dd( $statusEnt );
+        $status = $statusEnt->status();
 
         // We are here so lets check status and do actions
-        switch( $statusEnt->status() ) {
-            case $statusEnt::ST_APROVED :
+        switch( $status ) {
+            case $statusEnt::ST_APPROVED :
             case $statusEnt::ST_PENDING :
 
                 // Check order not already completed
                 if( $order->status == 'completed' ) {
                     $this->logger( __( 'Aborting, Order #' . $order->id . ' is already complete.', 'woocommerce-gateway-placetopay' ) );
+
+                    if( $isCallback )
+                        return;
+
                     exit;
                 }
 
-                dd( $order->get_total(), $transactionInfo );
+                $totalAmount = $transactionInfo->request()->payment()->amount()->total();
+                $payerEmail = $transactionInfo->request()->payer()->email();
+
+                $paymentMethodName = count( $transactionInfo->payment ) > 0
+                    ? array_map( function( $trans ) {
+                        return $trans[ 'paymentMethodName' ];
+                    }, $transactionInfo->payment[ 'transaction' ] )
+                    : [];
+
+                $internalReference = count( $transactionInfo->payment ) > 0
+                    ? array_map( function( $trans ) {
+                        return $trans[ 'internalReference' ];
+                    }, $transactionInfo->payment[ 'transaction' ] )
+                    : [];
+
 
                 // Validate Amount
-                if( $order->get_total() != $req['TX_VALUE'] ) {
-                    $order->update_status( 'on-hold', sprintf( __( 'Validation error: PlacetoPay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay' ), $req['TX_VALUE'] ) );
+                if( $order->get_total() != floatval( $totalAmount ) ) {
+                    $msg = sprintf( __( 'Validation error: PlacetoPay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay' ), $totalAmount );
+                    $order->update_status( 'on-hold', $msg );
 
-                    $this->msg[ 'message' ] = sprintf( __( 'Validation error: PlacetoPay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay' ), $req['TX_VALUE'] );
+                    $this->msg[ 'message' ] = $msg;
                     $this->msg[ 'class' ] = 'woocommerce-error';
                 }
 
-                // Validate Merchand id
-                if ( strcasecmp( trim( $req['merchantId'] ), trim( $this->merchant_id ) ) != 0 ) {
-                    $order->update_status( 'on-hold', sprintf( __( 'Validation error: Payment in PlacetoPay comes from another id (%s).', 'woocommerce-gateway-placetopay' ), $req['merchantId'] ) );
-                    $this->msg['message'] = sprintf( __( 'Validation error: Payment in PlacetoPay comes from another id (%s).', 'woocommerce-gateway-placetopay' ), $req['merchantId'] );
-                    $this->msg['class'] = 'woocommerce-error';
-
-                }
-
                  // Payment Details
-                if ( ! empty( $req['buyerEmail'] ) )
-                    update_post_meta( $order->id, __('Payer PlacetoPay email', 'woocommerce-gateway-placetopay' ), $req['buyerEmail'] );
-                if ( ! empty( $req['transactionId'] ) )
-                    update_post_meta( $order->id, __('Transaction ID', 'woocommerce-gateway-placetopay' ), $req['transactionId'] );
-                if ( ! empty( $req['trazabilityCode'] ) )
-                    update_post_meta( $order->id, __('Trasability Code', 'woocommerce-gateway-placetopay' ), $req['trazabilityCode'] );
-                /*if ( ! empty( $req['last_name'] ) )
-                    update_post_meta( $order->id, 'Payer last name', $req['last_name'] );*/
-                if ( ! empty( $req['lapPaymentMethodType'] ) )
-                    update_post_meta( $order->id, __('Payment type', 'woocommerce-gateway-placetopay' ), $req['lapPaymentMethodType'] );
+                if( !empty( $payerEmail ) )
+                    update_post_meta( $order->id, __( 'Payer PlacetoPay email', 'woocommerce-gateway-placetopay' ), $payerEmail );
 
-                if ( $codes[$state] == 'APPROVED' ) {
+                if( count( $internalReference ) > 0 )
+                    update_post_meta( $order->id, __( 'Transaction ID', 'woocommerce-gateway-placetopay' ), implode( ",", $internalReference ) );
+
+                if( count( $paymentMethodName ) > 0 )
+                    update_post_meta( $order->id, __( 'Payment type', 'woocommerce-gateway-placetopay' ), implode( ",", $paymentMethodName ) );
+
+                if( $status == $statusEnt::ST_APPROVED ) {
                     $order->add_order_note( __( 'PlacetoPay payment approved', 'woocommerce-gateway-placetopay' ) );
-                    $this->msg['message'] = $this->msg_approved;
-                    $this->msg['class'] = 'woocommerce-message';
+                    $this->msg[ 'message' ] = $this->msg_approved;
+                    $this->msg[ 'class' ] = 'woocommerce-message';
+
                     $order->payment_complete();
+                    $this->logger( 'Order # ' . $order->id, 'Payment approved' );
+
                 } else {
-                    $order->update_status( 'on-hold', sprintf( __( 'Payment pending: %s', 'woocommerce-gateway-placetopay' ), $codes[$state] ) );
-                    $this->msg['message'] = $this->msg_pending;
-                    $this->msg['class'] = 'woocommerce-info';
+                    $order->update_status( 'on-hold', sprintf( __( 'Payment pending: %s', 'woocommerce-gateway-placetopay' ), $status ) );
+                    $this->msg[ 'message' ] = $this->msg_pending;
+                    $this->msg[ 'class' ] = 'woocommerce-info';
                 }
             break;
 
-            case 'DECLINED':
-            case 'EXPIRED':
-            case 'ERROR':
-                // Order failed
-                $order->update_status( 'failed', sprintf( __( 'Payment rejected via PlacetoPay. Error type: %s', 'woocommerce-gateway-placetopay' ), ( $codes[$state] ) ) );
-                    $this->msg['message'] = $this->msg_declined ;
-                    $this->msg['class'] = 'woocommerce-error';
+            // Order failed
+            case $statusEnt::ST_REJECTED :
+            case $statusEnt::ST_ERROR :
+                $order->update_status( 'failed', sprintf( __( 'Payment rejected via PlacetoPay. Error type: %s', 'woocommerce-gateway-placetopay' ), $status ) );
+                $this->msg[ 'message' ] = $this->msg_declined;
+                $this->msg[ 'class' ] = 'woocommerce-error';
             break;
 
             default:
-                $order->update_status( 'failed', sprintf( __( 'Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay' ), ( $codes[$state] ) ) );
-                    $this->msg['message'] = $this->msg_cancel ;
-                    $this->msg['class'] = 'woocommerce-error';
+                $order->update_status( 'failed', sprintf( __( 'Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay' ), $status ) );
+                $this->msg[ 'message' ] = $this->msg_cancel;
+                $this->msg[ 'class' ] = 'woocommerce-error';
             break;
         }
+
+        // Is notification request
+        if( $isCallback )
+            return;
 
         $redirectUrl = ( $this->redirect_page_id == 'default'
             || $this->redirect_page_id == ""
@@ -413,113 +462,6 @@ class GatewayMethod extends WC_Payment_Gateway {
 
         wp_redirect( $redirectUrl );
         exit;
-    }
-
-
-    /**
-     * Process page of confirmation
-     *
-     * @param  array $req
-     * @return void
-     */
-    public function confirmationProcess( $req ) {
-        global $woocommerce;
-        $order = $this->getOrder( $req );
-
-        $codes=array(
-            '1'     => 'CAPTURING_DATA',
-            '2'     => 'NEW',
-            '101'   => 'FX_CONVERTED',
-            '102'   => 'VERIFIED',
-            '103'   => 'SUBMITTED',
-            '4'     => 'APPROVED',
-            '6'     => 'DECLINED',
-            '104'   => 'ERROR',
-            '7'     => 'PENDING',
-            '5'     => 'EXPIRED'
-        );
-
-        $this->logger( 'Found order #' . $order->id );
-        $state = $req[ 'state_pol' ];
-        $this->logger( 'Payment status: ' . $codes[ $state ] );
-
-        // We are here so lets check status and do actions
-        switch ( $codes[$state] ) {
-            case 'APPROVED' :
-            case 'PENDING' :
-
-                // Check order not already completed
-                if ( $order->status == 'completed' ) {
-                     if ( 'yes' == $this->debug )
-                        $this->logger( __('Aborting, Order #' . $order->id . ' is already complete.', 'woocommerce-gateway-placetopay' ) );
-                     exit;
-                }
-
-                // Validate Amount
-                if ( $order->get_total() != $req['value'] ) {
-                    $order->update_status( 'on-hold', sprintf( __( 'Validation error: PlacetoPay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay' ), $req['value'] ) );
-
-                    $this->msg['message'] = sprintf( __( 'Validation error: PlacetoPay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay' ), $req['value'] );
-                    $this->msg['class'] = 'woocommerce-error';
-                }
-
-                // Validate Merchand id
-                if ( strcasecmp( trim( $req['merchant_id'] ), trim( $this->merchant_id ) ) != 0 ) {
-
-                    $order->update_status( 'on-hold', sprintf( __( 'Validation error: Payment in PlacetoPay comes from another id (%s).', 'woocommerce-gateway-placetopay' ), $req['merchant_id'] ) );
-                    $this->msg['message'] = sprintf( __( 'Validation error: Payment in PlacetoPay comes from another id (%s).', 'woocommerce-gateway-placetopay' ), $req['merchant_id'] );
-                    $this->msg['class'] = 'woocommerce-error';
-                }
-
-                 // Payment details
-                if ( ! empty( $req['email_buyer'] ) )
-                    update_post_meta( $order->id, __('PlacetoPay Client email', 'woocommerce-gateway-placetopay' ), $req['email_buyer'] );
-                if ( ! empty( $req['transaction_id'] ) )
-                    update_post_meta( $order->id, __('Transaction ID', 'woocommerce-gateway-placetopay' ), $req['transaction_id'] );
-                if ( ! empty( $req['reference_pol'] ) )
-                    update_post_meta( $order->id, __('Trasability Code', 'woocommerce-gateway-placetopay' ), $req['reference_pol'] );
-                if ( ! empty( $req['sign'] ) )
-                    update_post_meta( $order->id, __('Tash Code', 'woocommerce-gateway-placetopay' ), $req['sign'] );
-                if ( ! empty( $req['ip'] ) )
-                    update_post_meta( $order->id, __('Transaction IP', 'woocommerce-gateway-placetopay' ), $req['ip'] );
-
-                update_post_meta( $order->id, __('Extra Data', 'woocommerce-gateway-placetopay' ), 'response_code_pol: '.$req['response_code_pol'].' - '.'state_pol: '.$req['state_pol'].' - '.'payment_method: '.$req['payment_method'].' - '.'transaction_date: '.$req['transaction_date'].' - '.'currency: '.$req['currency'] );
-
-
-                if ( ! empty( $req['payment_method_type'] ) )
-                    update_post_meta( $order->id, __('Payment type', 'woocommerce-gateway-placetopay' ), $req['payment_method_type'] );
-
-                if ( $codes[$state] == 'APPROVED' ) {
-                    $order->add_order_note( __( 'PlacetoPay payment approved', 'woocommerce-gateway-placetopay' ) );
-                    $this->msg['message'] =  $this->msg_approved;
-                    $this->msg['class'] = 'woocommerce-message';
-                    $order->payment_complete();
-
-                    $this->logger( __('Payment complete.', 'woocommerce-gateway-placetopay' ) );
-
-                } else {
-                    $order->update_status( 'on-hold', sprintf( __( 'Payment pending: %s', 'woocommerce-gateway-placetopay' ), $codes[$state] ) );
-                    $this->msg['message'] = $this->msg_pending;
-                    $this->msg['class'] = 'woocommerce-info';
-                }
-            break;
-
-            case 'DECLINED' :
-            case 'EXPIRED' :
-            case 'ERROR' :
-            case 'ABANDONED_TRANSACTION':
-                // Order failed
-                $order->update_status( 'failed', sprintf( __( 'Payment rejected via PlacetoPay. Error type: %s', 'woocommerce-gateway-placetopay' ), ( $codes[$state] ) ) );
-                    $this->msg['message'] = $this->msg_declined ;
-                    $this->msg['class'] = 'woocommerce-error';
-            break;
-
-            default :
-                $order->update_status( 'failed', sprintf( __( 'Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay' ), ( $codes[$state] ) ) );
-                    $this->msg['message'] = $this->msg_cancel ;
-                    $this->msg['class'] = 'woocommerce-error';
-            break;
-        }
     }
 
 

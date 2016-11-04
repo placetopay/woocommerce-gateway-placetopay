@@ -65,11 +65,11 @@ return [
         'desc_tip' 		=> true
     ],
     'endpoint' => [
-        'title' 		=> __('Page End Point (Woo > 2.1)', 'woocommerce-gateway-placetopay' ),
+        'title' 		=> __( 'Page End Point (WP >= 4.6)', 'woocommerce-gateway-placetopay' ),
         'type' 			=> 'text',
-        'default' 		=> '',
-        'description' 	=> __('Return Page End Point.', 'woocommerce-gateway-placetopay' ),
-        'desc_tip' 		=> true
+        'class'         => 'readonly',
+        'description'   => __( 'If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/', 'woocommerce-gateway-placetopay' ),
+        'label' 	    => __( 'Return Page End Point.', 'woocommerce-gateway-placetopay' )
     ],
     'msg_approved' => [
         'title' 		=> __('Message for approved transaction', 'woocommerce-gateway-placetopay' ),

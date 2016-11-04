@@ -138,4 +138,13 @@ class WC_Gateway_PlacetoPay {
 
         return $assets_path . $path;
     }
+
+
+    /**
+     * Getter for version property
+     * @return string
+     */
+    public static function version() {
+        return self::$instance->version;
+    }
 }
