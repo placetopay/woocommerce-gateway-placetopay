@@ -23,14 +23,30 @@ class GatewayMethod extends WC_Payment_Gateway {
     const SESSION_REQ_ID = 'placetopay_request_id';
 
     /**
-     * PlacetoPay uri endpoint via wordpress for the notification of the service
-     * 0 => namespace
-     * 1 => route
+     * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
      *
      * @var array
      */
     const PAYMENT_ENDPOINT_NAMESPACE = 'placetopay-payment/v2';
+
+    /**
+    * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
+    *
+    * @var array
+    */
     const PAYMENT_ENDPOINT_CALLBACK = '/callback/';
+
+    /**
+     * URI for production service
+     * @var string
+     */
+    private $prodUri = 'https://secure.placetopay.com/redirection';
+
+    /**
+     * URI for testing enviroment
+     * @var string
+     */
+    private $testUri = 'https://test.placetopay.com/redirection';
 
     /**
      * Instance of placetopay to manage the connection with the webservice
@@ -86,13 +102,16 @@ class GatewayMethod extends WC_Payment_Gateway {
 
         $this->currency 		= get_woocommerce_currency();
         $this->currency         = Currency::isValidCurrency( $this->currency ) ? $this->currency : Currency::CUR_COP;
-        $this->debug            = 'no';
 
-        if( $this->testmode == "yes" )
+        if( $this->testmode == "yes" ) {
             $this->debug = "yes";
-
-        if( $this->debug == 'yes' )
+            $this->uri_service = $this->testUri;
             $this->log = ( version_compare( WOOCOMMERCE_VERSION, '2.1', '>=' ) ? new \WC_Logger(): $woocommerce->logger() );
+
+        } else {
+            $this->debug = 'no';
+            $this->uri_service = $this->prodUri;
+        }
     }
 
 
@@ -636,7 +655,7 @@ class GatewayMethod extends WC_Payment_Gateway {
         $this->placetopay = new PlacetoPay([
             'login'     => $this->login,
             'tranKey'   => $this->tran_key,
-            'url'       => 'http://redirection.dnetix.co/',
+            'url'       => $this->uri_service,
         ]);
     }
 
