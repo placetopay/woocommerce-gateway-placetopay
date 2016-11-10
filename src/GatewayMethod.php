@@ -29,7 +29,8 @@ class GatewayMethod extends WC_Payment_Gateway {
      *
      * @var array
      */
-    const PAYMENT_ENDPOINT = [ 'placetopay-payment/v2', '/callback/' ];
+    const PAYMENT_ENDPOINT_NAMESPACE = 'placetopay-payment/v2';
+    const PAYMENT_ENDPOINT_CALLBACK = '/callback/';
 
     /**
      * Instance of placetopay to manage the connection with the webservice
@@ -67,7 +68,7 @@ class GatewayMethod extends WC_Payment_Gateway {
 
         // Init settings
         $this->initFormFields();
-        $this->settings[ 'endpoint' ] = home_url( '/wp-json/' ) . implode( '', self::PAYMENT_ENDPOINT );
+        $this->settings[ 'endpoint' ] = home_url( '/wp-json/' ) . self::getPaymentEndpoint();
 
         $this->endpoint 		= $this->settings[ 'endpoint' ];
         $this->testmode         = $this->get_option( 'testmode' );
@@ -107,7 +108,7 @@ class GatewayMethod extends WC_Payment_Gateway {
 
         // Register endpoint for placetopay
         add_action( 'rest_api_init', function() {
-            register_rest_route( self::PAYMENT_ENDPOINT[ 0 ], self::PAYMENT_ENDPOINT[ 1 ], [
+            register_rest_route( self::PAYMENT_ENDPOINT_NAMESPACE, self::PAYMENT_ENDPOINT_CALLBACK, [
                 'methods' => 'POST',
                 'callback' => [ $this, 'endpointPlacetoPay' ]
             ]);
@@ -148,8 +149,12 @@ class GatewayMethod extends WC_Payment_Gateway {
         if( !empty( $data[ 'signature' ] ) && !empty( $data[ 'requestId' ] ) ) {
             $notification = new \Dnetix\Redirection\Message\Notification( $data, $this->tran_key );
 
-            if( !$notification->isValidNotification() )
-                return; // $notification->makeSignature();
+            if( !$notification->isValidNotification() ) {
+                if( $this->testmode == "yes" )
+                    return $notification->makeSignature();
+
+                return;
+            }
 
             $transactionInfo = $this->placetopay->query( $notification->requestId() );
             $this->returnProcess([ 'key' => $data[ 'reference' ] ], $transactionInfo, true );
@@ -613,6 +618,11 @@ class GatewayMethod extends WC_Payment_Gateway {
         }
 
         return $pageList;
+    }
+
+
+    public static function getPaymentEndpoint() {
+        return self::PAYMENT_ENDPOINT_NAMESPACE . self::PAYMENT_ENDPOINT_CALLBACK;
     }
 
 
