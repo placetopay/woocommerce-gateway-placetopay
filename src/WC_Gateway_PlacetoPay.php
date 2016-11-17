@@ -57,8 +57,6 @@ class WC_Gateway_PlacetoPay {
         // Paths
         $this->plugin_path = trailingslashit( plugin_dir_path( $file ) );
         $this->plugin_url = trailingslashit( plugin_dir_url( $file ) );
-
-        $this->paymentMethod = new GatewayMethod();
     }
 
 
@@ -67,7 +65,7 @@ class WC_Gateway_PlacetoPay {
      * @return \WC_Gateway_PlacetoPay
      */
     public static function getInstance( $version = null, $file = null ) {
-        if( !self::$instance instanceof self )
+        if( !( self::$instance instanceof self ) )
             self::$instance = new self( $version, $file );
 
         return self::$instance;
@@ -130,13 +128,15 @@ class WC_Gateway_PlacetoPay {
      * @param  string $path Optional relative path to concatenate with assets path
      * @return string
      */
-    public static function assets( $path = null ) {
-        $assets_path = self::$instance->plugin_path . 'assets';
+    public static function assets( $path = null, $type = 'path' ) {
+        $assets = ( $type === 'path'
+            ? self::$instance->plugin_path
+            : self::$instance->plugin_url ) . 'assets';
 
         if( $path === null )
-            return $assets_path;
+            return $assets;
 
-        return $assets_path . $path;
+        return $assets . $path;
     }
 
 

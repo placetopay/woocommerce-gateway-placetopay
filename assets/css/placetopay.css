@@ -1,0 +1,45 @@
+#logo_comercio{
+	display: none;
+}
+
+@media print {
+table td, table th {
+  padding: .857em;
+  text-align: left;
+  vertical-align: top;
+}
+.shop_table .order_details {
+  color: #000000;
+  border-spacing: 0;
+  width: 100%;
+  border-collapse: collapse;
+  border-color: #000000;
+  border: 1px solid #000;
+  display: table-cell;
+}
+th {
+  font-weight: bold;
+}
+td, th {
+  padding: 0;
+  box-sizing: border-box;
+}
+user agent stylesheettd, th {
+  display: table-cell;
+  vertical-align: inherit;
+}
+h2{
+	padding-left: .857em;
+}
+#logo_comercio{
+	display: block;
+	vertical-align: middle;
+	padding-bottom: 20px;
+	max-width:100%;
+	max-height:200px;
+	margin-left: auto;
+    margin-right: auto;
+	margin-top: auto;
+	margin-bottom: auto;
+}
+}

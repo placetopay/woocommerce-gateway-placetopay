@@ -16,13 +16,6 @@ return [
         'default' 		=> 'no',
         'description' 	=> __( 'Show in the Payment List as a payment option', 'woocommerce-gateway-placetopay' )
     ],
-    // 'icon_checkout' => [
-    //     'title' 		=> __( 'Logo en el checkout:', 'woocommerce-gateway-placetopay' ),
-    //     'type'			=> 'text',
-    //     'default'		=> $this->icon_default,
-    //     'description' 	=> __('URL de la Imagen para mostrar en el carrro de compra.', 'woocommerce-gateway-placetopay' ),
-    //     'desc_tip' 		=> true
-    // ],
     'title' => [
         'title' 		=> __( 'Title:', 'woocommerce-gateway-placetopay' ),
         'type'			=> 'text',
@@ -60,7 +53,7 @@ return [
     'redirect_page_id' => [
         'title' 		=> __('Return Page', 'woocommerce-gateway-placetopay' ),
         'type' 			=> 'select',
-        'options' 		=> $this->getPages(__('Select Page', 'woocommerce-gateway-placetopay' )),
+        'options' 		=> $this->getPages(),
         'description' 	=> __('URL of success page', 'woocommerce-gateway-placetopay' ),
         'desc_tip' 		=> true
     ],
@@ -70,6 +63,20 @@ return [
         'class'         => 'readonly',
         'description'   => __( 'If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/', 'woocommerce-gateway-placetopay' ),
         'label' 	    => __( 'Return Page End Point.', 'woocommerce-gateway-placetopay' )
+    ],
+    'merchant_phone' => [
+        'title'         => __( 'Phone number', 'woocommerce-gateway-placetopay' ),
+        'description'   => __( 'Provide the phone number used for the inquiries or support in your shop', 'woocommerce-gateway-placetopay' ),
+        'type'          => 'text',
+        'default'       => '',
+        'desc_tip'      => true,
+    ],
+    'merchant_email' => [
+        'title'         => __( 'Email', 'woocommerce-gateway-placetopay' ),
+        'description'   => __( 'Provide contact email', 'woocommerce-gateway-placetopay' ),
+        'type'          => 'text',
+        'default'       => '',
+        'desc_tip'      => true,
     ],
     'msg_approved' => [
         'title' 		=> __('Message for approved transaction', 'woocommerce-gateway-placetopay' ),

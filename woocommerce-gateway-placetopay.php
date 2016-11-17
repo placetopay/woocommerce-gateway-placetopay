@@ -29,6 +29,33 @@ if( !defined( 'ABSPATH' ) ) {
 function wc_gateway_placetopay() {
     // carga las traducciones de Place to Pay
     load_plugin_textdomain( 'woocommerce-gateway-placetopay', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+    add_filter( 'woocommerce_locate_template', 'wooAddonPluginTemplate', 1, 3 );
+
+    function wooAddonPluginTemplate( $template, $templateName, $templatePath ) {
+        global $woocommerce;
+
+        $_template = $template;
+
+        if( ! $templatePath )
+            $templatePath = $woocommerce->template_url;
+
+        $pluginPath  = untrailingslashit( plugin_dir_path( __FILE__ ) )  . '/woocommerce/';
+
+        // Look within passed path within the theme - this is priority
+        $template = locate_template([
+            $templatePath . $templateName,
+            $templateName
+        ]);
+
+        if( !$template && file_exists( $pluginPath . $templateName ) )
+            $template = $pluginPath . $templateName;
+
+        if( !$template )
+            $template = $_template;
+
+        return $template;
+    }
+
 
     require_once( __DIR__ . '/vendor/autoload.php' );
     return \PlacetoPay\WC_Gateway_PlacetoPay::getInstance( '2.0.0', __FILE__ );
