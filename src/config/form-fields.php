@@ -42,13 +42,12 @@ return [
         'description' 	=>  __('Given to transactional key by PlacetoPay', 'woocommerce-gateway-placetopay' ),
         'desc_tip' 		=> true
     ],
-    'testmode' => [
-        'title' 		=> __('Test mode', 'woocommerce-gateway-placetopay' ),
-        'type' 			=> 'checkbox',
-        'label' 		=> __('Enable PlacetoPay TEST Transactions.', 'woocommerce-gateway-placetopay' ),
-        'default' 		=> 'no',
-        'description' 	=> __('Tick to run TEST Transaction on the PlacetoPay platform', 'woocommerce-gateway-placetopay' ),
-        'desc_tip' 		=> true
+    'enviroment_mode' => [
+        'title' 		=> __( 'Enviroment mode', 'woocommerce-gateway-placetopay' ),
+        'type' 			=> 'select',
+        'default'       => 'dev',
+        'options' 		=> $this->getEnviroments(),
+        'description' 	=> __( 'Enable the enviroment PlacetoPay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is actived</b>', 'woocommerce-gateway-placetopay' )
     ],
     'redirect_page_id' => [
         'title' 		=> __('Return Page', 'woocommerce-gateway-placetopay' ),

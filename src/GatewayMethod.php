@@ -49,7 +49,7 @@ class GatewayMethod extends WC_Payment_Gateway {
     private $testUri = 'https://test.placetopay.com/redirection';
 
     /**
-     * URI for testing in develoment enviroment
+     * URI for testing in development enviroment
      * @var string
      */
     private $testUriDev = 'http://redirection.dnetix.co/';
@@ -94,7 +94,7 @@ class GatewayMethod extends WC_Payment_Gateway {
         $this->settings[ 'endpoint' ] = home_url( '/wp-json/' ) . self::getPaymentEndpoint();
 
         $this->endpoint 		= $this->settings[ 'endpoint' ];
-        $this->testmode         = $this->get_option( 'testmode' );
+        $this->enviroment_mode  = $this->get_option( 'enviroment_mode' );
         $this->title            = $this->get_option( 'title' );
         $this->description 		= $this->get_option( 'description' );
         $this->login 		    = $this->get_option( 'login' );
@@ -112,17 +112,25 @@ class GatewayMethod extends WC_Payment_Gateway {
         $this->currency 		= get_woocommerce_currency();
         $this->currency         = Currency::isValidCurrency( $this->currency ) ? $this->currency : Currency::CUR_COP;
 
+        $this->testmode = in_array( $this->enviroment_mode, [ "test", 'dev' ] ) ? 'yes' : 'no';
+
         if( $this->testmode == "yes" ) {
             $this->debug = "yes";
-            $this->uri_service = $this->testUri;
             $this->log = ( version_compare( WOOCOMMERCE_VERSION, '2.1', '>=' ) ? new \WC_Logger(): $woocommerce->logger() );
 
-        } else {
+            $this->uri_service = $this->enviroment_mode === 'dev'
+                ? $this->testUriDev
+                : $this->testUri;
+
+        } else if( $this->enviroment_mode === 'prod' ) {
             $this->debug = 'no';
             $this->uri_service = $this->prodUri;
+
         }
 
+        // By default always it will be enviroment of development testing
         if( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+            $this->settings[ 'enviroment_mode' ] = 'dev';
             $this->uri_service = $this->testUriDev;
         }
     }
@@ -732,6 +740,24 @@ class GatewayMethod extends WC_Payment_Gateway {
     }
 
 
+    /**
+     * Return list of enviroments for selection
+     *
+     * @return array
+     */
+    protected function getEnviroments() {
+        return [
+            'dev' => __( 'Development Test', 'woocommerce-gateway-placetopay' ),
+            'prod' => __( 'Production', 'woocommerce-gateway-placetopay' ),
+            'test' => __( 'Production Test', 'woocommerce-gateway-placetopay' ),
+        ];
+    }
+
+
+    /**
+     * Return the payment endpoint for url request-back
+     * @return string
+     */
     public static function getPaymentEndpoint() {
         return self::PAYMENT_ENDPOINT_NAMESPACE . self::PAYMENT_ENDPOINT_CALLBACK;
     }

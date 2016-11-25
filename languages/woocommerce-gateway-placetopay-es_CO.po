@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
-"POT-Creation-Date: 2016-11-18 10:42-0500\n"
-"PO-Revision-Date: 2016-11-18 10:42-0500\n"
+"POT-Creation-Date: 2016-11-22 14:20-0500\n"
+"PO-Revision-Date: 2016-11-22 14:20-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_CO\n"
@@ -24,16 +24,16 @@ msgstr "PlacetoPay"
 msgid "Sells online safely and agile"
 msgstr "Vende en línea de forma segura y ágil"
 
-#: src/GatewayMethod.php:269 src/GatewayMethod.php:270
-#: src/GatewayMethod.php:274
+#: src/GatewayMethod.php:277 src/GatewayMethod.php:278
+#: src/GatewayMethod.php:282
 msgid "Payment error:"
 msgstr "Error al pagar:"
 
-#: src/GatewayMethod.php:308
+#: src/GatewayMethod.php:318
 msgid "Redirecting to PlacetoPay"
 msgstr "Redireccionando a PlacetoPay"
 
-#: src/GatewayMethod.php:322
+#: src/GatewayMethod.php:334
 msgid ""
 "We are now redirecting you to PlacetoPay to make payment, if you are not "
 "redirected please press the bottom."
@@ -41,59 +41,59 @@ msgstr ""
 "Ahora estamos redirigiéndolo a PlacetoPay para hacer el pago, si no es "
 "redirigido por favor presione la parte inferior."
 
-#: src/GatewayMethod.php:368
+#: src/GatewayMethod.php:380
 msgid "PlacetoPay Request Failure"
 msgstr "Fallo la petición a PlacetoPay"
 
-#: src/GatewayMethod.php:391
+#: src/GatewayMethod.php:403
 msgid ""
 "There was an error on the request. please contact the website administrator."
 msgstr ""
 "Ha ocurrido un error en la solicitud. Por favor comuniquese con el "
 "administrador del sitio web"
 
-#: src/GatewayMethod.php:426
+#: src/GatewayMethod.php:438
 msgid "Aborting, Order #"
 msgstr "Cancelando, Orden #"
 
-#: src/GatewayMethod.php:452
+#: src/GatewayMethod.php:464
 #, php-format
 msgid "Validation error: PlacetoPay amounts do not match (gross %s)."
 msgstr ""
 "Error de validación: La cantidad pagada en PlacetoPay  no coincide (Cantidad "
 "%s)."
 
-#: src/GatewayMethod.php:464
+#: src/GatewayMethod.php:476
 msgid "Payer PlacetoPay email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/GatewayMethod.php:467
+#: src/GatewayMethod.php:479
 msgid "Payment type"
 msgstr "Método de pago usado"
 
-#: src/GatewayMethod.php:470
+#: src/GatewayMethod.php:482
 msgid "PlacetoPay payment approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/GatewayMethod.php:478
+#: src/GatewayMethod.php:490
 #, php-format
 msgid "Payment pending: %s"
 msgstr "Pago pendiente: %s"
 
-#: src/GatewayMethod.php:487
+#: src/GatewayMethod.php:499
 #, php-format
 msgid "Payment rejected via PlacetoPay. Error type: %s."
 msgstr "Pago rechazado por PlacetoPay. Error: %s."
 
-#: src/GatewayMethod.php:493 src/config/form-fields.php:104
+#: src/GatewayMethod.php:507 src/config/form-fields.php:103
 msgid "Payment rejected via PlacetoPay."
 msgstr "Pago rechazado por PlacetoPay."
 
-#: src/GatewayMethod.php:557
+#: src/GatewayMethod.php:573
 msgid "Error: Order Key does not match invoice."
 msgstr "Error: La llave de la orden no coincide."
 
-#: src/GatewayMethod.php:592
+#: src/GatewayMethod.php:608
 #, php-format
 msgid ""
 "At this time your order #%s display a checkout transaction which is pending "
@@ -116,21 +116,38 @@ msgstr ""
 "cliente %s o enviar un correo electrónico a %s\n"
 "                            y preguntar por el estado de la transacción: %s"
 
-#: src/GatewayMethod.php:598
+#: src/GatewayMethod.php:614
 msgid "CUS/Authorization"
 msgstr "CUS/Autorización"
 
-#: src/GatewayMethod.php:665
+#: src/GatewayMethod.php:688
+#, php-format
+msgid "Item #%s stock incremented from %s to %s."
+msgstr "Item #%s incremento de %s a %s."
+
+#: src/GatewayMethod.php:712
 msgid "Default Page"
 msgstr "Pagina por defecto"
 
-#: src/GatewayMethod.php:671
+#: src/GatewayMethod.php:718
 msgid "My Account"
 msgstr "Mi cuenta"
 
-#: src/GatewayMethod.php:672
+#: src/GatewayMethod.php:719
 msgid "My Orders"
 msgstr "Mis ordenes"
+
+#: src/GatewayMethod.php:750
+msgid "Development Test"
+msgstr "Desarrollo pruebas"
+
+#: src/GatewayMethod.php:751
+msgid "Production"
+msgstr "Producción"
+
+#: src/GatewayMethod.php:752
+msgid "Production Test"
+msgstr "Producción pruebas"
 
 #: src/WC_Gateway_PlacetoPay.php:108
 msgid "Settings"
@@ -185,31 +202,31 @@ msgid "Given to transactional key by PlacetoPay"
 msgstr "Clave transaccional del vendedor proporcionada por PlacetoPay"
 
 #: src/config/form-fields.php:46
-msgid "Test mode"
-msgstr "Modo de pruebas"
-
-#: src/config/form-fields.php:48
-msgid "Enable PlacetoPay TEST Transactions."
-msgstr "Habilita las transacciones de prueba en PlacetoPay"
+msgid "Enviroment mode"
+msgstr "Entorno de desarrollo"
 
 #: src/config/form-fields.php:50
-msgid "Tick to run TEST Transaction on the PlacetoPay platform"
+msgid ""
+"Enable the enviroment PlacetoPay for testing or production transactions.<br /"
+">Note: <b>By default is \"Development Test\", if WP_DEBUG is actived</b>"
 msgstr ""
-"Activar para hacer transacciones de prueba con la plataforma de PlacetoPay."
+"Habilite el ambiente PlacetoPay para realizar transacciones en modo pruebas "
+"o producción.<br />Nota: <b>Por defecto es \"Desarrollo pruebas\", sí "
+"WP_DEBUG esta activado</b>"
 
-#: src/config/form-fields.php:54
+#: src/config/form-fields.php:53
 msgid "Return Page"
 msgstr "Pagina de regreso"
 
-#: src/config/form-fields.php:57
+#: src/config/form-fields.php:56
 msgid "URL of success page"
 msgstr "Dirección de la pagina de retorno"
 
-#: src/config/form-fields.php:61
+#: src/config/form-fields.php:60
 msgid "Return url. EndPoint (WP >= 4.6)"
 msgstr "Url de retorno. Endpoint (WP >= 4.6)"
 
-#: src/config/form-fields.php:64
+#: src/config/form-fields.php:63
 msgid ""
 "Url of return where PlacetoPay will send a notification of a transaction for "
 "Woocommerce.<br />If your Wordpress not support REST-API, please visit: "
@@ -219,48 +236,48 @@ msgstr ""
 "una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-API, "
 "por favor visita: https://wordpress.org/plugins/rest-api/"
 
-#: src/config/form-fields.php:67
+#: src/config/form-fields.php:66
 msgid "Phone number"
 msgstr "Número de teléfono"
 
-#: src/config/form-fields.php:68
+#: src/config/form-fields.php:67
 msgid "Provide the phone number used for the inquiries or support in your shop"
 msgstr ""
 "Proporcione el número de teléfono usado para consultas o soporte de su tienda"
 
-#: src/config/form-fields.php:74
+#: src/config/form-fields.php:73
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: src/config/form-fields.php:75
+#: src/config/form-fields.php:74
 msgid "Provide contact email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/config/form-fields.php:81 src/config/form-fields.php:84
+#: src/config/form-fields.php:80 src/config/form-fields.php:83
 msgid "Message for approved transaction"
 msgstr "Mensaje para el pago aprobado por PlacetoPay"
 
-#: src/config/form-fields.php:83
+#: src/config/form-fields.php:82
 msgid "PlacetoPay Payment Approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/config/form-fields.php:88 src/config/form-fields.php:91
+#: src/config/form-fields.php:87 src/config/form-fields.php:90
 msgid "Message for pending transaction"
 msgstr "Mensaje para transacción pendiente en PlacetoPay"
 
-#: src/config/form-fields.php:90
+#: src/config/form-fields.php:89
 msgid "Payment pending"
 msgstr "Pago pendiente"
 
-#: src/config/form-fields.php:95 src/config/form-fields.php:98
+#: src/config/form-fields.php:94 src/config/form-fields.php:97
 msgid "Message for cancel transaction"
 msgstr "Mensaje para un transacción cancelada"
 
-#: src/config/form-fields.php:97
+#: src/config/form-fields.php:96
 msgid "Transaction Canceled."
 msgstr "Transacción cancelada."
 
-#: src/config/form-fields.php:102 src/config/form-fields.php:105
+#: src/config/form-fields.php:101 src/config/form-fields.php:104
 msgid "Message for rejected transaction"
 msgstr "Mensaje para una transacción rechazada."
 
@@ -340,6 +357,17 @@ msgstr "Ir a la tienda"
 #: woocommerce/myaccount/orders.php:147
 msgid "No order has been made yet."
 msgstr "No hay ordenes creadas todavia."
+
+#~ msgid "Test mode"
+#~ msgstr "Modo de pruebas"
+
+#~ msgid "Enable PlacetoPay TEST Transactions."
+#~ msgstr "Habilita las transacciones de prueba en PlacetoPay"
+
+#~ msgid "Tick to run TEST Transaction on the PlacetoPay platform"
+#~ msgstr ""
+#~ "Activar para hacer transacciones de prueba con la plataforma de "
+#~ "PlacetoPay."
 
 #~ msgid ""
 #~ "En este momento su orden # %s presenta un proceso de pago cuya "
