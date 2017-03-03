@@ -4,21 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "48889b4d29215bf8e5d4f59565c0872c",
     "content-hash": "4e62661acc28110eaa5e57dad6797ae3",
     "packages": [
         {
             "name": "dnetix/redirection",
-            "version": "0.2.2",
+            "version": "0.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dnetix/redirection.git",
-                "reference": "e8064eed48b05f3cf57d13b2ab046cd3aafa0e07"
+                "reference": "6fdeed0f623b2b7a0f2556e46ea15fbfa16f9555"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dnetix/redirection/zipball/e8064eed48b05f3cf57d13b2ab046cd3aafa0e07",
-                "reference": "e8064eed48b05f3cf57d13b2ab046cd3aafa0e07",
+                "url": "https://api.github.com/repos/dnetix/redirection/zipball/6fdeed0f623b2b7a0f2556e46ea15fbfa16f9555",
+                "reference": "6fdeed0f623b2b7a0f2556e46ea15fbfa16f9555",
                 "shasum": ""
             },
             "require": {
@@ -26,7 +25,7 @@
                 "php": ">=5.4"
             },
             "require-dev": {
-                "phpunit/phpunit": "^5.4"
+                "phpunit/phpunit": "^4.8"
             },
             "type": "library",
             "autoload": {
@@ -45,22 +44,22 @@
                 }
             ],
             "description": "Library to connect with PlacetoPay Redirection service",
-            "time": "2016-11-15 22:47:46"
+            "time": "2017-01-18T15:57:56+00:00"
         }
     ],
     "packages-dev": [
         {
             "name": "larapack/dd",
-            "version": "1.0",
+            "version": "1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/larapack/dd.git",
-                "reference": "564da1a427b5559b5286138e180d80ed26558e85"
+                "reference": "561b5111a13d0094b59b5c81b1572489485fb948"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/larapack/dd/zipball/564da1a427b5559b5286138e180d80ed26558e85",
-                "reference": "564da1a427b5559b5286138e180d80ed26558e85",
+                "url": "https://api.github.com/repos/larapack/dd/zipball/561b5111a13d0094b59b5c81b1572489485fb948",
+                "reference": "561b5111a13d0094b59b5c81b1572489485fb948",
                 "shasum": ""
             },
             "require": {
@@ -83,7 +82,7 @@
                 }
             ],
             "description": "`dd` is a helper method in Laravel. This package will add the `dd` to your application.",
-            "time": "2015-06-10 11:33:45"
+            "time": "2016-12-15T09:34:34+00:00"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -142,20 +141,20 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-11-14 01:06:16"
+            "time": "2016-11-14T01:06:16+00:00"
         },
         {
             "name": "symfony/var-dumper",
-            "version": "v3.1.6",
+            "version": "v3.2.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/var-dumper.git",
-                "reference": "4dc2f03b480c43f1665d3317d827a04ed6ffd11e"
+                "reference": "cb50260b674ee1c2d4ab49f2395a42e0b4681e20"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/4dc2f03b480c43f1665d3317d827a04ed6ffd11e",
-                "reference": "4dc2f03b480c43f1665d3317d827a04ed6ffd11e",
+                "url": "https://api.github.com/repos/symfony/var-dumper/zipball/cb50260b674ee1c2d4ab49f2395a42e0b4681e20",
+                "reference": "cb50260b674ee1c2d4ab49f2395a42e0b4681e20",
                 "shasum": ""
             },
             "require": {
@@ -171,7 +170,7 @@
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "3.1-dev"
+                    "dev-master": "3.2-dev"
                 }
             },
             "autoload": {
@@ -205,7 +204,7 @@
                 "debug",
                 "dump"
             ],
-            "time": "2016-10-18 15:46:07"
+            "time": "2017-02-16T22:46:52+00:00"
         }
     ],
     "aliases": [],

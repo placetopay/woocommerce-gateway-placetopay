@@ -1,7 +1,7 @@
 <?php namespace PlacetoPay;
 
 
-if( !defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
@@ -9,7 +9,8 @@ if( !defined( 'ABSPATH' ) ) {
 /**
  * @package \PlacetoPay;
  */
-class WC_Gateway_PlacetoPay {
+class WC_Gateway_PlacetoPay
+{
 
     /**
      * Plugin version.
@@ -34,39 +35,45 @@ class WC_Gateway_PlacetoPay {
 
     /**
      * Unique instance of self
-     * @var \WC_Gateway_PlacetoPay
+     * @var WC_Gateway_PlacetoPay
      */
     private static $instance = null;
 
 
     /**
      * Constructor
-     * @access private
      *
-     * @param string $file    Filepath of main plugin file
-     * @param string $version Plugin version
+     * @access private
+     * @param string $file Filepath of main plugin file
+     * @param string $version
      */
-    private function __construct( $version, $file ) {
-        if( !$this->checkDependencies() )
+    private function __construct($version, $file)
+    {
+        if (!$this->checkDependencies())
             return null;
 
-        add_filter( 'woocommerce_payment_gateways', [ $this, 'addPlacetoPayGatewayMethod' ]);
-        add_filter( 'plugin_action_links_' . plugin_basename( $file ), [ $this, 'actionLinksPlacetopay' ]);
+        add_filter('woocommerce_payment_gateways', [$this, 'addPlacetoPayGatewayMethod']);
+        add_filter('plugin_action_links_' . plugin_basename($file), [$this, 'actionLinksPlacetopay']);
 
         $this->version = $version;
         // Paths
-        $this->plugin_path = trailingslashit( plugin_dir_path( $file ) );
-        $this->plugin_url = trailingslashit( plugin_dir_url( $file ) );
+        $this->plugin_path = trailingslashit(plugin_dir_path($file));
+        $this->plugin_url = trailingslashit(plugin_dir_url($file));
     }
 
 
     /**
      * Method to implement a singleton pattern
-     * @return \WC_Gateway_PlacetoPay
+     *
+     * @param null $version
+     * @param null $file
+     * @return WC_Gateway_PlacetoPay
      */
-    public static function getInstance( $version = null, $file = null ) {
-        if( !( self::$instance instanceof self ) )
-            self::$instance = new self( $version, $file );
+    public static function getInstance($version = null, $file = null)
+    {
+        if (!(self::$instance instanceof self)) {
+            self::$instance = new self($version, $file);
+        }
 
         return self::$instance;
     }
@@ -76,9 +83,10 @@ class WC_Gateway_PlacetoPay {
      * Verify if woocommerce plugin is installed
      * @return bool
      */
-    public function checkDependencies() {
-        if( !function_exists( 'WC' ) ) {
-            add_action( 'admin_notices', function() {
+    public function checkDependencies()
+    {
+        if (!function_exists('WC')) {
+            add_action('admin_notices', function () {
                 echo '<div class="error fade">
                     <p>
                         <strong>
@@ -100,12 +108,13 @@ class WC_Gateway_PlacetoPay {
      * @param  array $links
      * @return array
      */
-    public function actionLinksPlacetopay( $links ) {
+    public function actionLinksPlacetopay($links)
+    {
         $customLinks = [
             'settings' => sprintf(
                 '<a href="%s">%s</a>',
-                admin_url( 'admin.php?page=wc-settings&tab=checkout&section=placetopay' ),
-                __( 'Settings', 'woocommerce-gateway-placetopay' )
+                admin_url('admin.php?page=wc-settings&tab=checkout&section=placetopay'),
+                __('Settings', 'woocommerce-gateway-placetopay')
             )
         ];
 
@@ -116,7 +125,8 @@ class WC_Gateway_PlacetoPay {
     /**
      * Add the Gateway to WooCommerce, this method is a override and is called by woocommerce
      **/
-    public function addPlacetoPayGatewayMethod( $methods ) {
+    public function addPlacetoPayGatewayMethod($methods)
+    {
         $methods[] = GatewayMethod::class;
         return $methods;
     }
@@ -125,15 +135,17 @@ class WC_Gateway_PlacetoPay {
     /**
      * Return the assets path
      *
-     * @param  string $path Optional relative path to concatenate with assets path
+     * @param null $path Optional relative path to concatenate with assets path
+     * @param string $type
      * @return string
      */
-    public static function assets( $path = null, $type = 'path' ) {
-        $assets = ( $type === 'path'
-            ? self::$instance->plugin_path
-            : self::$instance->plugin_url ) . 'assets';
+    public static function assets($path = null, $type = 'path')
+    {
+        $assets = ($type === 'path'
+                ? self::$instance->plugin_path
+                : self::$instance->plugin_url) . 'assets';
 
-        if( $path === null )
+        if ($path === null)
             return $assets;
 
         return $assets . $path;
@@ -144,7 +156,8 @@ class WC_Gateway_PlacetoPay {
      * Getter for version property
      * @return string
      */
-    public static function version() {
+    public static function version()
+    {
         return self::$instance->version;
     }
 }

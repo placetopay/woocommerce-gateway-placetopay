@@ -16,7 +16,7 @@
  * @version 2.0.0
  */
 
-if( !defined( 'ABSPATH' ) ) {
+if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
@@ -26,20 +26,28 @@ if( !defined( 'ABSPATH' ) ) {
  *
  * @return \PlacetoPay\WC_Gateway_PlacetoPay
  */
-function wc_gateway_placetopay() {
-    // carga las traducciones de Place to Pay
-    load_plugin_textdomain( 'woocommerce-gateway-placetopay', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
-    add_filter( 'woocommerce_locate_template', 'wooAddonPluginTemplate', 1, 3 );
+function wc_gateway_placetopay()
+{
+    // carga las traducciones de PlacetoPay
+    load_plugin_textdomain('woocommerce-gateway-placetopay', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate', 1, 3);
 
-    function wooAddonPluginTemplate( $template, $templateName, $templatePath ) {
+    /**
+     * @param $template
+     * @param $templateName
+     * @param $templatePath
+     * @return string
+     */
+    function wooAddonPluginTemplate($template, $templateName, $templatePath)
+    {
         global $woocommerce;
 
         $_template = $template;
 
-        if( ! $templatePath )
+        if (!$templatePath)
             $templatePath = $woocommerce->template_url;
 
-        $pluginPath  = untrailingslashit( plugin_dir_path( __FILE__ ) )  . '/woocommerce/';
+        $pluginPath = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/';
 
         // Look within passed path within the theme - this is priority
         $template = locate_template([
@@ -47,18 +55,17 @@ function wc_gateway_placetopay() {
             $templateName
         ]);
 
-        if( !$template && file_exists( $pluginPath . $templateName ) )
+        if (!$template && file_exists($pluginPath . $templateName))
             $template = $pluginPath . $templateName;
 
-        if( !$template )
+        if (!$template)
             $template = $_template;
 
         return $template;
     }
 
-
-    require_once( __DIR__ . '/vendor/autoload.php' );
-    return \PlacetoPay\WC_Gateway_PlacetoPay::getInstance( '2.0.0', __FILE__ );
+    require_once(__DIR__ . '/vendor/autoload.php');
+    return \PlacetoPay\WC_Gateway_PlacetoPay::getInstance('2.0.0', __FILE__);
 }
 
-add_action( 'plugins_loaded', 'wc_gateway_placetopay', 0 );
+add_action('plugins_loaded', 'wc_gateway_placetopay', 0);

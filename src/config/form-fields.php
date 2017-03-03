@@ -5,7 +5,7 @@ if( !defined( 'ABSPATH' ) ) {
 }
 
 /**
- * This file will be incluided into of GatewayMethod class
+ * This file will be included into of GatewayMethod class
  * @package \PlacetoPay;
  */
 return [
