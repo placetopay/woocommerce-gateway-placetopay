@@ -54,8 +54,6 @@ if ( $has_orders ) : ?>
                 'wc-failed'     => __( 'Failed', 'woocommerce-gateway-placetopay' ), //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
             ];
 
-            update_post_meta( 38, '_p2p_authorization', '000000' );
-
             foreach ( $customer_orders->orders as $customer_order ) {
                 $order = wc_get_order( $customer_order );
                 $item_count = $order->get_item_count();
@@ -65,7 +63,7 @@ if ( $has_orders ) : ?>
                 ?><tr class="order">
                     <td class="order-number" data-title="<?php _e( 'Order Number', 'woocommerce-gateway-placetopay' ); ?>">
                         <a href="<?php echo esc_url( $order->get_view_order_url() ); ?>">
-                            <?php echo _x( '#', 'hash before order number', 'woocommerce-gateway-placetopay' ) . $order->get_order_number(); ?>
+                            <?php echo _x( '#', 'hash before order number', 'woocommerce-gateway-placetopay' ) . str_pad($order->get_order_number(), 4, '0', STR_PAD_LEFT); ?>
                         </a>
                     </td>
 

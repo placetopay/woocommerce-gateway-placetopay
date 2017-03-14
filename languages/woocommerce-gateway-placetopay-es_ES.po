@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
 "POT-Creation-Date: 2017-03-03 18:28-0500\n"
-"PO-Revision-Date: 2017-03-03 18:28-0500\n"
+"PO-Revision-Date: 2017-03-14 11:17-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -319,7 +319,7 @@ msgstr "Pendiente"
 
 #: woocommerce/myaccount/orders.php:50 woocommerce/myaccount/orders.php:52
 msgid "Approved"
-msgstr "Aprobado"
+msgstr "Aprobada"
 
 #: woocommerce/myaccount/orders.php:53 woocommerce/myaccount/orders.php:79
 msgid "Rejected"
@@ -327,7 +327,7 @@ msgstr "Rechazada"
 
 #: woocommerce/myaccount/orders.php:54
 msgid "Failed"
-msgstr "Fallido"
+msgstr "Fallida"
 
 #: woocommerce/myaccount/orders.php:66
 msgid "Order Number"
