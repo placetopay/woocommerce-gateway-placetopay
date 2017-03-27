@@ -55,7 +55,7 @@ if ($has_orders) : ?>
             'wc-on-hold' => __('Pending', 'woocommerce-gateway-placetopay'), //Awaiting payment – stock is reduced, but you need to confirm payment
             'wc-completed' => __('Approved', 'woocommerce-gateway-placetopay'), //Order fulfilled and complete – requires no further action
             'wc-refunded' => __('Rejected', 'woocommerce-gateway-placetopay'), //Refunded – Refunded by an admin – no further action required
-            'wc-failed' => __('Failed', 'woocommerce-gateway-placetopay'), //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
+            'wc-failed' => __('Rejected', 'woocommerce-gateway-placetopay'), //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
         ];
 
         foreach ($customer_orders->orders as $customer_order) {
@@ -72,7 +72,7 @@ if ($has_orders) : ?>
                 <td class="order-number"
                     data-title="<?php _e('Order Number', 'woocommerce-gateway-placetopay'); ?>">
                     <a href="<?php echo esc_url($order->get_view_order_url()); ?>">
-                        <?php echo _x('#', 'hash before order number', 'woocommerce-gateway-placetopay') . str_pad($order->get_order_number(), 4, '0', STR_PAD_LEFT); ?>
+                        <?php echo _x('#', 'hash before order number', 'woocommerce-gateway-placetopay') . \PlacetoPay\GatewayMethod::getOrderNumber($order); ?>
                     </a>
                 </td>
 
