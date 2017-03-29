@@ -477,7 +477,6 @@ class GatewayMethod extends WC_Payment_Gateway
                     }, $transactionInfo->payment)
                     : [];
 
-
                 // Validate Amount
                 if ($order->get_total() != floatval($totalAmount)) {
                     $msg = sprintf(__('Validation error: PlacetoPay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay'), $totalAmount);
@@ -508,16 +507,16 @@ class GatewayMethod extends WC_Payment_Gateway
                 }
                 break;
 
-            // Order failed
             case $statusEnt::ST_REJECTED :
-            case $statusEnt::ST_ERROR :
-                $order->update_status('failed', sprintf(__('Payment rejected via PlacetoPay. Error type: %s.', 'woocommerce-gateway-placetopay'), $status));
+            case $statusEnt::ST_REFUNDED :
+                $order->update_status('refunded', sprintf(__('Payment rejected via PlacetoPay. Error type: %s.', 'woocommerce-gateway-placetopay'), $status));
                 $this->msg['message'] = $this->msg_declined;
                 $this->msg['class'] = 'woocommerce-error';
 
                 $this->restoreOrderStock($order->id);
                 break;
 
+            case $statusEnt::ST_ERROR :
             default:
                 $order->update_status('failed', sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status));
                 $this->msg['message'] = $this->msg_cancel;
