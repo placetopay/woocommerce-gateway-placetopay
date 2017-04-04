@@ -27,6 +27,16 @@ class GatewayMethod extends WC_Payment_Gateway
     const SESSION_REQ_ID = 'placetopay_request_id';
 
     /**
+     * @var string
+     */
+    const META_AUTHORIZATION_CUS = '_p2p_authorization';
+
+    /**
+     * @var string
+     */
+    const META_REQUEST_ID = '_p2p_request_id';
+
+    /**
      * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
      * @var array
      */
@@ -279,6 +289,7 @@ class GatewayMethod extends WC_Payment_Gateway
             if ($res->isSuccessful()) {
                 // Store the requestId in the session
                 WC()->session->set(self::SESSION_REQ_ID, $res->requestId());
+                update_post_meta($order->id, self::META_REQUEST_ID, $res->requestId());
 
                 // Redirect the client to the processUrl or display it on the JS extension
                 $processUrl = urlencode($res->processUrl());
@@ -324,7 +335,7 @@ class GatewayMethod extends WC_Payment_Gateway
             // Payment Details
             if (count($authorizationCode) > 0) {
                 $this->logger('Adding authorization code $auth = ' . $authorizationCode, 'receiptPage');
-                update_post_meta($orderId, '_p2p_authorization', implode(",", $authorizationCode));
+                update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(",", $authorizationCode));
             }
 
             // Add information to the order to notify that exit to PlacetoPay
@@ -449,7 +460,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         // Payment Details
         if (count($authorizationCode) > 0)
-            update_post_meta($order->id, '_p2p_authorization', implode(",", $authorizationCode));
+            update_post_meta($order->id, self::META_AUTHORIZATION_CUS, implode(",", $authorizationCode));
 
 
         // We are here so lets check status and do actions
@@ -583,8 +594,8 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Validate key
-        if ($order->order_key !== $orderKey) {
-            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'));
+        if (!!$key && $order->order_key !== $orderKey) {
+            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'), 'Method getOrder');
             exit;
         }
 
@@ -617,7 +628,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     $order->populate($orderId);
 
                     if ($order->status == 'pending' || $order->status == 'on-hold') {
-                        $authCode = get_post_meta($order->id, '_p2p_authorization', true);
+                        $authCode = get_post_meta($order->id, self::META_AUTHORIZATION_CUS, true);
 
                         $message = sprintf(
                             __("At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
@@ -786,6 +797,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return self::PAYMENT_ENDPOINT_NAMESPACE . self::PAYMENT_ENDPOINT_CALLBACK;
     }
 
+
     /**
      * @param $order
      * @param int $len
@@ -796,6 +808,21 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         return str_pad($order->get_order_number(), $len, $symbol, STR_PAD_LEFT);
     }
+
+
+    /**
+     * @param $orderId
+     * @param $requestId
+     */
+    public static function processPendingOrder($orderId, $requestId)
+    {
+        $gatewayMethod = new self();
+        $transactionInfo = $gatewayMethod->placetopay->query($requestId);
+        $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
+
+        var_dump($requestId, $orderId);
+    }
+
 
     /**
      * Instantiates a PlacetoPay object providing the login and tranKey,
@@ -823,6 +850,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         return str_replace("\\", "_", $lowercase ? strtolower(get_class($this)) : get_class($this));
     }
+
 
     /**
      * @param $order

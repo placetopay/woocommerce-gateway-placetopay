@@ -14,3 +14,7 @@ Run `composer install --no-dev`
 - Español Colombia (es_CO)
 - Español (es)
 - Inglés (en)
+
+
+#### Nota: El erchivo de log para el plugin se encuentra en la ruta
+> wp-content/uploads/wc-logs/PlacetoPay-xxx.log
