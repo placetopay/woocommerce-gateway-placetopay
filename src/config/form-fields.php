@@ -57,10 +57,10 @@ return [
         'desc_tip' 		=> true
     ],
     'endpoint' => [
-        'title' 		=> __( 'Return url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay' ),
+        'title' 		=> __( 'Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay' ),
         'type' 			=> 'text',
         'class'         => 'readonly',
-        'description'   => __( 'Url of return where PlacetoPay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/', 'woocommerce-gateway-placetopay' )
+        'description'   => __( 'Url of notification where PlacetoPay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/', 'woocommerce-gateway-placetopay' )
     ],
     'merchant_phone' => [
         'title'         => __( 'Phone number', 'woocommerce-gateway-placetopay' ),

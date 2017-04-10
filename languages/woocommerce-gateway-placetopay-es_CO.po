@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
-"POT-Creation-Date: 2017-03-14 11:16-0500\n"
-"PO-Revision-Date: 2017-03-14 11:16-0500\n"
+"POT-Creation-Date: 2017-04-10 11:54-0500\n"
+"PO-Revision-Date: 2017-04-10 11:54-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_CO\n"
@@ -16,24 +16,24 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: src/GatewayMethod.php:87 src/config/form-fields.php:22
+#: src/GatewayMethod.php:100 src/config/form-fields.php:22
 msgid "PlacetoPay"
 msgstr "PlacetoPay"
 
-#: src/GatewayMethod.php:88
+#: src/GatewayMethod.php:101
 msgid "Sells online safely and agile"
 msgstr "Vende en línea de forma segura y ágil"
 
-#: src/GatewayMethod.php:285 src/GatewayMethod.php:286
-#: src/GatewayMethod.php:290
+#: src/GatewayMethod.php:303 src/GatewayMethod.php:304
+#: src/GatewayMethod.php:308
 msgid "Payment error:"
 msgstr "Error al pagar:"
 
-#: src/GatewayMethod.php:324
+#: src/GatewayMethod.php:343
 msgid "Redirecting to PlacetoPay"
 msgstr "Redireccionando a PlacetoPay"
 
-#: src/GatewayMethod.php:340
+#: src/GatewayMethod.php:359
 msgid ""
 "We are now redirecting you to PlacetoPay to make payment, if you are not "
 "redirected please press the bottom."
@@ -41,59 +41,60 @@ msgstr ""
 "Ahora estamos redirigiéndolo a PlacetoPay para hacer el pago, si no es "
 "redirigido por favor presione la parte inferior."
 
-#: src/GatewayMethod.php:386
+#: src/GatewayMethod.php:406
 msgid "PlacetoPay Request Failure"
 msgstr "Fallo la petición a PlacetoPay"
 
-#: src/GatewayMethod.php:409
+#: src/GatewayMethod.php:430
 msgid ""
 "There was an error on the request. please contact the website administrator."
 msgstr ""
 "Ha ocurrido un error en la solicitud. Por favor comuniquese con el "
 "administrador del sitio web"
 
-#: src/GatewayMethod.php:440
+#: src/GatewayMethod.php:476
 msgid "Aborting, Order #"
 msgstr "Cancelando, Orden #"
 
-#: src/GatewayMethod.php:467
+#: src/GatewayMethod.php:496
 #, php-format
 msgid "Validation error: PlacetoPay amounts do not match (gross %s)."
 msgstr ""
 "Error de validación: La cantidad pagada en PlacetoPay  no coincide (Cantidad "
 "%s)."
 
-#: src/GatewayMethod.php:479
+#: src/GatewayMethod.php:504
 msgid "Payer PlacetoPay email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/GatewayMethod.php:482
+#: src/GatewayMethod.php:507
 msgid "Payment type"
 msgstr "Método de pago usado"
 
-#: src/GatewayMethod.php:485
+#: src/GatewayMethod.php:510
 msgid "PlacetoPay payment approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/GatewayMethod.php:493
+#: src/GatewayMethod.php:518
 #, php-format
 msgid "Payment pending: %s"
 msgstr "Pago pendiente: %s"
 
-#: src/GatewayMethod.php:502
+#: src/GatewayMethod.php:528 src/GatewayMethod.php:546
+#: src/config/form-fields.php:103
+msgid "Payment rejected via PlacetoPay."
+msgstr "Pago rechazado por PlacetoPay."
+
+#: src/GatewayMethod.php:534
 #, php-format
 msgid "Payment rejected via PlacetoPay. Error type: %s."
 msgstr "Pago rechazado por PlacetoPay. Error: %s."
 
-#: src/GatewayMethod.php:510 src/config/form-fields.php:103
-msgid "Payment rejected via PlacetoPay."
-msgstr "Pago rechazado por PlacetoPay."
-
-#: src/GatewayMethod.php:574
+#: src/GatewayMethod.php:612
 msgid "Error: Order Key does not match invoice."
 msgstr "Error: La llave de la orden no coincide."
 
-#: src/GatewayMethod.php:609
+#: src/GatewayMethod.php:648
 #, php-format
 msgid ""
 "At this time your order #%s display a checkout transaction which is pending "
@@ -116,44 +117,44 @@ msgstr ""
 "cliente %s o enviar un correo electrónico a %s\n"
 "                            y preguntar por el estado de la transacción: %s"
 
-#: src/GatewayMethod.php:615
+#: src/GatewayMethod.php:654
 msgid "CUS/Authorization"
 msgstr "CUS/Autorización"
 
-#: src/GatewayMethod.php:692
+#: src/GatewayMethod.php:734
 #, php-format
 msgid "Item #%s stock incremented from %s to %s."
 msgstr "Item #%s incremento de %s a %s."
 
-#: src/GatewayMethod.php:716
+#: src/GatewayMethod.php:759
 msgid "Default Page"
 msgstr "Pagina por defecto"
 
-#: src/GatewayMethod.php:722
+#: src/GatewayMethod.php:765 woocommerce/checkout/thankyou.php:41
 msgid "My Account"
 msgstr "Mi cuenta"
 
-#: src/GatewayMethod.php:723
+#: src/GatewayMethod.php:766
 msgid "My Orders"
 msgstr "Mis ordenes"
 
-#: src/GatewayMethod.php:754
+#: src/GatewayMethod.php:798
 msgid "Development Test"
 msgstr "Desarrollo pruebas"
 
-#: src/GatewayMethod.php:755
+#: src/GatewayMethod.php:799
 msgid "Production"
 msgstr "Producción"
 
-#: src/GatewayMethod.php:756
+#: src/GatewayMethod.php:800
 msgid "Production Test"
 msgstr "Producción pruebas"
 
-#: src/GatewayMethod.php:804
+#: src/GatewayMethod.php:878
 msgid "<strong>First Name</strong>, does not have a valid format"
 msgstr "El <strong>nombre</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:809
+#: src/GatewayMethod.php:883
 msgid "<strong>Last Name</strong>, does not have a valid format"
 msgstr "El <strong>apellido</strong>, no tiene un formato válido"
 
@@ -231,18 +232,18 @@ msgid "URL of success page"
 msgstr "Dirección de la pagina de retorno"
 
 #: src/config/form-fields.php:60
-msgid "Return url. EndPoint (WP >= 4.6)"
-msgstr "Url de retorno. Endpoint (WP >= 4.6)"
+msgid "Notification url. EndPoint (WP >= 4.6)"
+msgstr "Url de notificación. (WP >= 4.6)"
 
 #: src/config/form-fields.php:63
 msgid ""
-"Url of return where PlacetoPay will send a notification of a transaction for "
-"Woocommerce.<br />If your Wordpress not support REST-API, please visit: "
-"https://wordpress.org/plugins/rest-api/"
+"Url of notification where PlacetoPay will send a notification of a "
+"transaction for Woocommerce.<br />If your Wordpress not support REST-API, "
+"please visit: https://wordpress.org/plugins/rest-api/"
 msgstr ""
-"Url de retorno donde PlacetoPay enviará una notificación como respuesta a "
-"una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-API, "
-"por favor visita: https://wordpress.org/plugins/rest-api/"
+"Url de notificación donde PlacetoPay enviará una notificación como respuesta "
+"a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
+"API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
 #: src/config/form-fields.php:66
 msgid "Phone number"
@@ -289,6 +290,43 @@ msgstr "Transacción cancelada."
 msgid "Message for rejected transaction"
 msgstr "Mensaje para una transacción rechazada."
 
+#: woocommerce/checkout/thankyou.php:28
+msgid ""
+"Unfortunately your order cannot be processed as the originating bank/"
+"merchant has declined your transaction. Please attempt your purchase again."
+msgstr ""
+"Desafortunadamente, tu pedido no puede procesarse el banco/comercio ha "
+"rechazado tu transacción. Por favor, intenta realizar la compra de nuevo."
+
+#: woocommerce/checkout/thankyou.php:32 woocommerce/checkout/thankyou.php:73
+#: woocommerce/myaccount/orders.php:42 woocommerce/myaccount/orders.php:92
+msgid "Authorization/CUS"
+msgstr "Autorización/CUS"
+
+#: woocommerce/checkout/thankyou.php:38 woocommerce/myaccount/orders.php:107
+msgid "Pay"
+msgstr "Pagar"
+
+#: woocommerce/checkout/thankyou.php:47 woocommerce/checkout/thankyou.php:86
+msgid "Thank you. Your order has been received."
+msgstr "Gracias. Su orden ha sido recibida."
+
+#: woocommerce/checkout/thankyou.php:51
+msgid "Order Number:"
+msgstr "Número de orden:"
+
+#: woocommerce/checkout/thankyou.php:56
+msgid "Date:"
+msgstr "Fecha:"
+
+#: woocommerce/checkout/thankyou.php:61
+msgid "Total:"
+msgstr "Total:"
+
+#: woocommerce/checkout/thankyou.php:67
+msgid "Payment Method:"
+msgstr "Método de pago:"
+
 #: woocommerce/myaccount/orders.php:30
 msgid "Recent Orders"
 msgstr "Ordenes recientes"
@@ -297,74 +335,78 @@ msgstr "Ordenes recientes"
 msgid "Order"
 msgstr "Orden de compra"
 
-#: woocommerce/myaccount/orders.php:37 woocommerce/myaccount/orders.php:72
+#: woocommerce/myaccount/orders.php:38 woocommerce/myaccount/orders.php:79
 msgid "Date"
 msgstr "Fecha"
 
-#: woocommerce/myaccount/orders.php:38 woocommerce/myaccount/orders.php:78
+#: woocommerce/myaccount/orders.php:39 woocommerce/myaccount/orders.php:86
 msgid "Status"
 msgstr "Estado"
 
-#: woocommerce/myaccount/orders.php:39 woocommerce/myaccount/orders.php:82
-msgid "Authorization/CUS"
-msgstr "Autorización/CUS"
-
-#: woocommerce/myaccount/orders.php:40 woocommerce/myaccount/orders.php:86
+#: woocommerce/myaccount/orders.php:43 woocommerce/myaccount/orders.php:96
 msgid "Total"
 msgstr "Total"
 
-#: woocommerce/myaccount/orders.php:49 woocommerce/myaccount/orders.php:51
+#: woocommerce/myaccount/orders.php:53 woocommerce/myaccount/orders.php:55
 msgid "Pending"
 msgstr "Pendiente"
 
-#: woocommerce/myaccount/orders.php:50 woocommerce/myaccount/orders.php:52
+#: woocommerce/myaccount/orders.php:54 woocommerce/myaccount/orders.php:56
 msgid "Approved"
 msgstr "Aprobada"
 
-#: woocommerce/myaccount/orders.php:53 woocommerce/myaccount/orders.php:79
+#: woocommerce/myaccount/orders.php:57 woocommerce/myaccount/orders.php:88
 msgid "Rejected"
 msgstr "Rechazada"
 
-#: woocommerce/myaccount/orders.php:54
+#: woocommerce/myaccount/orders.php:58
 msgid "Failed"
 msgstr "Fallida"
 
-#: woocommerce/myaccount/orders.php:66
+#: woocommerce/myaccount/orders.php:73
 msgid "Order Number"
 msgstr "Orden #"
 
-#: woocommerce/myaccount/orders.php:87
+#: woocommerce/myaccount/orders.php:97
 #, php-format
 msgid "%s for %s item"
 msgstr "%s para %s item"
 
-#: woocommerce/myaccount/orders.php:97
-msgid "Pay"
-msgstr "Pagar"
-
-#: woocommerce/myaccount/orders.php:104
+#: woocommerce/myaccount/orders.php:114
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: woocommerce/myaccount/orders.php:110
+#: woocommerce/myaccount/orders.php:120
 msgid "View"
 msgstr "Ver"
 
-#: woocommerce/myaccount/orders.php:132
+#: woocommerce/myaccount/orders.php:144
 msgid "Previous"
 msgstr "Anterior"
 
-#: woocommerce/myaccount/orders.php:136
+#: woocommerce/myaccount/orders.php:149
 msgid "Next"
 msgstr "Siguiente"
 
-#: woocommerce/myaccount/orders.php:145
+#: woocommerce/myaccount/orders.php:159
 msgid "Go shop"
 msgstr "Ir a la tienda"
 
-#: woocommerce/myaccount/orders.php:147
+#: woocommerce/myaccount/orders.php:161
 msgid "No order has been made yet."
 msgstr "No hay ordenes creadas todavia."
+
+#~ msgid "Return url. EndPoint (WP >= 4.6)"
+#~ msgstr "Url de retorno. Endpoint (WP >= 4.6)"
+
+#~ msgid ""
+#~ "Url of return where PlacetoPay will send a notification of a transaction "
+#~ "for Woocommerce.<br />If your Wordpress not support REST-API, please "
+#~ "visit: https://wordpress.org/plugins/rest-api/"
+#~ msgstr ""
+#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a "
+#~ "una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
+#~ "API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
 #~ msgid "The <strong>Name</strong>, does not have a valid format"
 #~ msgstr "El <strong>nombre</strong>, no tiene un formato válido"

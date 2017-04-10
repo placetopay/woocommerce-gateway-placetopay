@@ -462,6 +462,9 @@ class GatewayMethod extends WC_Payment_Gateway
         if (count($authorizationCode) > 0)
             update_post_meta($order->id, self::META_AUTHORIZATION_CUS, implode(",", $authorizationCode));
 
+        $paymentFirstStatus = count($transactionInfo->payment()) > 0
+            ? $transactionInfo->payment()[0]->status()
+            : null;
 
         // We are here so lets check status and do actions
         switch ($status) {
@@ -520,14 +523,25 @@ class GatewayMethod extends WC_Payment_Gateway
 
             case $statusEnt::ST_REJECTED :
             case $statusEnt::ST_REFUNDED :
-                $order->update_status('refunded', sprintf(__('Payment rejected via PlacetoPay. Error type: %s.', 'woocommerce-gateway-placetopay'), $status));
-                $this->msg['message'] = $this->msg_declined;
-                $this->msg['class'] = 'woocommerce-error';
+
+                if ($status === $statusEnt::ST_REJECTED && $paymentFirstStatus->status() === $paymentFirstStatus::ST_FAILED) {
+                    $order->update_status('failed', sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status));
+                    $this->msg['message'] = $this->msg_cancel;
+
+                    $this->logger($paymentFirstStatus->message(), $status);
+
+                } else {
+                    $order->update_status('refunded', sprintf(__('Payment rejected via PlacetoPay. Error type: %s.', 'woocommerce-gateway-placetopay'), $status));
+                    $this->msg['message'] = $this->msg_declined;
+                }
 
                 $this->restoreOrderStock($order->id);
+                $this->msg['class'] = 'woocommerce-error';
+
                 break;
 
             case $statusEnt::ST_ERROR :
+            case $statusEnt::ST_FAILED :
             default:
                 $order->update_status('failed', sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status));
                 $this->msg['message'] = $this->msg_cancel;
