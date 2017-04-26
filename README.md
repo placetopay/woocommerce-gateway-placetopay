@@ -18,3 +18,6 @@ Run `composer install --no-dev`
 
 #### Nota: El erchivo de log para el plugin se encuentra en la ruta
 > wp-content/uploads/wc-logs/PlacetoPay-xxx.log
+
+#### Nota: La ruta para encontrar el archivo cron es:
+> wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php

@@ -55,6 +55,17 @@ class WC_Gateway_PlacetoPay
         add_filter('woocommerce_payment_gateways', [$this, 'addPlacetoPayGatewayMethod']);
         add_filter('plugin_action_links_' . plugin_basename($file), [$this, 'actionLinksPlacetopay']);
 
+        // Register endpoint for placetopay
+        add_action('rest_api_init', function () {
+            $self = new GatewayMethod();
+            $self->logger('register rest route', 'rest_api_init');
+
+            register_rest_route($self::PAYMENT_ENDPOINT_NAMESPACE, $self::PAYMENT_ENDPOINT_CALLBACK, [
+                'methods' => 'POST',
+                'callback' => [$self, 'endpointPlacetoPay']
+            ]);
+        }, 1);
+
         $this->version = $version;
         // Paths
         $this->plugin_path = trailingslashit(plugin_dir_path($file));

@@ -161,16 +161,8 @@ class GatewayMethod extends WC_Payment_Gateway
         add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
         add_action('placetopay_init', [$this, 'successfulRequest']);
 
-        // Register endpoint for placetopay
-        add_action('rest_api_init', function () {
-            register_rest_route(self::PAYMENT_ENDPOINT_NAMESPACE, self::PAYMENT_ENDPOINT_CALLBACK, [
-                'methods' => 'POST',
-                'callback' => [$this, 'endpointPlacetoPay']
-            ]);
-        });
-
         if ($this->enabled === 'yes') {
-            add_action('woocommerce_before_checkout_form', [$this, 'checkoutMessage'], 5);
+            add_action('woocommerce_before_checkout_form', [$this, 'checkoutMessage'], 100);
         }
 
         if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
@@ -202,6 +194,8 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function endpointPlacetoPay(\WP_REST_Request $req)
     {
+        $this->logger('starting request api', 'rest-api');
+
         $data = $req->get_params();
 
         if (!empty($data['signature']) && !empty($data['requestId'])) {
