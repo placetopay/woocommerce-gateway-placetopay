@@ -320,7 +320,6 @@ class GatewayMethod extends WC_Payment_Gateway
     public function receiptPage($orderId)
     {
         global $woocommerce, $wpdb;
-
         $this->logger('order #' . $orderId, 'receiptPage');
 
         try {
@@ -631,12 +630,16 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($userId) {
             // Getting the last client's order to view if he has one pending
-            $customerOrders = get_posts(apply_filters('woocommerce_my_account_my_orders_query', [
+            $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
                 'numberposts' => 5,
+                'limit' => 5,
                 'meta_key' => '_customer_user',
                 'meta_value' => $userId,
-                'post_type' => 'shop_order',
-                'post_status' => 'publish',
+                'customer' => $userId,
+                'status' => [
+                    'wc-pending',
+                    'wc-on-hold',
+                ],
                 'shop_order_status' => 'on-hold'
             ]));
 
