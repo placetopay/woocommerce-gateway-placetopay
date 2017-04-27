@@ -235,10 +235,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $ref = $order->order_key . '-' . time();
         $productInfo = "Order $orderId";
-
-        $redirectUrl = ($this->redirect_page_id == "" || $this->redirect_page_id == 0)
-            ? get_site_url() . "/"
-            : get_permalink($this->redirect_page_id);
+        $redirectUrl = $this->getRedirectUrl($order);
 
         //For wooCoomerce 2.0
         $redirectUrl = add_query_arg('wc-api', $this->getClassName(), $redirectUrl);
@@ -525,7 +522,7 @@ class GatewayMethod extends WC_Payment_Gateway
             case $statusEnt::ST_REJECTED :
             case $statusEnt::ST_REFUNDED :
 
-                if ($status === $statusEnt::ST_REJECTED && $paymentFirstStatus->status() === $paymentFirstStatus::ST_FAILED) {
+                if ($status === $statusEnt::ST_REJECTED && $paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_FAILED) {
                     $order->update_status('failed', sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status));
                     $this->msg['message'] = $this->msg_cancel;
 
@@ -567,26 +564,6 @@ class GatewayMethod extends WC_Payment_Gateway
 
         wp_redirect($redirectUrl);
         exit;
-    }
-
-
-    /**
-     * Return redirect url
-     * @return string
-     */
-    public function getRedirectUrl($order)
-    {
-
-        if ($this->redirect_page_id == 'default' || !$this->redirect_page_id) {
-            $this->logger('Redirect page is default', 'Called by: getRedirectUrl');
-            return $order->get_checkout_order_received_url();
-        }
-
-        if ($this->redirect_page_id === 'my-orders') {
-            return wc_get_account_endpoint_url(get_option('woocommerce_myaccount_orders_endpoint', 'orders'));
-        }
-
-        return get_permalink($this->redirect_page_id);
     }
 
 
@@ -791,6 +768,26 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return $pageList;
+    }
+
+
+    /**
+     * Return redirect url
+     * @return string
+     */
+    public function getRedirectUrl($order)
+    {
+
+        if ($this->redirect_page_id == 'default' || !$this->redirect_page_id) {
+            $this->logger('Redirect page is default', 'Called by: getRedirectUrl');
+            return $order->get_checkout_order_received_url();
+        }
+
+        if ($this->redirect_page_id === 'my-orders') {
+            return wc_get_account_endpoint_url(get_option('woocommerce_myaccount_orders_endpoint', 'orders'));
+        }
+
+        return get_permalink($this->redirect_page_id);
     }
 
 
