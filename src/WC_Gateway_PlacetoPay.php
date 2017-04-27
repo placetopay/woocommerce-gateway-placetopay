@@ -55,6 +55,8 @@ class WC_Gateway_PlacetoPay
         add_filter('woocommerce_payment_gateways', [$this, 'addPlacetoPayGatewayMethod']);
         add_filter('plugin_action_links_' . plugin_basename($file), [$this, 'actionLinksPlacetopay']);
 
+        add_action('woocommerce_before_checkout_form', [new GatewayMethod(), 'checkoutMessage']);
+
         // Register endpoint for placetopay
         add_action('rest_api_init', function () {
             $self = new GatewayMethod();

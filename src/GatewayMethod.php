@@ -7,12 +7,12 @@ if (!defined('ABSPATH')) {
 
 use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
-use Dnetix\Redirection\Validators\PersonValidator;
-use \Exception;
-use \WC_Order;
-use \WC_Payment_Gateway;
 use Dnetix\Redirection\PlacetoPay;
 use Dnetix\Redirection\Validators\Currency;
+use Dnetix\Redirection\Validators\PersonValidator;
+use Exception;
+use WC_Order;
+use WC_Payment_Gateway;
 
 /**
  * @package \PlacetoPay
@@ -161,10 +161,6 @@ class GatewayMethod extends WC_Payment_Gateway
         add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
         add_action('placetopay_init', [$this, 'successfulRequest']);
 
-        if ($this->enabled === 'yes') {
-            add_action('woocommerce_before_checkout_form', [$this, 'checkoutMessage'], 100);
-        }
-
         if (version_compare(WOOCOMMERCE_VERSION, '2.0.0', '>=')) {
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [&$this, 'process_admin_options']);
             return;
@@ -194,7 +190,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function endpointPlacetoPay(\WP_REST_Request $req)
     {
-        $this->logger('starting request api', 'rest-api');
+        $this->logger('starting request api', 'endpointPlacetoPay');
 
         $data = $req->get_params();
 
@@ -210,7 +206,15 @@ class GatewayMethod extends WC_Payment_Gateway
             }
 
             $transactionInfo = $this->placetopay->query($notification->requestId());
-            $this->returnProcess(['key' => $data['reference']], $transactionInfo, true);
+            $fields = $transactionInfo->request()->fieldsToKeyValue();
+
+            if (!isset($fields['orderKey'])) {
+                $this->logger('Not orderKey in response for notificationUrl', 'endpointPlacetoPay');
+                return null;
+            }
+
+            $this->returnProcess(['key' => $fields['orderKey']], $transactionInfo, true);
+            $this->logger('Response successfully', 'endpointPlacetoPay');
 
             return ['success' => true];
         }
@@ -273,7 +277,11 @@ class GatewayMethod extends WC_Payment_Gateway
                 ]
             ],
             'fields' => [
-                'orderKey' => $order->order_key,
+                [
+                    'keyword' => 'orderKey',
+                    'value' => $order->order_key,
+                    'displayOn' => 'none',
+                ],
             ],
         ];
 
@@ -477,7 +485,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 }
 
                 $totalAmount = $transactionInfo->request()->payment()->amount()->total();
-                $payerEmail = $transactionInfo->request()->payer()->email();
+                $payerEmail = $transactionInfo->request()->payer() ? $transactionInfo->request()->payer()->email() : null;
 
                 $paymentMethodName = count($transactionInfo->payment) > 0
                     ? array_map(function ($trans) {
@@ -546,8 +554,10 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Is notification request
-        if ($isCallback)
+        if ($isCallback) {
+            $this->logger('Returning to endpoint method with status ' . $status, 'returnProcess');
             return;
+        }
 
         $redirectUrl = $this->getRedirectUrl($order);
         //For wooCoomerce 2.0
@@ -603,7 +613,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         // Validate key
         if (!!$key && $order->order_key !== $orderKey) {
-            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'), 'Method getOrder');
+            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'), 'getOrder');
             exit;
         }
 
