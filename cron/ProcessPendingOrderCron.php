@@ -2,11 +2,13 @@
 
 require_once(dirname(__FILE__) . '/../../../../wp-blog-header.php');
 
-$customerOrders = get_posts(apply_filters('woocommerce_my_account_my_orders_query', [
-    'numberposts' => -1,
-    'post_type' => 'shop_order',
-    'post_status' => 'publish',
-    'shop_order_status' => 'on-hold'
+$customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
+    'limit' => -1,
+    'shop_order_status' => 'on-hold',
+    'status' => [
+        'wc-pending',
+        'wc-on-hold',
+    ],
 ]));
 
 if ($customerOrders) {
