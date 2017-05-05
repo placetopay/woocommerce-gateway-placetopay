@@ -49,14 +49,17 @@ class WC_Gateway_PlacetoPay
      */
     private function __construct($version, $file)
     {
-        if (!$this->checkDependencies())
+        if (!$this->checkDependencies()) {
             return null;
+        }
 
         add_filter('woocommerce_payment_gateways', [$this, 'addPlacetoPayGatewayMethod']);
         add_filter('plugin_action_links_' . plugin_basename($file), [$this, 'actionLinksPlacetopay']);
 
         add_action('woocommerce_before_checkout_form', [new GatewayMethod(), 'checkoutMessage']);
         add_action('woocommerce_before_account_orders', [new GatewayMethod(), 'checkoutMessage']);
+
+        add_action(GatewayMethod::NOTIFICATION_RETURN_PAGE, [$this, 'notificationReturnPage']);
 
         // Register endpoint for placetopay
         add_action('rest_api_init', function () {
@@ -75,7 +78,6 @@ class WC_Gateway_PlacetoPay
         $this->plugin_url = trailingslashit(plugin_dir_url($file));
     }
 
-
     /**
      * Method to implement a singleton pattern
      *
@@ -91,7 +93,6 @@ class WC_Gateway_PlacetoPay
 
         return self::$instance;
     }
-
 
     /**
      * Verify if woocommerce plugin is installed
@@ -116,7 +117,6 @@ class WC_Gateway_PlacetoPay
         return true;
     }
 
-
     /**
      * Add the links to show aside of the plugin
      * @param  array $links
@@ -135,7 +135,6 @@ class WC_Gateway_PlacetoPay
         return array_merge($links, $customLinks);
     }
 
-
     /**
      * Add the Gateway to WooCommerce, this method is a override and is called by woocommerce
      **/
@@ -144,7 +143,6 @@ class WC_Gateway_PlacetoPay
         $methods[] = GatewayMethod::class;
         return $methods;
     }
-
 
     /**
      * Return the assets path
@@ -159,12 +157,12 @@ class WC_Gateway_PlacetoPay
                 ? self::$instance->plugin_path
                 : self::$instance->plugin_url) . 'assets';
 
-        if ($path === null)
+        if ($path === null) {
             return $assets;
+        }
 
         return $assets . $path;
     }
-
 
     /**
      * Getter for version property
@@ -173,5 +171,18 @@ class WC_Gateway_PlacetoPay
     public static function version()
     {
         return self::$instance->version;
+    }
+
+    public function notificationReturnPage()
+    {
+        if (isset($_REQUEST['order_key'])
+            && isset($_REQUEST['payment_method'])
+            && $_REQUEST['payment_method'] === 'placetopay'
+        ) {
+            $orderId = wc_get_order_id_by_order_key($_REQUEST['order_key']);
+            $order = new \WC_Order($orderId);
+
+            wc_get_template('checkout/thankyou.php', array('order' => $order));
+        }
     }
 }

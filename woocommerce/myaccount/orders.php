@@ -23,11 +23,13 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+do_action(\PlacetoPay\GatewayMethod::NOTIFICATION_RETURN_PAGE);
 do_action('woocommerce_before_account_orders', $has_orders);
 
 if ($has_orders) : ?>
 
-    <h2><?php echo apply_filters('woocommerce_my_account_my_orders_title', __('Recent Orders', 'woocommerce-gateway-placetopay')); ?></h2>
+    <h2><?php echo apply_filters('woocommerce_my_account_my_orders_title',
+            __('Recent Orders', 'woocommerce-gateway-placetopay')); ?></h2>
 
     <table class="shop_table shop_table_responsive my_account_orders  woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">
 
@@ -50,12 +52,18 @@ if ($has_orders) : ?>
         <?php
 
         $statuses = [
-            'wc-pending' => __('Pending', 'woocommerce-gateway-placetopay'), //Order received (unpaid)
-            'wc-processing' => __('Approved', 'woocommerce-gateway-placetopay'), //Payment received and stock has been reduced- the order is awaiting fulfillment
-            'wc-on-hold' => __('Pending', 'woocommerce-gateway-placetopay'), //Awaiting payment – stock is reduced, but you need to confirm payment
-            'wc-completed' => __('Approved', 'woocommerce-gateway-placetopay'), //Order fulfilled and complete – requires no further action
-            'wc-refunded' => __('Rejected', 'woocommerce-gateway-placetopay'), //Refunded – Refunded by an admin – no further action required
-            'wc-failed' => __('Failed', 'woocommerce-gateway-placetopay'), //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
+            'wc-pending' => __('Pending', 'woocommerce-gateway-placetopay'),
+            //Order received (unpaid)
+            'wc-processing' => __('Approved', 'woocommerce-gateway-placetopay'),
+            //Payment received and stock has been reduced- the order is awaiting fulfillment
+            'wc-on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
+            //Awaiting payment – stock is reduced, but you need to confirm payment
+            'wc-completed' => __('Approved', 'woocommerce-gateway-placetopay'),
+            //Order fulfilled and complete – requires no further action
+            'wc-refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
+            //Refunded – Refunded by an admin – no further action required
+            'wc-failed' => __('Failed', 'woocommerce-gateway-placetopay'),
+            //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
         ];
 
         foreach ($customer_orders->orders as $customer_order) {
@@ -64,7 +72,7 @@ if ($has_orders) : ?>
             $status = $statuses[$order->post_status];
             // $status = $statuses[ get_post_meta( $order->id, '_p2p_status', true ) ];
 
-            $authorizationCodes = get_post_meta($order->id, '_p2p_authorization', true);
+            $authorizationCodes = get_post_meta($order->get_id(), '_p2p_authorization', true);
             $authorizationCodes = explode(',', $authorizationCodes);
 
             foreach ($authorizationCodes as $code) { ?>
@@ -72,14 +80,16 @@ if ($has_orders) : ?>
                 <td class="order-number"
                     data-title="<?php _e('Order Number', 'woocommerce-gateway-placetopay'); ?>">
                     <a href="<?php echo esc_url($order->get_view_order_url()); ?>">
-                        <?php echo _x('#', 'hash before order number', 'woocommerce-gateway-placetopay') . \PlacetoPay\GatewayMethod::getOrderNumber($order); ?>
+                        <?php echo _x('#', 'hash before order number',
+                                'woocommerce-gateway-placetopay') . \PlacetoPay\GatewayMethod::getOrderNumber($order); ?>
                     </a>
                 </td>
 
                 <td class="order-date" data-title="<?php _e('Date', 'woocommerce-gateway-placetopay'); ?>">
                     <time datetime="<?php echo date('Y-m-d H:i:s', strtotime($order->order_date)); ?>"
                           title="<?php echo esc_attr(strtotime($order->order_date)); ?>">
-                        <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'), strtotime($order->order_date)); ?>
+                        <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'),
+                            strtotime($order->order_date)); ?>
                     </time>
                 </td>
 
@@ -94,21 +104,27 @@ if ($has_orders) : ?>
                 </td>
 
                 <td class="order-total" data-title="<?php _e('Total', 'woocommerce-gateway-placetopay'); ?>">
-                    <?php echo $order->get_order_currency() . ' ' . sprintf(_n('%s for %s item', '%s for %s items', $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(), $item_count); ?>
+                    <?php echo $order->get_order_currency() . ' ' . sprintf(_n('%s for %s item', '%s for %s items',
+                            $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(),
+                            $item_count); ?>
                 </td>
 
                 <td class="order-actions">
                     <?php
                     $actions = array();
 
-                    if (in_array($order->get_status(), apply_filters('woocommerce_valid_order_statuses_for_payment', array('failed', 'refunded',), $order))) {
+                    if (in_array($order->get_status(),
+                        apply_filters('woocommerce_valid_order_statuses_for_payment', array('failed', 'refunded',),
+                            $order))) {
                         $actions['pay'] = array(
                             'url' => $order->get_checkout_payment_url(),
                             'name' => __('Pay', 'woocommerce-gateway-placetopay')
                         );
                     }
 
-                    if (in_array($order->get_status(), apply_filters('woocommerce_valid_order_statuses_for_cancel', array('pending', 'failed'), $order))) {
+                    if (in_array($order->get_status(),
+                        apply_filters('woocommerce_valid_order_statuses_for_cancel', array('pending', 'failed'),
+                            $order))) {
                         $actions['cancel'] = array(
                             'url' => $order->get_cancel_order_url(wc_get_page_permalink('myaccount')),
                             'name' => __('Cancel', 'woocommerce-gateway-placetopay')
@@ -141,12 +157,14 @@ if ($has_orders) : ?>
         <div class="woocommerce-Pagination">
             <?php if (1 !== $current_page) : ?>
                 <a class="woocommerce-Button woocommerce-Button--previous button"
-                   href="<?php echo esc_url(wc_get_endpoint_url('orders', $current_page - 1)); ?>"><?php _e('Previous', 'woocommerce-gateway-placetopay'); ?></a>
+                   href="<?php echo esc_url(wc_get_endpoint_url('orders', $current_page - 1)); ?>"><?php _e('Previous',
+                        'woocommerce-gateway-placetopay'); ?></a>
             <?php endif; ?>
 
             <?php if (intval($customer_orders->max_num_pages) !== $current_page) : ?>
                 <a class="woocommerce-Button woocommerce-Button--next button"
-                   href="<?php echo esc_url(wc_get_endpoint_url('orders', $current_page + 1)); ?>"><?php _e('Next', 'woocommerce-gateway-placetopay'); ?></a>
+                   href="<?php echo esc_url(wc_get_endpoint_url('orders', $current_page + 1)); ?>"><?php _e('Next',
+                        'woocommerce-gateway-placetopay'); ?></a>
             <?php endif; ?>
         </div>
     <?php endif; ?>
@@ -155,7 +173,8 @@ if ($has_orders) : ?>
 <?php else : ?>
     <div class="woocommerce-Message woocommerce-Message--info woocommerce-info">
         <a class="woocommerce-Button button"
-           href="<?php echo esc_url(apply_filters('woocommerce_return_to_shop_redirect', wc_get_page_permalink('shop'))); ?>">
+           href="<?php echo esc_url(apply_filters('woocommerce_return_to_shop_redirect',
+               wc_get_page_permalink('shop'))); ?>">
             <?php _e('Go shop', 'woocommerce-gateway-placetopay') ?>
         </a>
         <?php _e('No order has been made yet.', 'woocommerce-gateway-placetopay'); ?>

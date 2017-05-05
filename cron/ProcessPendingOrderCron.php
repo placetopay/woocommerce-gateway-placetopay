@@ -23,7 +23,7 @@ if ($customerOrders) {
         $order->populate($orderPost);
 
         if ($order->status == 'pending' || $order->status == 'on-hold') {
-            \PlacetoPay\GatewayMethod::processPendingOrder($order->id, $requestId);
+            \PlacetoPay\GatewayMethod::processPendingOrder($order->get_id(), $requestId);
         }
     }
 }
