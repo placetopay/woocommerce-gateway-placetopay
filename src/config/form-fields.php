@@ -5,6 +5,10 @@ if( !defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * @var \PlacetoPay\GatewayMethod $this
+ */
+
+/**
  * This file will be included into of GatewayMethod class
  * @package \PlacetoPay;
  */
@@ -46,7 +50,7 @@ return [
         'title' 		=> __( 'Enviroment mode', 'woocommerce-gateway-placetopay' ),
         'type' 			=> 'select',
         'default'       => 'dev',
-        'options' 		=> $this->getEnviroments(),
+        'options' 		=> $this->getEnvironments(),
         'description' 	=> __( 'Enable the enviroment PlacetoPay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is actived</b>', 'woocommerce-gateway-placetopay' )
     ],
     'redirect_page_id' => [

@@ -22,8 +22,10 @@ if ($customerOrders) {
         $order = new WC_Order();
         $order->populate($orderPost);
 
-        if ($order->status == 'pending' || $order->status == 'on-hold') {
-            \PlacetoPay\GatewayMethod::processPendingOrder($order->get_id(), $requestId);
+        if (!\PlacetoPay\GatewayMethod::isPendingStatusOrder($order->get_id())) {
+            continue;
         }
+
+        \PlacetoPay\GatewayMethod::processPendingOrder($order->get_id(), $requestId);
     }
 }

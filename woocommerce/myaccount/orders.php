@@ -70,9 +70,8 @@ if ($has_orders) : ?>
             $order = wc_get_order($customer_order);
             $item_count = $order->get_item_count();
             $status = $statuses[$order->post_status];
-            // $status = $statuses[ get_post_meta( $order->id, '_p2p_status', true ) ];
 
-            $authorizationCodes = get_post_meta($order->get_id(), '_p2p_authorization', true);
+            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\GatewayMethod::META_AUTHORIZATION_CUS, true);
             $authorizationCodes = explode(',', $authorizationCodes);
 
             foreach ($authorizationCodes as $code) { ?>
