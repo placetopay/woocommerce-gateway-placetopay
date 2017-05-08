@@ -535,6 +535,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     $this->msg['class'] = 'woocommerce-message';
 
                     $order->add_order_note(__('PlacetoPay payment approved', 'woocommerce-gateway-placetopay'));
+                    $this->restoreOrderStock($order->get_id(), false);
                     $order->payment_complete();
                     $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
 
@@ -746,7 +747,7 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * @param $orderId
      */
-    public function restoreOrderStock($orderId)
+    public function restoreOrderStock($orderId, $logger = true)
     {
         $order = new WC_Order($orderId);
 
@@ -773,12 +774,14 @@ class GatewayMethod extends WC_Payment_Gateway
             $newQuantity = wc_update_product_stock($product, $qty, 'increase');
             do_action('woocommerce_auto_stock_restored', $product, $item);
 
-            $order->add_order_note(sprintf(
-                __('Item #%s stock incremented from %s to %s.', 'woocommerce'),
-                $item['product_id'],
-                $oldStock,
-                $newQuantity
-            ));
+            if( $logger ) {
+                $order->add_order_note(sprintf(
+                    __('Item #%s stock incremented from %s to %s.', 'woocommerce'),
+                    $item['product_id'],
+                    $oldStock,
+                    $newQuantity
+                ));
+            }
         }
     }
 
