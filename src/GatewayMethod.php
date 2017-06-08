@@ -66,7 +66,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * URI for testing in development enviroment
      * @var string
      */
-    private $testUriDev = 'http://redirection.dnetix.co/';
+    private $testUriDev = 'https://dev.placetopay.com/redirection';
 
     /**
      * Instance of placetopay to manage the connection with the webservice
@@ -93,6 +93,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $endpoint;
     private $currency;
     private $enviroment_mode;
+    private $fill_buyer_information;
     private $login;
     private $redirect_page_id;
     private $form_method;
@@ -134,6 +135,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->settings['endpoint'] = home_url('/wp-json/') . self::getPaymentEndpoint();
 
         $this->endpoint = $this->settings['endpoint'];
+        $this->fill_buyer_information = $this->get_option('fill_buyer_information');
         $this->enviroment_mode = $this->get_option('enviroment_mode');
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
@@ -275,6 +277,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $req = [
             'expiration' => date('c', strtotime('+2 days')),
             'returnUrl' => $redirectUrl . '&key=' . $ref,
+            'noBuyerFill' => !($this->fill_buyer_information === 'yes'),
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'buyer' => [
@@ -676,13 +679,9 @@ class GatewayMethod extends WC_Payment_Gateway
                                     'woocommerce-gateway-placetopay') . ' #%s', $authCode))
                         );
 
-                        echo "<table class='shop_table order_details'>
-                            <tbody>
-                                <tr>
-                                    <th scope='row'>{$message}</th>
-                                </tr>
-                            </tbody>
-                        </table>";
+                        echo "<div class='shop_table order_details'>
+                            <p scope='row'>{$message}</p>
+                        </div>";
 
                         return;
                     }
@@ -774,7 +773,7 @@ class GatewayMethod extends WC_Payment_Gateway
             $newQuantity = wc_update_product_stock($product, $qty, 'increase');
             do_action('woocommerce_auto_stock_restored', $product, $item);
 
-            if( $logger ) {
+            if ($logger) {
                 $order->add_order_note(sprintf(
                     __('Item #%s stock incremented from %s to %s.', 'woocommerce'),
                     $item['product_id'],

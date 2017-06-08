@@ -20,6 +20,12 @@ return [
         'default' 		=> 'no',
         'description' 	=> __( 'Show in the Payment List as a payment option', 'woocommerce-gateway-placetopay' )
     ],
+    'fill_buyer_information' => [
+        'title' 		=> __( '¿Prediligenciar la información del comprador?', 'woocommerce-gateway-placetopay' ),
+        'type' 			=> 'checkbox',
+        'label' 		=> __('Habilitar para precargar la información del comprador en la plataforma PlacetoPay.', 'woocommerce-gateway-placetopay' ),
+        'default' 		=> 'yes',
+    ],
     'title' => [
         'title' 		=> __( 'Title:', 'woocommerce-gateway-placetopay' ),
         'type'			=> 'text',
