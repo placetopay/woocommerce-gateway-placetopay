@@ -71,7 +71,8 @@ if ($has_orders) : ?>
             $item_count = $order->get_item_count();
             $status = $statuses[$order->post_status];
 
-            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\GatewayMethod::META_AUTHORIZATION_CUS, true);
+            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\GatewayMethod::META_AUTHORIZATION_CUS,
+                true);
             $authorizationCodes = explode(',', $authorizationCodes);
 
             foreach ($authorizationCodes as $code) { ?>
@@ -110,30 +111,31 @@ if ($has_orders) : ?>
 
                 <td class="order-actions">
                     <?php
-                    $actions = array();
-
-                    if (in_array($order->get_status(),
-                        apply_filters('woocommerce_valid_order_statuses_for_payment', array('failed', 'refunded',),
-                            $order))) {
-                        $actions['pay'] = array(
+                    $actions = array(
+                        'pay' => array(
                             'url' => $order->get_checkout_payment_url(),
-                            'name' => __('Pay', 'woocommerce-gateway-placetopay')
-                        );
-                    }
-
-                    if (in_array($order->get_status(),
-                        apply_filters('woocommerce_valid_order_statuses_for_cancel', array('pending', 'failed'),
-                            $order))) {
-                        $actions['cancel'] = array(
+                            'name' => __('Pay', 'woocommerce'),
+                        ),
+                        'view' => array(
+                            'url' => $order->get_view_order_url(),
+                            'name' => __('View', 'woocommerce'),
+                        ),
+                        'cancel' => array(
                             'url' => $order->get_cancel_order_url(wc_get_page_permalink('myaccount')),
-                            'name' => __('Cancel', 'woocommerce-gateway-placetopay')
-                        );
+                            'name' => __('Cancel', 'woocommerce'),
+                        ),
+                    );
+
+                    if (!$order->needs_payment()) {
+                        unset($actions['pay']);
                     }
 
-                    $actions['view'] = array(
-                        'url' => $order->get_view_order_url(),
-                        'name' => __('View', 'woocommerce-gateway-placetopay')
-                    );
+                    if (!in_array($order->get_status(),
+                        apply_filters('woocommerce_valid_order_statuses_for_cancel', array('pending', 'failed'),
+                            $order))
+                    ) {
+                        unset($actions['cancel']);
+                    }
 
                     $actions = apply_filters('woocommerce_my_account_my_orders_actions', $actions, $order);
 
