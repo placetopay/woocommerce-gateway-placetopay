@@ -33,6 +33,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     const META_STATUS = '_p2p_status';
 
+    const META_STOCK_RESTORED = '_p2p_stock_restored:%s';
+
     /**
      * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
      * @var array
@@ -778,6 +780,16 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
+        $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
+
+        if ($requestId) {
+            $stockReduced = get_post_meta($orderId, self::META_STOCK_RESTORED . $requestId, true);
+
+            if($stockReduced === 'yes') {
+                return;
+            }
+        }
+
         /** @var \WC_Order_Item_Product $item */
         foreach ($order->get_items() as $item) {
             if ($item['product_id'] <= 0) {
@@ -806,6 +818,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 ));
             }
         }
+
+        update_post_meta($orderId, self::META_STOCK_RESTORED . $requestId, 'yes');
     }
 
     /**
@@ -930,20 +944,20 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * @param $order
+     * @param \WC_Order $order
      * @return bool
      */
     private function validateFields($order)
     {
         $isValid = true;
 
-        if (preg_match(PersonValidator::PATTERN_NAME, trim($order->billing_first_name)) !== 1) {
+        if (preg_match(PersonValidator::PATTERN_NAME, trim($order->get_billing_first_name())) !== 1) {
             wc_add_notice(__('<strong>First Name</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'), 'error');
             $isValid = false;
         }
 
-        if (preg_match(PersonValidator::PATTERN_NAME, trim($order->billing_last_name)) !== 1) {
+        if (preg_match(PersonValidator::PATTERN_NAME, trim($order->get_billing_last_name())) !== 1) {
             wc_add_notice(__('<strong>Last Name</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'), 'error');
             $isValid = false;
