@@ -155,7 +155,10 @@ class WC_Gateway_PlacetoPay
     {
         $assets = ($type === 'path'
                 ? self::$instance->plugin_path
-                : self::$instance->plugin_url) . 'assets';
+                : self::$instance
+                    ? self::$instance->plugin_url
+                    : ''
+            ) . 'assets';
 
         if ($path === null) {
             return $assets;
