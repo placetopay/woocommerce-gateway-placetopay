@@ -12,20 +12,30 @@ Un plugin para agregar un nuevo método de pago a tu tienda por PlacetoPay.
 ## Install in production environment
 Run `composer install --no-dev`
 
-## Lenguajes soportados
+## Idiomas soportados
 - Español Colombia (es_CO)
 - Español (es)
 - Inglés (en)
 
 
-#### Nota: El erchivo de log para el plugin se encuentra en la ruta
+#### Paths de archivos útiles
+Log para el plugin se encuentra en la ruta.
+_Solo cuando estas en entorno de desarrollo o pruebas_
 > wp-content/uploads/wc-logs/PlacetoPay-xxx.log
 
-#### Nota: La ruta para encontrar el archivo cron es:
+La ruta para encontrar el archivo cron es:
 > wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php
 
 
-Ejemplo de peticion para el notification url:
+#### Ejemplo de peticion para el notification url:
+
+``Nota: Solo es posible si estas en ambiente de pruebas o desarrollo``
+
+1. Primero haces una compra de ejemplo
+2. En la plataforma de placetopay te copias el número de la sesión y el de la orden
+3. Pegas en el **requestId** y **reference** respectivamente
+4. Ejecutas la petición y te responderá con un código es el signature (la firma)
+5. Usala para ejecutar nuevamente la petición y así conseguir simular el proceso
 
 ```rest
 Request: http://mi-sitio.com//wp-json/placetopay-payment/v2/callback/
