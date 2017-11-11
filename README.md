@@ -53,3 +53,13 @@ Method: POST
 }
 
 ```
+
+## Start with Docker
+### Requirements
+- docker 17.04.0+
+- docker-compose 1.17.0
+
+### Running
+```
+docker-compose up -d
+```
