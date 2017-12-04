@@ -19,6 +19,10 @@
 if (!defined('ABSPATH')) {
     exit;
 }
+
+use PlacetoPay\GatewayMethod;
+
+/** @var WC_Order $order */
 ?>
 
 <div class="woocommerce-order">
@@ -34,46 +38,67 @@ if (!defined('ABSPATH')) {
                 <br>
 
                 <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
-                <strong><?php echo get_post_meta($order->get_id(), '_p2p_authorization', true); ?></strong>
+                <strong><?php echo get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS,
+                        true); ?></strong>
             </p>
 
             <p class="woocommerce-notice woocommerce-notice--error woocommerce-thankyou-order-failed-actions">
                 <a href="<?php echo esc_url($order->get_checkout_payment_url()); ?>" class="button pay">
-                    <?php _e('Pay', 'woocommerce') ?>
+                    <?php _e('Pay', 'woocommerce-gateway-placetopay') ?>
                 </a>
 
                 <?php if (is_user_logged_in()) : ?>
                     <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>"
-                       class="button pay"><?php _e('My account', 'woocommerce'); ?></a>
+                       class="button pay"><?php _e('My account', 'woocommerce-gateway-placetopay'); ?></a>
                 <?php endif; ?>
             </p>
 
         <?php else : ?>
 
-            <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received"><?php echo apply_filters('woocommerce_thankyou_order_received_text',
-                    __('Thank you. Your order has been received.', 'woocommerce'), $order); ?></p>
+            <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">
+                <?php echo apply_filters('woocommerce_thankyou_order_received_text',
+                    __('Thank you. Your order has been received.', 'woocommerce-gateway-placetopay'), $order); ?>
+
+                <?php
+                $processUrl = get_post_meta($order->get_id(), GatewayMethod::META_PROCESS_URL, true);
+
+                if (!empty($processUrl)) { ?>
+
+                    <?php echo sprintf(
+                        __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in placetopay</a>',
+                            'woocommerce-gateway-placetopay'),
+                        urldecode($processUrl)
+                    ); ?>
+
+                <?php } ?>
+            </p>
 
             <ul class="woocommerce-order-overview woocommerce-thankyou-order-details order_details">
 
                 <li class="woocommerce-order-overview__order order">
-                    <?php _e('Order Number:', 'woocommerce'); ?>
-                    <strong><?php echo \PlacetoPay\GatewayMethod::getOrderNumber($order); ?></strong>
+                    <?php _e('Order status:', 'woocommerce-gateway-placetopay'); ?>
+                    <strong><?php echo GatewayMethod::getOrderStatusLabels($order->post_status); ?></strong>
+                </li>
+
+                <li class="woocommerce-order-overview__order order">
+                    <?php _e('Order Number:', 'woocommerce-gateway-placetopay'); ?>
+                    <strong><?php echo GatewayMethod::getOrderNumber($order); ?></strong>
                 </li>
 
                 <li class="woocommerce-order-overview__date date">
-                    <?php _e('Date:', 'woocommerce'); ?>
+                    <?php _e('Date:', 'woocommerce-gateway-placetopay'); ?>
                     <strong><?php echo wc_format_datetime($order->get_date_created()); ?></strong>
                 </li>
 
                 <li class="woocommerce-order-overview__total total">
-                    <?php _e('Total:', 'woocommerce'); ?>
+                    <?php _e('Total:', 'woocommerce-gateway-placetopay'); ?>
                     <strong><?php echo $order->get_formatted_order_total(); ?></strong>
                 </li>
 
                 <?php if ($order->get_payment_method_title()) : ?>
 
                     <li class="woocommerce-order-overview__payment-method method">
-                        <?php _e('Payment method:', 'woocommerce'); ?>
+                        <?php _e('Payment method:', 'woocommerce-gateway-placetopay'); ?>
                         <strong><?php echo wp_kses_post($order->get_payment_method_title()); ?></strong>
                     </li>
 
@@ -81,7 +106,8 @@ if (!defined('ABSPATH')) {
 
                 <li class="order">
                     <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
-                    <strong><?php echo get_post_meta($order->get_id(), '_p2p_authorization', true); ?></strong>
+                    <strong><?php echo get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS,
+                            true); ?></strong>
                 </li>
 
             </ul>
@@ -94,8 +120,7 @@ if (!defined('ABSPATH')) {
     <?php else : ?>
 
         <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received"><?php echo apply_filters('woocommerce_thankyou_order_received_text',
-                __('Thank you. Your order has been received.', 'woocommerce'), null); ?></p>
+                __('Thank you. Your order has been received.', 'woocommerce-gateway-placetopay'), null); ?></p>
 
     <?php endif; ?>
-
 </div>

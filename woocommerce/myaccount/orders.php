@@ -51,20 +51,7 @@ if ($has_orders) : ?>
         <tbody>
         <?php
 
-        $statuses = [
-            'wc-pending' => __('Pending', 'woocommerce-gateway-placetopay'),
-            //Order received (unpaid)
-            'wc-processing' => __('Approved', 'woocommerce-gateway-placetopay'),
-            //Payment received and stock has been reduced- the order is awaiting fulfillment
-            'wc-on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
-            //Awaiting payment – stock is reduced, but you need to confirm payment
-            'wc-completed' => __('Approved', 'woocommerce-gateway-placetopay'),
-            //Order fulfilled and complete – requires no further action
-            'wc-refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
-            //Refunded – Refunded by an admin – no further action required
-            'wc-failed' => __('Failed', 'woocommerce-gateway-placetopay'),
-            //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
-        ];
+        $statuses = \PlacetoPay\GatewayMethod::getOrderStatusLabels();
 
         foreach ($customer_orders->orders as $customer_order) {
             $order = wc_get_order($customer_order);

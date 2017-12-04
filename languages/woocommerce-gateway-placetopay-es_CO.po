@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
-"POT-Creation-Date: 2017-12-04 09:16-0500\n"
-"PO-Revision-Date: 2017-12-04 09:16-0500\n"
+"POT-Creation-Date: 2017-12-04 10:45-0500\n"
+"PO-Revision-Date: 2017-12-04 10:45-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_CO\n"
@@ -16,27 +16,43 @@ msgstr ""
 "X-Poedit-SourceCharset: UTF-8\n"
 "X-Poedit-SearchPath-0: .\n"
 
-#: src/GatewayMethod.php:134 src/config/form-fields.php:33
+#: src/GatewayMethod.php:136 src/config/form-fields.php:33
 msgid "PlacetoPay"
 msgstr "PlacetoPay"
 
-#: src/GatewayMethod.php:135
+#: src/GatewayMethod.php:137
 msgid "Sells online safely and agile"
 msgstr "Vende en línea de forma segura y ágil"
 
-#: src/GatewayMethod.php:352
+#: src/GatewayMethod.php:228 src/GatewayMethod.php:232
+msgid "Pending"
+msgstr "Pendiente"
+
+#: src/GatewayMethod.php:230 src/GatewayMethod.php:234
+msgid "Approved"
+msgstr "Aprobada"
+
+#: src/GatewayMethod.php:236 woocommerce/myaccount/orders.php:85
+msgid "Rejected"
+msgstr "Rechazada"
+
+#: src/GatewayMethod.php:238
+msgid "Failed"
+msgstr "Fallida"
+
+#: src/GatewayMethod.php:383
 msgid "Payment error: "
 msgstr "Error en el pago:"
 
-#: src/GatewayMethod.php:357
+#: src/GatewayMethod.php:388
 msgid "Payment error: Server error internal."
 msgstr "Error en el pago: Error interno del servidor."
 
-#: src/GatewayMethod.php:389
+#: src/GatewayMethod.php:420
 msgid "Redirecting to PlacetoPay"
 msgstr "Redireccionando a PlacetoPay"
 
-#: src/GatewayMethod.php:392
+#: src/GatewayMethod.php:423
 msgid ""
 "We are now redirecting you to PlacetoPay to make payment, if you are not "
 "redirected please press the bottom."
@@ -44,56 +60,56 @@ msgstr ""
 "Ahora estamos redirigiéndolo a PlacetoPay para hacer el pago, si no es "
 "redirigido por favor presione la parte inferior."
 
-#: src/GatewayMethod.php:439
+#: src/GatewayMethod.php:470
 msgid "PlacetoPay Request Failure"
 msgstr "Fallo la petición a PlacetoPay"
 
-#: src/GatewayMethod.php:460
+#: src/GatewayMethod.php:491
 msgid ""
 "There was an error on the request. please contact the website administrator."
 msgstr ""
 "Ha ocurrido un error en la solicitud. Por favor comuniquese con el "
 "administrador del sitio web"
 
-#: src/GatewayMethod.php:539
+#: src/GatewayMethod.php:570
 #, php-format
 msgid "Validation error: PlacetoPay amounts do not match (gross %s)."
 msgstr ""
 "Error de validación: La cantidad pagada en PlacetoPay  no coincide (Cantidad "
 "%s)."
 
-#: src/GatewayMethod.php:548
+#: src/GatewayMethod.php:579
 msgid "Payer PlacetoPay email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/GatewayMethod.php:553
+#: src/GatewayMethod.php:584
 msgid "Payment type"
 msgstr "Método de pago usado"
 
-#: src/GatewayMethod.php:561
+#: src/GatewayMethod.php:592
 msgid "PlacetoPay payment approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/GatewayMethod.php:572
+#: src/GatewayMethod.php:603
 #, php-format
 msgid "Payment pending: %s"
 msgstr "Pago pendiente: %s"
 
-#: src/GatewayMethod.php:585 src/GatewayMethod.php:613
+#: src/GatewayMethod.php:616 src/GatewayMethod.php:644
 #: src/config/form-fields.php:127
 msgid "Payment rejected via PlacetoPay."
 msgstr "Pago rechazado por PlacetoPay."
 
-#: src/GatewayMethod.php:599
+#: src/GatewayMethod.php:630
 #, php-format
 msgid "Payment rejected via PlacetoPay. Error type: %s."
 msgstr "Pago rechazado por PlacetoPay. Error: %s."
 
-#: src/GatewayMethod.php:661
+#: src/GatewayMethod.php:692
 msgid "Error: Order Key does not match invoice."
 msgstr "Error: La llave de la orden no coincide."
 
-#: src/GatewayMethod.php:704
+#: src/GatewayMethod.php:735
 #, php-format
 msgid ""
 "At this time your order #%s display a checkout transaction which is pending "
@@ -116,84 +132,84 @@ msgstr ""
 "cliente %s o enviar un correo electrónico a %s\n"
 "                            y preguntar por el estado de la transacción: %s"
 
-#: src/GatewayMethod.php:711
+#: src/GatewayMethod.php:742
 msgid "CUS/Authorization"
 msgstr "CUS/Autorización"
 
-#: src/GatewayMethod.php:821
+#: src/GatewayMethod.php:852
 #, php-format
 msgid "Item #%s stock incremented from %s to %s."
 msgstr "Item #%s incremento de %s a %s."
 
-#: src/GatewayMethod.php:923
+#: src/GatewayMethod.php:954
 msgid "Default Page"
 msgstr "Pagina por defecto"
 
-#: src/GatewayMethod.php:930
+#: src/GatewayMethod.php:961
 msgid "My Orders"
 msgstr "Mis ordenes"
 
-#: src/GatewayMethod.php:943
+#: src/GatewayMethod.php:974
 msgid "Development"
 msgstr "Desarrollo"
 
-#: src/GatewayMethod.php:944
+#: src/GatewayMethod.php:975
 msgid "Test"
 msgstr "Pruebas"
 
-#: src/GatewayMethod.php:945
+#: src/GatewayMethod.php:976
 msgid "Production"
 msgstr "Producción"
 
-#: src/GatewayMethod.php:962
+#: src/GatewayMethod.php:993
 msgid "Minutes"
 msgstr "Minutos"
 
-#: src/GatewayMethod.php:966
+#: src/GatewayMethod.php:997
 msgid "Hour(s)"
 msgstr "Hora(s)"
 
-#: src/GatewayMethod.php:970
+#: src/GatewayMethod.php:1001
 msgid "Day(s)"
 msgstr "Día(s)"
 
-#: src/GatewayMethod.php:975
+#: src/GatewayMethod.php:1006
 msgid "Week(s)"
 msgstr "Semana(s)"
 
-#: src/GatewayMethod.php:980
+#: src/GatewayMethod.php:1011
 msgid "Month(s)"
 msgstr "Mes"
 
-#: src/GatewayMethod.php:1021
+#: src/GatewayMethod.php:1052
 msgid "<strong>First Name</strong>, does not have a valid format"
 msgstr "El <strong>nombre</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1028
+#: src/GatewayMethod.php:1059
 msgid "<strong>Last Name</strong>, does not have a valid format"
 msgstr "El <strong>apellido</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1035
+#: src/GatewayMethod.php:1066
 msgid "<strong>Country</strong>, is not valid."
 msgstr "El <strong>País</strong>, no es válido"
 
-#: src/GatewayMethod.php:1042
+#: src/GatewayMethod.php:1073
 msgid "<strong>State / Country</strong>, does not have a valid format"
 msgstr "El <strong>Departamento</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1049
+#: src/GatewayMethod.php:1080
 msgid "<strong>Town / City</strong>, does not have a valid format"
 msgstr "La <strong>Ciudad</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1056
+#: src/GatewayMethod.php:1087
 msgid "<strong>Phone</strong>, does not have a valid format"
 msgstr "El <strong>Teléfono</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1063
+#: src/GatewayMethod.php:1094
 msgid "<strong>Email</strong>, does not have a valid format"
 msgstr "El <strong>Correo</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1092
+#: src/GatewayMethod.php:1123
 #, php-format
 msgid "Order %s - Products: %s"
 msgstr "Pedido %s - Productos: %s"
@@ -349,7 +365,7 @@ msgstr "Transacción cancelada."
 msgid "Message for rejected transaction"
 msgstr "Mensaje para una transacción rechazada."
 
-#: woocommerce/checkout/thankyou.php:31
+#: woocommerce/checkout/thankyou.php:35
 msgid ""
 "Unfortunately your order cannot be processed as the originating bank/"
 "merchant has declined your transaction. Please attempt your purchase again."
@@ -357,36 +373,49 @@ msgstr ""
 "Lamentablemente, tu pedido no puede procesarse el banco/comercio ha "
 "rechazado tu transacción. Por favor, intenta realizar la compra de nuevo."
 
-#: woocommerce/checkout/thankyou.php:36 woocommerce/checkout/thankyou.php:83
-#: woocommerce/myaccount/orders.php:44 woocommerce/myaccount/orders.php:102
+#: woocommerce/checkout/thankyou.php:40 woocommerce/checkout/thankyou.php:108
+#: woocommerce/myaccount/orders.php:44 woocommerce/myaccount/orders.php:89
 msgid "Authorization/CUS"
 msgstr "Autorización/CUS"
 
-#: woocommerce/checkout/thankyou.php:42 woocommerce/myaccount/orders.php:117
+#: woocommerce/checkout/thankyou.php:47 woocommerce/myaccount/orders.php:104
 msgid "Pay"
 msgstr "Pagar"
 
-#: woocommerce/checkout/thankyou.php:47
+#: woocommerce/checkout/thankyou.php:52
 msgid "My account"
 msgstr "Mi cuenta"
 
-#: woocommerce/checkout/thankyou.php:54 woocommerce/checkout/thankyou.php:97
+#: woocommerce/checkout/thankyou.php:60 woocommerce/checkout/thankyou.php:123
 msgid "Thank you. Your order has been received."
 msgstr "Gracias. Su orden ha sido recibida."
 
-#: woocommerce/checkout/thankyou.php:59
+#: woocommerce/checkout/thankyou.php:68
+#, php-format
+msgid ""
+"<br>For more information about the status of your order: <a href=\"%s\" "
+"target=\"_blank\">view order detail in placetopay</a>"
+msgstr ""
+"<br> Para obtener más información sobre el estado de su pedido: <a href=\"%s"
+"\" target=\"_blank\">ver detalles de la orden en placetopay</a>"
+
+#: woocommerce/checkout/thankyou.php:79
+msgid "Order status:"
+msgstr "Estado del pedido:"
+
+#: woocommerce/checkout/thankyou.php:84
 msgid "Order Number:"
 msgstr "Número de orden:"
 
-#: woocommerce/checkout/thankyou.php:64
+#: woocommerce/checkout/thankyou.php:89
 msgid "Date:"
 msgstr "Fecha:"
 
-#: woocommerce/checkout/thankyou.php:69
+#: woocommerce/checkout/thankyou.php:94
 msgid "Total:"
 msgstr "Total:"
 
-#: woocommerce/checkout/thankyou.php:76
+#: woocommerce/checkout/thankyou.php:101
 msgid "Payment method:"
 msgstr "Método de pago:"
 
@@ -398,64 +427,48 @@ msgstr "Ordenes recientes"
 msgid "Order"
 msgstr "Orden de compra"
 
-#: woocommerce/myaccount/orders.php:40 woocommerce/myaccount/orders.php:88
+#: woocommerce/myaccount/orders.php:40 woocommerce/myaccount/orders.php:75
 msgid "Date"
 msgstr "Fecha"
 
-#: woocommerce/myaccount/orders.php:41 woocommerce/myaccount/orders.php:96
+#: woocommerce/myaccount/orders.php:41 woocommerce/myaccount/orders.php:83
 msgid "Status"
 msgstr "Estado"
 
-#: woocommerce/myaccount/orders.php:45 woocommerce/myaccount/orders.php:106
+#: woocommerce/myaccount/orders.php:45 woocommerce/myaccount/orders.php:93
 msgid "Total"
 msgstr "Total"
 
-#: woocommerce/myaccount/orders.php:55 woocommerce/myaccount/orders.php:59
-msgid "Pending"
-msgstr "Pendiente"
-
-#: woocommerce/myaccount/orders.php:57 woocommerce/myaccount/orders.php:61
-msgid "Approved"
-msgstr "Aprobada"
-
-#: woocommerce/myaccount/orders.php:63 woocommerce/myaccount/orders.php:98
-msgid "Rejected"
-msgstr "Rechazada"
-
-#: woocommerce/myaccount/orders.php:65
-msgid "Failed"
-msgstr "Fallida"
-
-#: woocommerce/myaccount/orders.php:81
+#: woocommerce/myaccount/orders.php:68
 msgid "Order Number"
 msgstr "Orden #"
 
-#: woocommerce/myaccount/orders.php:107
+#: woocommerce/myaccount/orders.php:94
 #, php-format
 msgid "%s for %s item"
 msgstr "%s para %s item"
 
-#: woocommerce/myaccount/orders.php:121
+#: woocommerce/myaccount/orders.php:108
 msgid "View"
 msgstr "Ver"
 
-#: woocommerce/myaccount/orders.php:125
+#: woocommerce/myaccount/orders.php:112
 msgid "Cancel"
 msgstr "Cancelar"
 
-#: woocommerce/myaccount/orders.php:161
+#: woocommerce/myaccount/orders.php:148
 msgid "Previous"
 msgstr "Anterior"
 
-#: woocommerce/myaccount/orders.php:167
+#: woocommerce/myaccount/orders.php:154
 msgid "Next"
 msgstr "Siguiente"
 
-#: woocommerce/myaccount/orders.php:179
+#: woocommerce/myaccount/orders.php:166
 msgid "Go shop"
 msgstr "Ir a la tienda"
 
-#: woocommerce/myaccount/orders.php:181
+#: woocommerce/myaccount/orders.php:168
 msgid "No order has been made yet."
 msgstr "No hay ordenes creadas todavia."
 

@@ -36,6 +36,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     const META_STOCK_RESTORED = '_p2p_stock_restored:%s';
 
+    const META_PROCESS_URL = '_p2p_process_url';
+
     /**
      * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
      * @var array
@@ -217,6 +219,34 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
+     * @param null $status
+     * @return array|mixed
+     */
+    public static function getOrderStatusLabels($status = null)
+    {
+        $labels = [
+            'wc-pending' => __('Pending', 'woocommerce-gateway-placetopay'),
+            //Order received (unpaid)
+            'wc-processing' => __('Approved', 'woocommerce-gateway-placetopay'),
+            //Payment received and stock has been reduced- the order is awaiting fulfillment
+            'wc-on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
+            //Awaiting payment – stock is reduced, but you need to confirm payment
+            'wc-completed' => __('Approved', 'woocommerce-gateway-placetopay'),
+            //Order fulfilled and complete – requires no further action
+            'wc-refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
+            //Refunded – Refunded by an admin – no further action required
+            'wc-failed' => __('Failed', 'woocommerce-gateway-placetopay'),
+            //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
+        ];
+
+        if ($status) {
+            return $labels[$status];
+        }
+
+        return $labels;
+    }
+
+    /**
      * Endpoint for the notification of PlacetoPay
      *
      * @param \WP_REST_Request $req
@@ -334,6 +364,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
                 // Redirect the client to the processUrl or display it on the JS extension
                 $processUrl = urlencode($res->processUrl());
+                update_post_meta($order->get_id(), self::META_PROCESS_URL, $processUrl);
 
                 if (!$requestId || !$this->isPendingStatusOrder($order->get_id())) {
                     // Reduce stock levels tempory
