@@ -29,7 +29,7 @@ if (!defined('ABSPATH')) {
 
             <p class="woocommerce-notice woocommerce-notice--error woocommerce-thankyou-order-failed">
                 <?php _e('Unfortunately your order cannot be processed as the originating bank/merchant has declined your transaction. Please attempt your purchase again.',
-                    'woocommerce'); ?>
+                    'woocommerce-gateway-placetopay'); ?>
 
                 <br>
 
