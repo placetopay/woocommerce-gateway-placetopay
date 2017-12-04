@@ -6,14 +6,14 @@
  * Author:      PlacetoPay
  * Author URI:  https://www.placetopay.com/
  * Developer:   Cristian Salazar
- * Version:     2.6.5
+ * Version:     2.11.6
  *
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2017 EGM Ingenieria sin fronteras S.A.S.
- * @version 2.6.5
+ * @version 2.11.6
  */
 
 if (!defined('ABSPATH')) {
@@ -64,7 +64,7 @@ function wc_gateway_placetopay()
     }
 
     require_once(__DIR__ . '/vendor/autoload.php');
-    return \PlacetoPay\WC_Gateway_PlacetoPay::getInstance('2.6.5', __FILE__);
+    return \PlacetoPay\WC_Gateway_PlacetoPay::getInstance('2.11.6', __FILE__);
 }
 
 add_action('plugins_loaded', 'wc_gateway_placetopay', 0);
