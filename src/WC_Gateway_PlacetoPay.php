@@ -58,6 +58,7 @@ class WC_Gateway_PlacetoPay
 
         add_action('woocommerce_before_checkout_form', [new GatewayMethod(), 'checkoutMessage']);
         add_action('woocommerce_before_account_orders', [new GatewayMethod(), 'checkoutMessage']);
+        add_action('woocommerce_checkout_process', [new GatewayMethod(), 'checkoutFieldProcess']);
 
         add_action(GatewayMethod::NOTIFICATION_RETURN_PAGE, [$this, 'notificationReturnPage']);
 
