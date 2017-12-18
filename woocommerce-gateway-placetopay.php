@@ -29,7 +29,7 @@ function wc_gateway_placetopay()
 {
     // carga las traducciones de PlacetoPay
     load_plugin_textdomain('woocommerce-gateway-placetopay', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate', 1, 3);
+    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate', 201, 3);
 
     /**
      * @param $template

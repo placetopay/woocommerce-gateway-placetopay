@@ -225,17 +225,17 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function getOrderStatusLabels($status = null)
     {
         $labels = [
-            'wc-pending' => __('Pending', 'woocommerce-gateway-placetopay'),
+            'pending' => __('Pending', 'woocommerce-gateway-placetopay'),
             //Order received (unpaid)
-            'wc-processing' => __('Approved', 'woocommerce-gateway-placetopay'),
+            'processing' => __('Approved', 'woocommerce-gateway-placetopay'),
             //Payment received and stock has been reduced- the order is awaiting fulfillment
-            'wc-on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
+            'on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
             //Awaiting payment – stock is reduced, but you need to confirm payment
-            'wc-completed' => __('Approved', 'woocommerce-gateway-placetopay'),
+            'completed' => __('Approved', 'woocommerce-gateway-placetopay'),
             //Order fulfilled and complete – requires no further action
-            'wc-refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
+            'refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
             //Refunded – Refunded by an admin – no further action required
-            'wc-failed' => __('Failed', 'woocommerce-gateway-placetopay'),
+            'failed' => __('Failed', 'woocommerce-gateway-placetopay'),
             //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
         ];
 
@@ -342,7 +342,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 'description' => $productInfo,
                 'amount' => [
                     'currency' => $this->currency,
-                    'total' => floatval($order->order_total)
+                    'total' => floatval($order->get_total())
                 ]
             ],
             'fields' => [
@@ -721,8 +721,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
             if ($customerOrders) {
                 foreach ($customerOrders as $_order) {
-                    $order = new WC_Order();
-                    $order->populate($_order);
+                    $order = new WC_Order($_order);
 
                     if (!self::isPendingStatusOrder($order->get_id())) {
                         continue;
@@ -809,6 +808,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param $orderId
+     * @param bool $logger
      */
     public function restoreOrderStock($orderId, $logger = true)
     {
@@ -932,7 +932,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($this->icon) {
             $icon = sprintf(
-                '<a href="%s" target="_blank"><img src="%s" alt="%s"/></a>',
+                '<a href="%s" target="_blank"><img src="%s" style="max-height: 24px; max-width: 200px;" alt="%s"/></a>',
                 'https://www.placetopay.com/',
                 WC_HTTPS::force_https_url($this->icon),
                 esc_attr($this->get_title())

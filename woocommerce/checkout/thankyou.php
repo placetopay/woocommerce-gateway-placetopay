@@ -77,7 +77,7 @@ use PlacetoPay\GatewayMethod;
 
                 <li class="woocommerce-order-overview__order order">
                     <?php _e('Order status:', 'woocommerce-gateway-placetopay'); ?>
-                    <strong><?php echo GatewayMethod::getOrderStatusLabels($order->post_status); ?></strong>
+                    <strong><?php echo GatewayMethod::getOrderStatusLabels($order->get_status()); ?></strong>
                 </li>
 
                 <li class="woocommerce-order-overview__order order">

@@ -56,7 +56,7 @@ if ($has_orders) : ?>
         foreach ($customer_orders->orders as $customer_order) {
             $order = wc_get_order($customer_order);
             $item_count = $order->get_item_count();
-            $status = $statuses[$order->post_status];
+            $status = $statuses[$order->get_status()];
 
             $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\GatewayMethod::META_AUTHORIZATION_CUS,
                 true);
@@ -75,8 +75,11 @@ if ($has_orders) : ?>
                 <td class="order-date" data-title="<?php _e('Date', 'woocommerce-gateway-placetopay'); ?>">
                     <time datetime="<?php echo date('Y-m-d H:i:s', strtotime($order->order_date)); ?>"
                           title="<?php echo esc_attr(strtotime($order->order_date)); ?>">
-                        <?php echo date_i18n(get_option('date_format') . ' ' . get_option('time_format'),
-                            strtotime($order->order_date)); ?>
+                        <?php echo esc_html(
+                            wc_format_datetime(
+                                $order->get_date_created()
+                            )
+                        ) ?>
                     </time>
                 </td>
 
@@ -91,7 +94,7 @@ if ($has_orders) : ?>
                 </td>
 
                 <td class="order-total" data-title="<?php _e('Total', 'woocommerce-gateway-placetopay'); ?>">
-                    <?php echo $order->get_order_currency() . ' ' . sprintf(_n('%s for %s item', '%s for %s items',
+                    <?php echo $order->get_currency() . ' ' . sprintf(_n('%s for %s item', '%s for %s items',
                             $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(),
                             $item_count); ?>
                 </td>
