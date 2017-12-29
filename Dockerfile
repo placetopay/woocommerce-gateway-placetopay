@@ -4,7 +4,7 @@ ENV WORDPRESS_VERSION 4.8.4
 ENV WOOCOMMERCE_VERSION 3.2.1
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends unzip libxml++2.6-dev php-soap \
+    && apt-get install -y --no-install-recommends unzip libxml++2.6-dev \
     \
     && curl -B https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/composer \
