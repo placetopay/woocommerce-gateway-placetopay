@@ -59,7 +59,15 @@ Method: POST
 - docker 17.04.0+
 - docker-compose 1.17.0
 
-### Running
+### Running with docker directly
 ```
-docker-compose up -d
+> docker-compose up -d
+> docker exec -u 1000:1000 -it wp_plugin_wordpress composer install -d ./wp-content/plugins/woocommerce-gateway-placetopay
 ```
+
+### If support for Makefile exists
+```$xslt
+> make install
+```
+
+The container listen in port 6969: `http://127.0.0.1:6969/`
