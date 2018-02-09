@@ -13,7 +13,7 @@ $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_
 
 if ($customerOrders) {
     foreach ($customerOrders as $orderPost) {
-        $requestId = get_post_meta($orderPost->ID, \PlacetoPay\GatewayMethod::META_REQUEST_ID, true);
+        $requestId = get_post_meta($orderPost->ID, \PlacetoPay\PaymentMethod\GatewayMethod::META_REQUEST_ID, true);
 
         if (!$requestId) {
             continue;
@@ -22,10 +22,10 @@ if ($customerOrders) {
         $order = new WC_Order();
         $order->populate($orderPost);
 
-        if (!\PlacetoPay\GatewayMethod::isPendingStatusOrder($order->get_id())) {
+        if (!\PlacetoPay\PaymentMethod\GatewayMethod::isPendingStatusOrder($order->get_id())) {
             continue;
         }
 
-        \PlacetoPay\GatewayMethod::processPendingOrder($order->get_id(), $requestId);
+        \PlacetoPay\PaymentMethod\GatewayMethod::processPendingOrder($order->get_id(), $requestId);
     }
 }

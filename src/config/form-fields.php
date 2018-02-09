@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * @var \PlacetoPay\GatewayMethod $this
+ * @var \PlacetoPay\PaymentMethod\GatewayMethod $this
  */
 
 /**
@@ -54,6 +54,12 @@ return [
         'type' => 'password',
         'description' => __('Given to transactional key by PlacetoPay', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
+    ],
+    'country' => [
+        'title' => __('Country', 'woocommerce-gateway-placetopay'),
+        'type' => 'select',
+        'default' => get_option('woocommerce_default_country'),
+        'options' => $this->getCountryList(),
     ],
     'enviroment_mode' => [
         'title' => __('Mode', 'woocommerce-gateway-placetopay'),

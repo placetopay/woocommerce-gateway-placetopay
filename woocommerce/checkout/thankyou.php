@@ -20,7 +20,7 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
-use PlacetoPay\GatewayMethod;
+use PlacetoPay\PaymentMethod\GatewayMethod;
 
 /** @var WC_Order $order */
 ?>

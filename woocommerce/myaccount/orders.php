@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-do_action(\PlacetoPay\GatewayMethod::NOTIFICATION_RETURN_PAGE);
+do_action(\PlacetoPay\PaymentMethod\GatewayMethod::NOTIFICATION_RETURN_PAGE);
 do_action('woocommerce_before_account_orders', $has_orders);
 
 if ($has_orders) : ?>
@@ -51,14 +51,14 @@ if ($has_orders) : ?>
         <tbody>
         <?php
 
-        $statuses = \PlacetoPay\GatewayMethod::getOrderStatusLabels();
+        $statuses = \PlacetoPay\PaymentMethod\GatewayMethod::getOrderStatusLabels();
 
         foreach ($customer_orders->orders as $customer_order) {
             $order = wc_get_order($customer_order);
             $item_count = $order->get_item_count();
             $status = $statuses[$order->get_status()];
 
-            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\GatewayMethod::META_AUTHORIZATION_CUS,
+            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_AUTHORIZATION_CUS,
                 true);
             $authorizationCodes = explode(',', $authorizationCodes);
 
@@ -68,7 +68,7 @@ if ($has_orders) : ?>
                     data-title="<?php _e('Order Number', 'woocommerce-gateway-placetopay'); ?>">
                     <a href="<?php echo esc_url($order->get_view_order_url()); ?>">
                         <?php echo _x('#', 'hash before order number',
-                                'woocommerce-gateway-placetopay') . \PlacetoPay\GatewayMethod::getOrderNumber($order); ?>
+                                'woocommerce-gateway-placetopay') . \PlacetoPay\PaymentMethod\GatewayMethod::getOrderNumber($order); ?>
                     </a>
                 </td>
 

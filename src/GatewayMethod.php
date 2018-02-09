@@ -1,4 +1,4 @@
-<?php namespace PlacetoPay;
+<?php namespace PlacetoPay\PaymentMethod;
 
 
 if (!defined('ABSPATH')) {
@@ -12,12 +12,15 @@ use Dnetix\Redirection\PlacetoPay;
 use Dnetix\Redirection\Validators\Currency;
 use Dnetix\Redirection\Validators\PersonValidator;
 use Exception;
+use PlacetoPay\PaymentMethod\Constants\Country;
+use PlacetoPay\PaymentMethod\Constants\Environment;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
 
 /**
- * @package \PlacetoPay
+ * Class GatewayMethod
+ * @package PlacetoPay\PaymentMethod
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
@@ -57,23 +60,6 @@ class GatewayMethod extends WC_Payment_Gateway
 
     const EXPIRATION_TIME_MINUTES_LIMIT = 40320;
 
-    /**
-     * URI for production service
-     * @var string
-     */
-    private $prodUri = 'https://secure.placetopay.com/redirection';
-
-    /**
-     * URI for testing in production enviroment
-     * @var string
-     */
-    private $testUri = 'https://test.placetopay.com/redirection';
-
-    /**
-     * URI for testing in development enviroment
-     * @var string
-     */
-    private $testUriDev = 'https://dev.placetopay.com/redirection';
 
     /**
      * Instance of placetopay to manage the connection with the webservice
@@ -100,6 +86,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $expiration_time_minutes;
     private $endpoint;
     private $currency;
+    private $country;
     private $enviroment_mode;
     private $fill_buyer_information;
     private $login;
@@ -134,7 +121,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $this->id = 'placetopay';
         $this->method_title = __('PlacetoPay', 'woocommerce-gateway-placetopay');
-        $this->method_description = __("Sells online safely and agile", 'woocommerce-gateway-placetopay');
+        $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
         $this->icon = WC_Gateway_PlacetoPay::assets('/images/placetopay.png', 'url');
         $this->has_fields = false;
 
@@ -145,6 +132,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->endpoint = $this->settings['endpoint'];
         $this->expiration_time_minutes = $this->settings['expiration_time_minutes'];
         $this->fill_buyer_information = $this->get_option('fill_buyer_information');
+        $this->country = $this->get_option('country');
         $this->enviroment_mode = $this->get_option('enviroment_mode');
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
@@ -163,30 +151,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->currency = get_woocommerce_currency();
         $this->currency = Currency::isValidCurrency($this->currency) ? $this->currency : Currency::CUR_COP;
 
-        $this->testmode = in_array($this->enviroment_mode, ["test", 'dev']) ? 'yes' : 'no';
-
-        if ($this->testmode == "yes") {
-            $this->debug = "yes";
-            $this->log = $this->wooCommerceVersionCompare('2.1')
-                ? new \WC_Logger()
-                : WC()->logger();
-
-            $this->uri_service = $this->enviroment_mode === 'dev'
-                ? $this->testUriDev
-                : $this->testUri;
-
-        } else {
-            if ($this->enviroment_mode === 'prod') {
-                $this->debug = 'no';
-                $this->uri_service = $this->prodUri;
-            }
-        }
-
-        // By default always it will be enviroment of development testing
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            $this->settings['enviroment_mode'] = 'dev';
-            $this->uri_service = $this->testUriDev;
-        }
+        $this->configureEnvironment();
     }
 
     /**
@@ -262,7 +227,7 @@ class GatewayMethod extends WC_Payment_Gateway
             $notification = new Notification($data, $this->tran_key);
 
             if (!$notification->isValidNotification()) {
-                if ($this->testmode == "yes") {
+                if ($this->testmode == 'yes') {
                     return $notification->makeSignature();
                 }
 
@@ -411,7 +376,7 @@ class GatewayMethod extends WC_Payment_Gateway
             // Payment Details
             if (count($authorizationCode) > 0) {
                 $this->logger('Adding authorization code $auth = ' . $authorizationCode, 'receiptPage');
-                update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(",", $authorizationCode));
+                update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(',', $authorizationCode));
             }
 
             // Add information to the order to notify that exit to PlacetoPay
@@ -731,9 +696,9 @@ class GatewayMethod extends WC_Payment_Gateway
                         $authCode = get_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, true);
 
                         $message = sprintf(
-                            __("At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
+                            __('At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
                             please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
-                            state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: '%s'",
+                            state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: \'%s\'',
                                 'woocommerce-gateway-placetopay'),
                             ( string )$order->get_id(),
                             $this->merchant_phone,
@@ -762,7 +727,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         global $woocommerce;
 
-        if ($this->enabled == "yes") {
+        if ($this->enabled == 'yes') {
             if (!Currency::isValidCurrency($this->currency)) {
                 return false;
             }
@@ -963,6 +928,14 @@ class GatewayMethod extends WC_Payment_Gateway
         return $pageList;
     }
 
+    public function getCountryList()
+    {
+        return [
+            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
+            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
+        ];
+    }
+
     /**
      * Return list of environments for selection
      *
@@ -971,9 +944,9 @@ class GatewayMethod extends WC_Payment_Gateway
     protected function getEnvironments()
     {
         return [
-            'dev' => __('Development', 'woocommerce-gateway-placetopay'),
-            'test' => __('Test', 'woocommerce-gateway-placetopay'),
-            'prod' => __('Production', 'woocommerce-gateway-placetopay'),
+            Environment::DEV => __('Development', 'woocommerce-gateway-placetopay'),
+            Environment::TEST => __('Test', 'woocommerce-gateway-placetopay'),
+            Environment::PROD => __('Production', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1131,5 +1104,46 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return sprintf($orderInfo, $orderId, implode(',', $products));
+    }
+
+    private function configureEnvironment()
+    {
+        $environmentByCountry = [
+            Country::CO => [
+                Environment::PROD => 'https://secure.placetopay.com/redirection',
+                Environment::TEST => 'https://test.placetopay.com/redirection',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+            Country::EC => [
+                Environment::PROD => 'https://secure.placetopay.ec/redirection',
+                Environment::TEST => 'https://test.placetopay.ec/redirection',
+                Environment::DEV => 'https://dev.placetopay.ec/redirection',
+            ],
+        ][$this->settings['country']];
+
+        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
+
+        if ($this->testmode == 'yes') {
+            $this->debug = 'yes';
+            $this->log = $this->wooCommerceVersionCompare('2.1')
+                ? new \WC_Logger()
+                : WC()->logger();
+
+            $this->uri_service = $this->enviroment_mode === Environment::DEV
+                ? $environmentByCountry[Environment::DEV]
+                : $environmentByCountry[Environment::TEST];
+
+        } else {
+            if ($this->enviroment_mode === Environment::PROD) {
+                $this->debug = 'no';
+                $this->uri_service = $environmentByCountry[Environment::PROD];
+            }
+        }
+
+        // By default always it will be environment of development testing
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $this->settings['enviroment_mode'] = Environment::DEV;
+            $this->uri_service = $environmentByCountry[Environment::DEV];
+        }
     }
 }

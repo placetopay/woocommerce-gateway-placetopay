@@ -1,4 +1,4 @@
-<?php namespace PlacetoPay;
+<?php namespace PlacetoPay\PaymentMethod;
 /**
  * Zend Framework (http://framework.zend.com/)
  *

@@ -1,4 +1,6 @@
-<?php namespace PlacetoPay;
+<?php
+
+namespace PlacetoPay\PaymentMethod;
 
 
 if (!defined('ABSPATH')) {

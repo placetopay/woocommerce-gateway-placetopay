@@ -23,7 +23,7 @@ if (!defined('ABSPATH')) {
 /**
  * Return instance of \PlacetoPay\WC_Gateway_PlacetoPay
  *
- * @return \PlacetoPay\WC_Gateway_PlacetoPay
+ * @return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay
  */
 function wc_gateway_placetopay()
 {
@@ -43,8 +43,9 @@ function wc_gateway_placetopay()
 
         $_template = $template;
 
-        if (!$templatePath)
+        if (!$templatePath) {
             $templatePath = $woocommerce->template_url;
+        }
 
         $pluginPath = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/';
 
@@ -54,17 +55,19 @@ function wc_gateway_placetopay()
             $templateName
         ]);
 
-        if (!$template && file_exists($pluginPath . $templateName))
+        if (!$template && file_exists($pluginPath . $templateName)) {
             $template = $pluginPath . $templateName;
+        }
 
-        if (!$template)
+        if (!$template) {
             $template = $_template;
+        }
 
         return $template;
     }
 
     require_once(__DIR__ . '/vendor/autoload.php');
-    return \PlacetoPay\WC_Gateway_PlacetoPay::getInstance('2.11.6', __FILE__);
+    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance('2.11.6', __FILE__);
 }
 
 add_action('plugins_loaded', 'wc_gateway_placetopay', 0);
