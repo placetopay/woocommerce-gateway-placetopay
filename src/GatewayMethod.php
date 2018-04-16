@@ -199,7 +199,7 @@ class GatewayMethod extends WC_Payment_Gateway
             'completed' => __('Approved', 'woocommerce-gateway-placetopay'),
             //Order fulfilled and complete – requires no further action
             'refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
-            //Refunded – Refunded by an admin – no further action required
+            'cancelled' => __('Cancelled', 'woocommerce-gateway-placetopay'),
             'failed' => __('Failed', 'woocommerce-gateway-placetopay'),
             //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
         ];
@@ -577,7 +577,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
                 if ($status === $sessionStatusInstance::ST_REJECTED) {
                     $order->update_status(
-                        'failed',
+                        'cancelled',
                         sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status)
                     );
 
