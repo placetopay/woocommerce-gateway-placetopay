@@ -58,12 +58,14 @@ return [
     'country' => [
         'title' => __('Country', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
+        'class' => 'wc-enhanced-select',
         'default' => get_option('woocommerce_default_country'),
         'options' => $this->getCountryList(),
     ],
     'enviroment_mode' => [
         'title' => __('Mode', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
+        'class' => 'wc-enhanced-select',
         'default' => 'dev',
         'options' => $this->getEnvironments(),
         'description' => __('Enable the environment PlacetoPay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
@@ -72,6 +74,7 @@ return [
     'redirect_page_id' => [
         'title' => __('Return Page', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
+        'class' => 'wc-enhanced-select',
         'options' => $this->getPages(),
         'description' => __('URL of success page', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
@@ -86,6 +89,7 @@ return [
     'expiration_time_minutes' => [
         'title' => __('Expiration time session', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
+        'class' => 'wc-enhanced-select',
         'default' => 2880,
         'options' => $this->getListOptionExpirationMinutes(),
         'description' => __('Expiration of the session for payment in PlacetoPay', 'woocommerce-gateway-placetopay'),
@@ -94,14 +98,14 @@ return [
     'taxes_others' => [
         'title' => __('Select taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
-        'class' => 'select2',
+        'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
         'description' => __('Select the taxes that are included as VAT or other types of taxes for PlacetoPay', 'woocommerce-gateway-placetopay'),
     ],
     'taxes_ice' => [
         'title' => __('Select ICE taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
-        'class' => 'select2',
+        'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
         'description' => __('Select the taxes that are included as an ICE tax rate for PlacetoPay', 'woocommerce-gateway-placetopay'),
     ],
