@@ -92,14 +92,14 @@ return [
         'desc_tip' => true
     ],
     'taxes_others' => [
-        'title' => __('Select taxes to included', 'woocommerce-gateway-placetopay'),
+        'title' => __('Select taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
         'class' => 'select2',
         'options' => $this->getListTaxes(),
         'description' => __('Select the taxes that are included as VAT or other types of taxes for PlacetoPay', 'woocommerce-gateway-placetopay'),
     ],
     'taxes_ice' => [
-        'title' => __('Select ICE taxes to included', 'woocommerce-gateway-placetopay'),
+        'title' => __('Select ICE taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
         'class' => 'select2',
         'options' => $this->getListTaxes(),
