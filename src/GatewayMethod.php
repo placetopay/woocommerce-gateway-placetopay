@@ -391,7 +391,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
             if (in_array($taxData['rate_id'], $iceType)) {
                 $taxForP2P[] = [
-                    'kind' => 'exciseDuty',
+//                    'kind' => 'exciseDuty',
+                    'kind' => 'ice',
                     'amount' => floatval($taxData['tax_total']),
                 ];
             }
