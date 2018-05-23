@@ -101,6 +101,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $msg_cancel;
     private $debug;
     private $uri_service;
+    private $taxes;
 
 
     /**
@@ -140,6 +141,11 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->tran_key = $this->get_option('tran_key');
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
+
+        $this->taxes = [
+            'taxes_others' => is_array($this->get_option('taxes_others')) ? $this->get_option('taxes_others') : [],
+            'taxes_ice' => is_array($this->get_option('taxes_ice')) ? $this->get_option('taxes_ice') : [],
+        ];
 
         $this->merchant_phone = $this->get_option('merchant_phone');
         $this->merchant_email = $this->get_option('merchant_email');
@@ -319,6 +325,12 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
         ];
 
+        $orderTaxes = $order->get_taxes();
+
+        if (count($orderTaxes) > 0) {
+            $req['payment']['amount']['taxes'] = $this->getOrderTaxes($orderTaxes);
+        }
+
         try {
             $res = $this->placetopay->request($req);
 
@@ -354,6 +366,37 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return null;
+    }
+
+    /**
+     * @param \WC_Order_Item_Tax[] $taxes
+     * @return array
+     */
+    public function getOrderTaxes($taxes)
+    {
+        $valueAddedTaxType = $this->taxes['taxes_others'];
+        $iceType = $this->taxes['taxes_ice'];
+        $taxForP2P = [];
+
+        foreach ($taxes as $tax) {
+            $taxData = $tax->get_data();
+
+            if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
+                $taxForP2P[] = [
+                    'kind' => 'valueAddedTax',
+                    'amount' => floatval($taxData['tax_total']),
+                ];
+            }
+
+            if (in_array($taxData['rate_id'], $iceType)) {
+                $taxForP2P[] = [
+                    'kind' => 'exciseDuty',
+                    'amount' => floatval($taxData['tax_total']),
+                ];
+            }
+        }
+
+        return $taxForP2P;
     }
 
     /**
@@ -987,6 +1030,31 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return $options;
+    }
+
+    /**
+     * @return array
+     */
+    protected function getListTaxes()
+    {
+        $countries = $this->getCountryList();
+        $formatTaxItem = '%s( %s ) - %s - %s %%';
+        $taxList = ['' => __('None', 'woocommerce-gateway-placetopay')];
+
+        foreach ($countries as $countryCode => $countryName) {
+            $taxes = \WC_Tax::find_rates(['country' => $countryCode]);
+
+            foreach ($taxes as $taxId => $tax) {
+                $taxList[$taxId] = sprintf($formatTaxItem,
+                    $countryName,
+                    $countryCode,
+                    $tax['label'],
+                    $tax['rate']
+                );
+            }
+        }
+
+        return $taxList;
     }
 
     /**

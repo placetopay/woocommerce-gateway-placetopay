@@ -91,6 +91,20 @@ return [
         'description' => __('Expiration of the session for payment in PlacetoPay', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ],
+    'taxes_others' => [
+        'title' => __('Select taxes to included', 'woocommerce-gateway-placetopay'),
+        'type' => 'multiselect',
+        'class' => 'select2',
+        'options' => $this->getListTaxes(),
+        'description' => __('Select the taxes that are included as VAT or other types of taxes for PlacetoPay', 'woocommerce-gateway-placetopay'),
+    ],
+    'taxes_ice' => [
+        'title' => __('Select ICE taxes to included', 'woocommerce-gateway-placetopay'),
+        'type' => 'multiselect',
+        'class' => 'select2',
+        'options' => $this->getListTaxes(),
+        'description' => __('Select the taxes that are included as an ICE tax rate for PlacetoPay', 'woocommerce-gateway-placetopay'),
+    ],
     'merchant_phone' => [
         'title' => __('Phone number', 'woocommerce-gateway-placetopay'),
         'description' => __('Provide the phone number used for the inquiries or support in your shop',
