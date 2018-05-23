@@ -6,6 +6,7 @@ if (!defined('ABSPATH')) {
 }
 
 use Dnetix\Redirection\Entities\Transaction;
+use Dnetix\Redirection\Exceptions\PlacetoPayException;
 use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
@@ -1063,11 +1064,16 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     private function initPlacetoPay()
     {
-        $this->placetopay = new PlacetoPay([
-            'login' => $this->login,
-            'tranKey' => $this->tran_key,
-            'url' => $this->uri_service,
-        ]);
+        try {
+            $this->placetopay = new PlacetoPay([
+                'login' => $this->login,
+                'tranKey' => $this->tran_key,
+                'url' => $this->uri_service,
+            ]);
+
+        } catch (PlacetoPayException $ex) {
+            $this->logger($ex->getMessage());
+        }
     }
 
     /**
