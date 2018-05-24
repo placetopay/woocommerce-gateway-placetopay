@@ -9,6 +9,9 @@ up:
 down:
 	docker-compose down
 
+rebuild: down
+	docker-compose up -d --build
+
 bash:
 	docker exec -it $(CONTAINER_WP) bash
 
