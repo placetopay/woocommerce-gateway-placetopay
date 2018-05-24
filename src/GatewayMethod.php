@@ -173,6 +173,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($this->wooCommerceVersionCompare('2.0.0')) {
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [&$this, 'process_admin_options']);
+
             return;
         }
 
@@ -374,8 +375,8 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function getOrderTaxes($taxes)
     {
-        $valueAddedTaxType = $this->taxes['taxes_others'];
-        $iceType = $this->taxes['taxes_ice'];
+        $valueAddedTaxType = array_map('intval', $this->taxes['taxes_others']);
+        $iceType = array_map('intval', $this->taxes['taxes_ice']);
         $taxForP2P = [];
 
         foreach ($taxes as $tax) {
@@ -1046,7 +1047,7 @@ class GatewayMethod extends WC_Payment_Gateway
             $taxes = \WC_Tax::find_rates(['country' => $countryCode]);
 
             foreach ($taxes as $taxId => $tax) {
-                $taxList[$taxId] = sprintf($formatTaxItem,
+                $taxList[$taxId . '_'] = sprintf($formatTaxItem,
                     $countryName,
                     $countryCode,
                     $tax['label'],
