@@ -100,14 +100,16 @@ return [
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as VAT or other types of taxes for PlacetoPay', 'woocommerce-gateway-placetopay'),
+        'description' => __('Select the taxes that are included as VAT or other types of taxes for PlacetoPay',
+            'woocommerce-gateway-placetopay'),
     ],
     'taxes_ice' => [
         'title' => __('Select ICE taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as an ICE tax rate for PlacetoPay', 'woocommerce-gateway-placetopay'),
+        'description' => __('Select the taxes that are included as an ICE tax rate for PlacetoPay',
+            'woocommerce-gateway-placetopay'),
     ],
     'merchant_phone' => [
         'title' => __('Phone number', 'woocommerce-gateway-placetopay'),

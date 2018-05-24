@@ -144,8 +144,8 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->form_method = $this->get_option('form_method');
 
         $this->taxes = [
-            'taxes_others' => is_array($this->get_option('taxes_others')) ? $this->get_option('taxes_others') : [],
-            'taxes_ice' => is_array($this->get_option('taxes_ice')) ? $this->get_option('taxes_ice') : [],
+            'taxes_others' => $this->get_option('taxes_others', []),
+            'taxes_ice' => $this->get_option('taxes_ice', []),
         ];
 
         $this->merchant_phone = $this->get_option('merchant_phone');
@@ -186,7 +186,6 @@ class GatewayMethod extends WC_Payment_Gateway
     public function initFormFields()
     {
         $this->form_fields = include(__DIR__ . '/config/form-fields.php');
-//        $this->init_form_fields();
         $this->init_settings();
     }
 
@@ -1041,7 +1040,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $countries = $this->getCountryList();
         $formatTaxItem = '%s( %s ) - %s - %s %%';
-        $taxList = ['' => __('None', 'woocommerce-gateway-placetopay')];
+        $taxList = [];
 
         foreach ($countries as $countryCode => $countryName) {
             $taxes = \WC_Tax::find_rates(['country' => $countryCode]);
