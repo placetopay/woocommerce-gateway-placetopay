@@ -103,7 +103,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $debug;
     private $uri_service;
     private $taxes;
-
+    private $allow_to_pay_with_pending_orders;
 
     /**
      * GatewayMethod constructor.
@@ -142,6 +142,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->tran_key = $this->get_option('tran_key');
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
+        $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
 
         $this->taxes = [
             'taxes_others' => $this->get_option('taxes_others', []),
@@ -712,55 +713,29 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutMessage()
     {
-        $userId = get_current_user_id();
+        $order = $this->getLastPendingOrder();
 
-        if ($userId) {
-            // Getting the last client's order to view if he has one pending
-            $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
-                'numberposts' => 5,
-                'limit' => 5,
-                'meta_key' => '_customer_user',
-                'meta_value' => $userId,
-                'customer' => $userId,
-                'status' => [
-                    'wc-pending',
-                    'wc-on-hold',
-                ],
-                'shop_order_status' => 'on-hold'
-            ]));
+        if (!$order) {
+            return;
+        }
 
-            if ($customerOrders) {
-                foreach ($customerOrders as $_order) {
-                    $order = new WC_Order($_order);
+        $authCode = get_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, true);
 
-                    if (!self::isPendingStatusOrder($order->get_id())) {
-                        continue;
-                    }
-
-                    if ($order->get_status() == 'pending' || $order->get_status() == 'on-hold') {
-                        $authCode = get_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, true);
-
-                        $message = sprintf(
-                            __('At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
+        $message = sprintf(
+            __('At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
                             please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
                             state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: \'%s\'',
-                                'woocommerce-gateway-placetopay'),
-                            ( string )$order->get_id(),
-                            $this->merchant_phone,
-                            $this->merchant_email,
-                            ($authCode == '' ? '' : sprintf(__('CUS/Authorization',
-                                    'woocommerce-gateway-placetopay') . ' #%s', $authCode))
-                        );
+                'woocommerce-gateway-placetopay'),
+            ( string )$order->get_id(),
+            $this->merchant_phone,
+            $this->merchant_email,
+            ($authCode == '' ? '' : sprintf(__('CUS/Authorization',
+                    'woocommerce-gateway-placetopay') . ' #%s', $authCode))
+        );
 
-                        echo "<div class='shop_table order_details'>
-                            <p scope='row'>{$message}</p>
-                        </div>";
-
-                        return;
-                    }
-                }
-            }
-        }
+        echo "<div class='shop_table order_details'>
+                <p scope='row'>{$message}</p>
+            </div>";
     }
 
     /**
@@ -1096,6 +1071,13 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $isValid = true;
 
+        if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
+            wc_add_notice(__('<strong>Pending order</strong>, no se ha podido continuar con el pago por qué se ha encontrado un pedido en estado pendiente',
+                'woocommerce-gateway-placetopay'), 'error');
+
+            $isValid = false;
+        }
+
         if (preg_match(PersonValidator::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
             wc_add_notice(__('<strong>First Name</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'), 'error');
@@ -1220,5 +1202,47 @@ class GatewayMethod extends WC_Payment_Gateway
             $this->settings['enviroment_mode'] = Environment::DEV;
             $this->uri_service = $environmentByCountry[Environment::DEV];
         }
+    }
+
+    /**
+     * @return null|WC_Order
+     */
+    private function getLastPendingOrder()
+    {
+        $userId = get_current_user_id();
+
+        if (!$userId) {
+            return null;
+        }
+
+        // Getting the last client's order to view if he has one pending
+        $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
+            'numberposts' => 5,
+            'limit' => 5,
+            'meta_key' => '_customer_user',
+            'meta_value' => $userId,
+            'customer' => $userId,
+            'status' => [
+                'wc-pending',
+                'wc-on-hold',
+            ],
+            'shop_order_status' => 'on-hold'
+        ]));
+
+        if ($customerOrders) {
+            foreach ($customerOrders as $_order) {
+                $order = new WC_Order($_order);
+
+                if (!self::isPendingStatusOrder($order->get_id())) {
+                    continue;
+                }
+
+                if ($order->get_status() == 'pending' || $order->get_status() == 'on-hold') {
+                    return $order;
+                }
+            }
+        }
+
+        return null;
     }
 }

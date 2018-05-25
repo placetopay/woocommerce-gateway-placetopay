@@ -26,6 +26,14 @@ return [
         'label' => __('Enable to preload the buyer\'s information on the PlacetoPay platform.',
             'woocommerce-gateway-placetopay'),
         'default' => 'yes',
+        'description' => __('Muestra un mensaje al momento de pagar si el usuario tienen una orden pendiente', 'woocommerce-gateway-placetopay'),
+    ],
+    'allow_to_pay_with_pending_orders' => [
+        'title' => __('Allow to pay with pending orders', 'woocommerce-gateway-placetopay'),
+        'type' => 'checkbox',
+        'label' => __('Si esta seleccionada, le permitirá al usuario pagar inclusive si este tiene ordenes en estado pendiente.',
+            'woocommerce-gateway-placetopay'),
+        'default' => 'yes',
     ],
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
