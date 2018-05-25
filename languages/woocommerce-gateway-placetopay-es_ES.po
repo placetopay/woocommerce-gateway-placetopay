@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
-"POT-Creation-Date: 2018-05-23 16:18-0500\n"
-"PO-Revision-Date: 2018-05-23 16:19-0500\n"
+"POT-Creation-Date: 2018-05-25 12:37-0500\n"
+"PO-Revision-Date: 2018-05-25 12:41-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
@@ -17,47 +17,47 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: tmp\n"
 
-#: src/GatewayMethod.php:124 src/config/form-fields.php:33
+#: src/GatewayMethod.php:125 src/config/form-fields.php:42
 msgid "PlacetoPay"
 msgstr "PlacetoPay"
 
-#: src/GatewayMethod.php:125
+#: src/GatewayMethod.php:126
 msgid "Sells online safely and agile"
 msgstr "Vende en línea de forma segura y ágil"
 
-#: src/GatewayMethod.php:199 src/GatewayMethod.php:203
+#: src/GatewayMethod.php:201 src/GatewayMethod.php:205
 msgid "Pending"
 msgstr "Pendiente"
 
-#: src/GatewayMethod.php:201 src/GatewayMethod.php:205
+#: src/GatewayMethod.php:203 src/GatewayMethod.php:207
 msgid "Approved"
 msgstr "Aprobada"
 
-#: src/GatewayMethod.php:207 woocommerce/myaccount/orders.php:88
+#: src/GatewayMethod.php:209 woocommerce/myaccount/orders.php:88
 msgid "Rejected"
 msgstr "Rechazada"
 
-#: src/GatewayMethod.php:208
+#: src/GatewayMethod.php:210
 msgid "Cancelled"
 msgstr "Cancelada"
 
-#: src/GatewayMethod.php:209
+#: src/GatewayMethod.php:211
 msgid "Failed"
 msgstr "Fallida"
 
-#: src/GatewayMethod.php:360
+#: src/GatewayMethod.php:362
 msgid "Payment error: "
 msgstr "Error en el pago: "
 
-#: src/GatewayMethod.php:365
+#: src/GatewayMethod.php:367
 msgid "Payment error: Server error internal."
 msgstr "Error de pago: error del servidor interno."
 
-#: src/GatewayMethod.php:428
+#: src/GatewayMethod.php:431
 msgid "Redirecting to PlacetoPay"
 msgstr "Redireccionando a PlacetoPay"
 
-#: src/GatewayMethod.php:431
+#: src/GatewayMethod.php:434
 msgid ""
 "We are now redirecting you to PlacetoPay to make payment, if you are not "
 "redirected please press the bottom."
@@ -65,56 +65,56 @@ msgstr ""
 "Ahora estamos redirigiéndolo a PlacetoPay para hacer el pago, si no es "
 "redirigido por favor presione la parte inferior."
 
-#: src/GatewayMethod.php:478
+#: src/GatewayMethod.php:481
 msgid "PlacetoPay Request Failure"
 msgstr "Fallo la petición a PlacetoPay"
 
-#: src/GatewayMethod.php:499
+#: src/GatewayMethod.php:502
 msgid ""
 "There was an error on the request. please contact the website administrator."
 msgstr ""
 "Ha ocurrido un error en la solicitud. Por favor comuniquese con el "
 "administrador del sitio web"
 
-#: src/GatewayMethod.php:578
+#: src/GatewayMethod.php:581
 #, php-format
 msgid "Validation error: PlacetoPay amounts do not match (gross %s)."
 msgstr ""
 "Error de validación: La cantidad pagada en PlacetoPay  no coincide (Cantidad "
 "%s)."
 
-#: src/GatewayMethod.php:587
+#: src/GatewayMethod.php:590
 msgid "Payer PlacetoPay email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/GatewayMethod.php:592
+#: src/GatewayMethod.php:595
 msgid "Payment type"
 msgstr "Método de pago usado"
 
-#: src/GatewayMethod.php:600
+#: src/GatewayMethod.php:603
 msgid "PlacetoPay payment approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/GatewayMethod.php:611
+#: src/GatewayMethod.php:614
 #, php-format
 msgid "Payment pending: %s"
 msgstr "Pago pendiente: %s"
 
-#: src/GatewayMethod.php:624 src/GatewayMethod.php:652
-#: src/config/form-fields.php:147
+#: src/GatewayMethod.php:627 src/GatewayMethod.php:655
+#: src/config/form-fields.php:162
 msgid "Payment rejected via PlacetoPay."
 msgstr "Pago rechazado por PlacetoPay."
 
-#: src/GatewayMethod.php:638
+#: src/GatewayMethod.php:641
 #, php-format
 msgid "Payment rejected via PlacetoPay. Error type: %s."
 msgstr "Pago rechazado por PlacetoPay. Error: %s."
 
-#: src/GatewayMethod.php:700
+#: src/GatewayMethod.php:703
 msgid "Error: Order Key does not match invoice."
 msgstr "Error: La llave de la orden no coincide."
 
-#: src/GatewayMethod.php:742
+#: src/GatewayMethod.php:725
 #, php-format
 msgid ""
 "At this time your order #%s display a checkout transaction which is pending "
@@ -137,96 +137,100 @@ msgstr ""
 "cliente %s o enviar un correo electrónico a %s\n"
 "                            y preguntar por el estado de la transacción: %s"
 
-#: src/GatewayMethod.php:749
+#: src/GatewayMethod.php:732
 msgid "CUS/Authorization"
 msgstr "CUS/Autorización"
 
-#: src/GatewayMethod.php:860
+#: src/GatewayMethod.php:837
 #, php-format
 msgid "Item #%s stock incremented from %s to %s."
 msgstr "Item #%s incremento de %s a %s."
 
-#: src/GatewayMethod.php:962
+#: src/GatewayMethod.php:939
 msgid "Default Page"
 msgstr "Pagina por defecto"
 
-#: src/GatewayMethod.php:969
+#: src/GatewayMethod.php:946
 msgid "My Orders"
 msgstr "Mis ordenes"
 
-#: src/GatewayMethod.php:977
+#: src/GatewayMethod.php:954
 msgid "Colombia"
 msgstr "Colombia"
 
-#: src/GatewayMethod.php:978
+#: src/GatewayMethod.php:955
 msgid "Ecuador"
 msgstr "Ecuador"
 
-#: src/GatewayMethod.php:990
+#: src/GatewayMethod.php:967
 msgid "Development"
 msgstr "Desarrollo"
 
-#: src/GatewayMethod.php:991
+#: src/GatewayMethod.php:968
 msgid "Test"
 msgstr "Pruebas"
 
-#: src/GatewayMethod.php:992
+#: src/GatewayMethod.php:969
 msgid "Production"
 msgstr "Producción"
 
-#: src/GatewayMethod.php:1009
+#: src/GatewayMethod.php:986
 msgid "Minutes"
 msgstr "Minutos"
 
-#: src/GatewayMethod.php:1013
+#: src/GatewayMethod.php:990
 msgid "Hour(s)"
 msgstr "Hora(s)"
 
-#: src/GatewayMethod.php:1017
+#: src/GatewayMethod.php:994
 msgid "Day(s)"
 msgstr "Día(s)"
 
-#: src/GatewayMethod.php:1022
+#: src/GatewayMethod.php:999
 msgid "Week(s)"
 msgstr "Semana(s)"
 
-#: src/GatewayMethod.php:1027
+#: src/GatewayMethod.php:1004
 msgid "Month(s)"
 msgstr "Mese(s)"
 
-#: src/GatewayMethod.php:1042
-msgid "None"
-msgstr "Ninguno"
+#: src/GatewayMethod.php:1075
+msgid ""
+"<strong>Pending order</strong>, the payment could not be continued because a "
+"pending order has been found."
+msgstr ""
+"<strong>Pedido pendiente</ strong>, el pago no pudo continuar porque se "
+"encontró una orden pendiente."
 
-#: src/GatewayMethod.php:1093
+#: src/GatewayMethod.php:1082
 msgid "<strong>First Name</strong>, does not have a valid format"
 msgstr "El <strong>nombre</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1100
+#: src/GatewayMethod.php:1089
 msgid "<strong>Last Name</strong>, does not have a valid format"
 msgstr "El <strong>apellido</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1107
+#: src/GatewayMethod.php:1096
 msgid "<strong>Country</strong>, is not valid."
 msgstr "El <strong>País</strong>, no es válido"
 
-#: src/GatewayMethod.php:1114
+#: src/GatewayMethod.php:1103
 msgid "<strong>State / Country</strong>, does not have a valid format"
 msgstr "El <strong>Departamento</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1121
+#: src/GatewayMethod.php:1110
 msgid "<strong>Town / City</strong>, does not have a valid format"
 msgstr "La <strong>Ciudad</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1128
+#: src/GatewayMethod.php:1117
 msgid "<strong>Phone</strong>, does not have a valid format"
 msgstr "El <strong>Teléfono</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1135
+#: src/GatewayMethod.php:1124
 msgid "<strong>Email</strong>, does not have a valid format"
 msgstr "El <strong>Correo</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1164
+#: src/GatewayMethod.php:1153
 #, php-format
 msgid "Order %s - Products: %s"
 msgstr "Pedido %s - Productos: %s"
@@ -258,50 +262,70 @@ msgstr ""
 "PlacetoPay."
 
 #: src/config/form-fields.php:31
+msgid "Allow to pay with pending orders"
+msgstr "Permitir pagar con órdenes pendientes"
+
+#: src/config/form-fields.php:33
+msgid ""
+"If it is selected, it will allow the user to pay even if he has orders in "
+"pending status."
+msgstr ""
+"Si se selecciona, le permitirá al usuario pagar incluso si tiene pedidos en "
+"estado pendiente."
+
+#: src/config/form-fields.php:36
+msgid ""
+"If it is disabled, it displays a message when paying if the user has a "
+"pending order"
+msgstr ""
+"Si está deshabilitado, muestra un mensaje al pagar si el usuario tiene una "
+"orden pendiente"
+
+#: src/config/form-fields.php:40
 msgid "Title:"
 msgstr "Título:"
 
-#: src/config/form-fields.php:34
+#: src/config/form-fields.php:43
 msgid "This controls the title which the user sees during checkout."
 msgstr "Esto controla el nombre del método de pago que el usuario ve al pagar."
 
-#: src/config/form-fields.php:39
+#: src/config/form-fields.php:48
 msgid "Description:"
 msgstr "Descripción:"
 
-#: src/config/form-fields.php:41
+#: src/config/form-fields.php:50
 msgid "Pay securely through PlacetoPay."
 msgstr "Pague seguro a través de PlacetoPay."
 
-#: src/config/form-fields.php:42
+#: src/config/form-fields.php:51
 msgid "This controls the description which the user sees during checkout."
 msgstr "Esto controla la descripción que el usuario ve al pagar."
 
-#: src/config/form-fields.php:47
+#: src/config/form-fields.php:56
 msgid "Login"
 msgstr "Login"
 
-#: src/config/form-fields.php:49
+#: src/config/form-fields.php:58
 msgid "Given to login by PlacetoPay"
 msgstr "Identificación del vendedor proporcionada por PlacetoPay"
 
-#: src/config/form-fields.php:53
+#: src/config/form-fields.php:62
 msgid "Transactional Key"
 msgstr "Clave transaccional"
 
-#: src/config/form-fields.php:55
+#: src/config/form-fields.php:64
 msgid "Given to transactional key by PlacetoPay"
 msgstr "Clave transaccional del vendedor proporcionada por PlacetoPay"
 
-#: src/config/form-fields.php:59
+#: src/config/form-fields.php:68
 msgid "Country"
 msgstr "País"
 
-#: src/config/form-fields.php:65
+#: src/config/form-fields.php:75
 msgid "Mode"
 msgstr "Ambiente"
 
-#: src/config/form-fields.php:69
+#: src/config/form-fields.php:80
 msgid ""
 "Enable the environment PlacetoPay for testing or production transactions."
 "<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is activated</"
@@ -311,19 +335,19 @@ msgstr ""
 "producción. <br /> Nota: <b> Por defecto es \"Prueba de desarrollo\", si "
 "WP_DEBUG está activado </ b>"
 
-#: src/config/form-fields.php:73
+#: src/config/form-fields.php:84
 msgid "Return Page"
 msgstr "Pagina de regreso"
 
-#: src/config/form-fields.php:76
+#: src/config/form-fields.php:88
 msgid "URL of success page"
 msgstr "Dirección de la pagina de retorno"
 
-#: src/config/form-fields.php:80
+#: src/config/form-fields.php:92
 msgid "Notification url. EndPoint (WP >= 4.6)"
 msgstr "Url de notificación. (WP >= 4.6)"
 
-#: src/config/form-fields.php:83
+#: src/config/form-fields.php:95
 msgid ""
 "Url of notification where PlacetoPay will send a notification of a "
 "transaction for Woocommerce.<br />If your Wordpress not support REST-API, "
@@ -333,19 +357,19 @@ msgstr ""
 "a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
 "API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
-#: src/config/form-fields.php:87
+#: src/config/form-fields.php:99
 msgid "Expiration time session"
 msgstr "Tiempo de expiración de la sesión"
 
-#: src/config/form-fields.php:91
+#: src/config/form-fields.php:104
 msgid "Expiration of the session for payment in PlacetoPay"
 msgstr "Expiración de la sesión para el pago en PlacetoPay"
 
-#: src/config/form-fields.php:95
+#: src/config/form-fields.php:108
 msgid "Select taxes to include"
 msgstr "Seleccione impuestos para incluir"
 
-#: src/config/form-fields.php:99
+#: src/config/form-fields.php:112
 msgid ""
 "Select the taxes that are included as VAT or other types of taxes for "
 "PlacetoPay"
@@ -353,58 +377,58 @@ msgstr ""
 "Seleccione los impuestos que se incluyen como el IVA u otros tipos de "
 "impuestos para PlacetoPay"
 
-#: src/config/form-fields.php:102
+#: src/config/form-fields.php:116
 msgid "Select ICE taxes to include"
 msgstr "Seleccione impuestos ICE para incluir"
 
-#: src/config/form-fields.php:106
+#: src/config/form-fields.php:120
 msgid "Select the taxes that are included as an ICE tax rate for PlacetoPay"
 msgstr ""
 "Selecciona los impuestos que se incluyen como tipo de impuesto ICE para "
 "PlacetoPay"
 
-#: src/config/form-fields.php:109
+#: src/config/form-fields.php:124
 msgid "Phone number"
 msgstr "Número de teléfono"
 
-#: src/config/form-fields.php:110
+#: src/config/form-fields.php:125
 msgid "Provide the phone number used for the inquiries or support in your shop"
 msgstr ""
 "Proporcione el número de teléfono usado para consultas o soporte de su tienda"
 
-#: src/config/form-fields.php:117
+#: src/config/form-fields.php:132
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: src/config/form-fields.php:118
+#: src/config/form-fields.php:133
 msgid "Provide contact email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/config/form-fields.php:124 src/config/form-fields.php:127
+#: src/config/form-fields.php:139 src/config/form-fields.php:142
 msgid "Message for approved transaction"
 msgstr "Mensaje para el pago aprobado por PlacetoPay"
 
-#: src/config/form-fields.php:126
+#: src/config/form-fields.php:141
 msgid "PlacetoPay Payment Approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/config/form-fields.php:131 src/config/form-fields.php:134
+#: src/config/form-fields.php:146 src/config/form-fields.php:149
 msgid "Message for pending transaction"
 msgstr "Mensaje para transacción pendiente en PlacetoPay"
 
-#: src/config/form-fields.php:133
+#: src/config/form-fields.php:148
 msgid "Payment pending"
 msgstr "Pago pendiente"
 
-#: src/config/form-fields.php:138 src/config/form-fields.php:141
+#: src/config/form-fields.php:153 src/config/form-fields.php:156
 msgid "Message for cancel transaction"
 msgstr "Mensaje para un transacción cancelada"
 
-#: src/config/form-fields.php:140
+#: src/config/form-fields.php:155
 msgid "Transaction Canceled."
 msgstr "Transacción cancelada."
 
-#: src/config/form-fields.php:145 src/config/form-fields.php:148
+#: src/config/form-fields.php:160 src/config/form-fields.php:163
 msgid "Message for rejected transaction"
 msgstr "Mensaje para una transacción rechazada."
 
@@ -514,6 +538,9 @@ msgstr "Ir a la tienda"
 #: woocommerce/myaccount/orders.php:171
 msgid "No order has been made yet."
 msgstr "No hay ordenes creadas todavia."
+
+#~ msgid "None"
+#~ msgstr "Ninguno"
 
 #~ msgid "Payment error:"
 #~ msgstr "Error al pagar:"

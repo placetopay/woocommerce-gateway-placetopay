@@ -1072,7 +1072,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $isValid = true;
 
         if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
-            wc_add_notice(__('<strong>Pending order</strong>, no se ha podido continuar con el pago por qué se ha encontrado un pedido en estado pendiente',
+            wc_add_notice(__('<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
                 'woocommerce-gateway-placetopay'), 'error');
 
             $isValid = false;
