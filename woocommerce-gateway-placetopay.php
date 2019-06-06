@@ -5,8 +5,8 @@
  * Description: Adds Place to Pay Payment Gateway to Woocommerce e-commerce plugin
  * Author:      PlacetoPay
  * Author URI:  https://www.placetopay.com/
- * Developer:   Cristian Salazar
- * Version:     2.13.1
+ * Developer:   PlacetoPay
+ * Version:     2.14.0
  *
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
@@ -67,7 +67,7 @@ function wc_gateway_placetopay()
     }
 
     require_once(__DIR__ . '/vendor/autoload.php');
-    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance('2.13.1', __FILE__);
+    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance('2.14.0', __FILE__);
 }
 
 add_action('plugins_loaded', 'wc_gateway_placetopay', 0);
