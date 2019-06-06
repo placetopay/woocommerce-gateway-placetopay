@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
 "POT-Creation-Date: 2018-05-25 12:37-0500\n"
-"PO-Revision-Date: 2018-05-25 12:41-0500\n"
+"PO-Revision-Date: 2019-06-05 16:57-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.8.7.1\n"
+"X-Generator: Poedit 2.0.6\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-KeywordsList: __;_e;_n\n"
@@ -282,50 +282,60 @@ msgstr ""
 "orden pendiente"
 
 #: src/config/form-fields.php:40
+msgid "Allow partial payments"
+msgstr "Permitir pagos parciales"
+
+#: src/config/form-fields.php:42
+msgid ""
+"If it is selected, allows the user to pay their orders in partial payments."
+msgstr ""
+"Si se selecciona, permite al usuario pagar sus pedidos en  pagos parciales."
+
+#: src/config/form-fields.php:47
 msgid "Title:"
 msgstr "Título:"
 
-#: src/config/form-fields.php:43
+#: src/config/form-fields.php:50
 msgid "This controls the title which the user sees during checkout."
 msgstr "Esto controla el nombre del método de pago que el usuario ve al pagar."
 
-#: src/config/form-fields.php:48
+#: src/config/form-fields.php:55
 msgid "Description:"
 msgstr "Descripción:"
 
-#: src/config/form-fields.php:50
+#: src/config/form-fields.php:57
 msgid "Pay securely through PlacetoPay."
 msgstr "Pague seguro a través de PlacetoPay."
 
-#: src/config/form-fields.php:51
+#: src/config/form-fields.php:58
 msgid "This controls the description which the user sees during checkout."
 msgstr "Esto controla la descripción que el usuario ve al pagar."
 
-#: src/config/form-fields.php:56
+#: src/config/form-fields.php:63
 msgid "Login"
 msgstr "Login"
 
-#: src/config/form-fields.php:58
+#: src/config/form-fields.php:65
 msgid "Given to login by PlacetoPay"
 msgstr "Identificación del vendedor proporcionada por PlacetoPay"
 
-#: src/config/form-fields.php:62
+#: src/config/form-fields.php:69
 msgid "Transactional Key"
 msgstr "Clave transaccional"
 
-#: src/config/form-fields.php:64
+#: src/config/form-fields.php:71
 msgid "Given to transactional key by PlacetoPay"
 msgstr "Clave transaccional del vendedor proporcionada por PlacetoPay"
 
-#: src/config/form-fields.php:68
+#: src/config/form-fields.php:75
 msgid "Country"
 msgstr "País"
 
-#: src/config/form-fields.php:75
+#: src/config/form-fields.php:82
 msgid "Mode"
 msgstr "Ambiente"
 
-#: src/config/form-fields.php:80
+#: src/config/form-fields.php:87
 msgid ""
 "Enable the environment PlacetoPay for testing or production transactions."
 "<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is activated</"
@@ -335,19 +345,19 @@ msgstr ""
 "producción. <br /> Nota: <b> Por defecto es \"Prueba de desarrollo\", si "
 "WP_DEBUG está activado </ b>"
 
-#: src/config/form-fields.php:84
+#: src/config/form-fields.php:91
 msgid "Return Page"
 msgstr "Pagina de regreso"
 
-#: src/config/form-fields.php:88
+#: src/config/form-fields.php:95
 msgid "URL of success page"
 msgstr "Dirección de la pagina de retorno"
 
-#: src/config/form-fields.php:92
+#: src/config/form-fields.php:99
 msgid "Notification url. EndPoint (WP >= 4.6)"
 msgstr "Url de notificación. (WP >= 4.6)"
 
-#: src/config/form-fields.php:95
+#: src/config/form-fields.php:102
 msgid ""
 "Url of notification where PlacetoPay will send a notification of a "
 "transaction for Woocommerce.<br />If your Wordpress not support REST-API, "
@@ -357,19 +367,19 @@ msgstr ""
 "a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
 "API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
-#: src/config/form-fields.php:99
+#: src/config/form-fields.php:106
 msgid "Expiration time session"
 msgstr "Tiempo de expiración de la sesión"
 
-#: src/config/form-fields.php:104
+#: src/config/form-fields.php:111
 msgid "Expiration of the session for payment in PlacetoPay"
 msgstr "Expiración de la sesión para el pago en PlacetoPay"
 
-#: src/config/form-fields.php:108
+#: src/config/form-fields.php:115
 msgid "Select taxes to include"
 msgstr "Seleccione impuestos para incluir"
 
-#: src/config/form-fields.php:112
+#: src/config/form-fields.php:119
 msgid ""
 "Select the taxes that are included as VAT or other types of taxes for "
 "PlacetoPay"
@@ -377,58 +387,58 @@ msgstr ""
 "Seleccione los impuestos que se incluyen como el IVA u otros tipos de "
 "impuestos para PlacetoPay"
 
-#: src/config/form-fields.php:116
+#: src/config/form-fields.php:123
 msgid "Select ICE taxes to include"
 msgstr "Seleccione impuestos ICE para incluir"
 
-#: src/config/form-fields.php:120
+#: src/config/form-fields.php:127
 msgid "Select the taxes that are included as an ICE tax rate for PlacetoPay"
 msgstr ""
 "Selecciona los impuestos que se incluyen como tipo de impuesto ICE para "
 "PlacetoPay"
 
-#: src/config/form-fields.php:124
+#: src/config/form-fields.php:131
 msgid "Phone number"
 msgstr "Número de teléfono"
 
-#: src/config/form-fields.php:125
+#: src/config/form-fields.php:132
 msgid "Provide the phone number used for the inquiries or support in your shop"
 msgstr ""
 "Proporcione el número de teléfono usado para consultas o soporte de su tienda"
 
-#: src/config/form-fields.php:132
+#: src/config/form-fields.php:139
 msgid "Email"
 msgstr "Correo electrónico"
 
-#: src/config/form-fields.php:133
+#: src/config/form-fields.php:140
 msgid "Provide contact email"
 msgstr "Correo electrónico del comprador en PlacetoPay"
 
-#: src/config/form-fields.php:139 src/config/form-fields.php:142
+#: src/config/form-fields.php:146 src/config/form-fields.php:149
 msgid "Message for approved transaction"
 msgstr "Mensaje para el pago aprobado por PlacetoPay"
 
-#: src/config/form-fields.php:141
+#: src/config/form-fields.php:148
 msgid "PlacetoPay Payment Approved"
 msgstr "Pago aprobado por PlacetoPay"
 
-#: src/config/form-fields.php:146 src/config/form-fields.php:149
+#: src/config/form-fields.php:153 src/config/form-fields.php:156
 msgid "Message for pending transaction"
 msgstr "Mensaje para transacción pendiente en PlacetoPay"
 
-#: src/config/form-fields.php:148
+#: src/config/form-fields.php:155
 msgid "Payment pending"
 msgstr "Pago pendiente"
 
-#: src/config/form-fields.php:153 src/config/form-fields.php:156
+#: src/config/form-fields.php:160 src/config/form-fields.php:163
 msgid "Message for cancel transaction"
 msgstr "Mensaje para un transacción cancelada"
 
-#: src/config/form-fields.php:155
+#: src/config/form-fields.php:162
 msgid "Transaction Canceled."
 msgstr "Transacción cancelada."
 
-#: src/config/form-fields.php:160 src/config/form-fields.php:163
+#: src/config/form-fields.php:167 src/config/form-fields.php:170
 msgid "Message for rejected transaction"
 msgstr "Mensaje para una transacción rechazada."
 

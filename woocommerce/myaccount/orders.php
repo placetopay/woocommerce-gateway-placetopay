@@ -60,7 +60,11 @@ if ($has_orders) : ?>
 
             $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_AUTHORIZATION_CUS,
                 true);
-            $authorizationCodes = explode(',', $authorizationCodes);
+
+            if (!get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true ) == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
+                $authorizationCodes = explode(',', $authorizationCodes);
+            else
+                $authorizationCodes = [$authorizationCodes];
 
             foreach ($authorizationCodes as $code) { ?>
                 <tr class="order">
@@ -93,11 +97,23 @@ if ($has_orders) : ?>
                     <?php echo $code; ?>
                 </td>
 
-                <td class="order-total" data-title="<?php _e('Total', 'woocommerce-gateway-placetopay'); ?>">
-                    <?php echo $order->get_currency() . ' ' . sprintf(_n('%s for %s item', '%s for %s items',
-                            $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(),
-                            $item_count); ?>
-                </td>
+                <?php if ( get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true ) == 'APPROVED_PARTIAL' && $order->get_status() == 'pending' ) { ?>
+
+                    <td class="order-total" data-title="<?php _e('Total', 'woocommerce-gateway-placetopay'); ?>">
+                        <?php echo $order->get_currency() . ' ' . sprintf(_n('%s (%s) for %s item', '%s (%s) for %s items',
+                                $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(), wc_price( get_post_meta( $order->get_id(), '_order_total_partial', true ) ),
+                                $item_count); ?>
+                    </td>
+
+                <?php } else { ?>
+
+                    <td class="order-total" data-title="<?php _e('Total', 'woocommerce-gateway-placetopay'); ?>">
+                        <?php echo $order->get_currency() . ' ' . sprintf(_n('%s for %s item', '%s for %s items',
+                                $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(),
+                                $item_count); ?>
+                    </td>
+
+                <?php } ?>
 
                 <td class="order-actions">
                     <?php

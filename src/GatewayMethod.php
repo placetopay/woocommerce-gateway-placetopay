@@ -104,6 +104,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $uri_service;
     private $taxes;
     private $allow_to_pay_with_pending_orders;
+    private $allow_partial_payments;
 
     /**
      * GatewayMethod constructor.
@@ -143,6 +144,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
         $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
+        $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes" ? true : false;
 
         $this->taxes = [
             'taxes_others' => $this->get_option('taxes_others', []),
@@ -268,7 +270,7 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * Process the payment for a order
+     * Process the payment for an order
      *
      * @param int $orderId
      * @return array|null
@@ -277,6 +279,17 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
         $order = new WC_Order($orderId);
+
+        $paymentStatus = get_post_meta($orderId, self::META_STATUS, true);
+
+        if ($paymentStatus && $paymentStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
+            $processUrl = get_post_meta($order->get_id(), GatewayMethod::META_PROCESS_URL, true);
+
+            return [
+                'result' => 'success',
+                'redirect' => urldecode($processUrl)
+            ];
+        }
 
         $ref = $order->get_order_key() . '-' . time();
         $productInfo = $this->getDescriptionOrder($orderId);
@@ -316,7 +329,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => floatval($order->get_total())
-                ]
+                ],
+                'allowPartial' => $this->allow_partial_payments
             ],
             'fields' => [
                 [
@@ -551,6 +565,7 @@ class GatewayMethod extends WC_Payment_Gateway
         // We are here so lets check status and do actions
         switch ($status) {
             case $sessionStatusInstance::ST_APPROVED :
+            case $sessionStatusInstance::ST_APPROVED_PARTIAL :
             case $sessionStatusInstance::ST_PENDING :
 
                 // Check order not already completed
@@ -565,6 +580,19 @@ class GatewayMethod extends WC_Payment_Gateway
                 }
 
                 $totalAmount = $transactionInfo->request()->payment()->amount()->total();
+                update_post_meta($order->get_id(), '_order_total_partial', $totalAmount);
+
+                if ($sessionStatusInstance::ST_APPROVED_PARTIAL && $order->get_status() == 'pending' || $order->get_status() == 'on-hold') {
+                    $pendingAmount = 0;
+
+                    foreach ($transactionInfo->payment() as $transaction) {
+                        $pendingAmount += $transaction->amount()->from()->total();
+                    }
+
+                    $totalAmount = $totalAmount - $pendingAmount;
+
+                    update_post_meta($order->get_id(), '_order_total', $totalAmount);
+                }
 
                 $payerEmail = $transactionInfo->request()->payer()
                     ? $transactionInfo->request()->payer()->email()

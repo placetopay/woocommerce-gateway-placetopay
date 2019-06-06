@@ -36,6 +36,13 @@ return [
         'description' => __('If it is disabled, it displays a message when paying if the user has a pending order',
             'woocommerce-gateway-placetopay'),
     ],
+    'allow_partial_payments' => [
+        'title' => __('Allow partial payments', 'woocommerce-gateway-placetopay'),
+        'type' => 'checkbox',
+        'label' => __('If it is selected, allows the user to pay their orders in partial payments.',
+            'woocommerce-gateway-placetopay'),
+        'default' => 'yes',
+    ],
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
