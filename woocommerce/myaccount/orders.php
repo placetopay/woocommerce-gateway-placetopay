@@ -57,11 +57,10 @@ if ($has_orders) : ?>
             $order = wc_get_order($customer_order);
             $item_count = $order->get_item_count();
             $status = $statuses[$order->get_status()];
+            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_AUTHORIZATION_CUS, true);
+            $metaStatus = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true );
 
-            $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_AUTHORIZATION_CUS,
-                true);
-
-            if (!get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true ) == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
+            if (! $metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
                 $authorizationCodes = explode(',', $authorizationCodes);
             else
                 $authorizationCodes = [$authorizationCodes];
@@ -97,11 +96,11 @@ if ($has_orders) : ?>
                     <?php echo $code; ?>
                 </td>
 
-                <?php if ( get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true ) == 'APPROVED_PARTIAL' && $order->get_status() == 'pending' ) { ?>
+                <?php if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') { ?>
 
                     <td class="order-total" data-title="<?php _e('Total', 'woocommerce-gateway-placetopay'); ?>">
                         <?php echo $order->get_currency() . ' ' . sprintf(_n('%s (%s) for %s item', '%s (%s) for %s items',
-                                $item_count, 'woocommerce-gateway-placetopay'), $order->get_formatted_order_total(), wc_price( get_post_meta( $order->get_id(), '_order_total_partial', true ) ),
+                                $item_count, 'woocommerce-gateway-placetopay'), wc_price(get_post_meta($order->get_id(), '_order_total_partial', true)), $order->get_formatted_order_total(),
                                 $item_count); ?>
                     </td>
 

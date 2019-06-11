@@ -103,6 +103,8 @@ class GatewayMethod extends WC_Payment_Gateway
     private $debug;
     private $uri_service;
     private $taxes;
+    private $minimum_amount;
+    private $maximum_amount;
     private $allow_to_pay_with_pending_orders;
     private $allow_partial_payments;
 
@@ -151,6 +153,8 @@ class GatewayMethod extends WC_Payment_Gateway
             'taxes_ice' => $this->get_option('taxes_ice', []),
         ];
 
+        $this->minimum_amount = $this->get_option('minimum_amount');
+        $this->maximum_amount = $this->get_option('maximum_amount');
         $this->merchant_phone = $this->get_option('merchant_phone');
         $this->merchant_email = $this->get_option('merchant_email');
         $this->msg_approved = $this->get_option('msg_approved');
@@ -580,9 +584,11 @@ class GatewayMethod extends WC_Payment_Gateway
                 }
 
                 $totalAmount = $transactionInfo->request()->payment()->amount()->total();
+
+                // We add a field to store the order total for partial payment
                 update_post_meta($order->get_id(), '_order_total_partial', $totalAmount);
 
-                if ($sessionStatusInstance::ST_APPROVED_PARTIAL && $order->get_status() == 'pending' || $order->get_status() == 'on-hold') {
+                if ($status == $sessionStatusInstance::ST_APPROVED_PARTIAL && in_array($order->get_status(), ['pending', 'on-hold'])) {
                     $pendingAmount = 0;
 
                     foreach ($transactionInfo->payment() as $transaction) {
@@ -591,7 +597,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
                     $totalAmount = $totalAmount - $pendingAmount;
 
-                    update_post_meta($order->get_id(), '_order_total', $totalAmount);
+                    update_post_meta($order->get_id(), '_order_total_partial', $totalAmount);
                 }
 
                 $payerEmail = $transactionInfo->request()->payer()
@@ -1151,6 +1157,20 @@ class GatewayMethod extends WC_Payment_Gateway
         if (preg_match(PersonValidator::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
             wc_add_notice(__('<strong>Email</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'), 'error');
+
+            $isValid = false;
+        }
+
+        if ($this->minimum_amount != null && WC()->cart->total < $this->minimum_amount) {
+            wc_add_notice(sprintf(__('<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.',
+                'woocommerce-gateway-placetopay'), number_format($this->minimum_amount, 2, '.', ',')), 'error');
+
+            $isValid = false;
+        }
+
+        if ($this->maximum_amount != null && WC()->cart->total > $this->maximum_amount) {
+            wc_add_notice(sprintf(__('<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.',
+                'woocommerce-gateway-placetopay'), number_format($this->maximum_amount, 2, '.', ',')), 'error');
 
             $isValid = false;
         }
