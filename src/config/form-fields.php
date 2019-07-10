@@ -102,6 +102,18 @@ return [
         'description' => __('Url of notification where PlacetoPay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
             'woocommerce-gateway-placetopay')
     ],
+    'minimum_amount' => [
+        'title' => __('Minimum Amount', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+        'default' => '',
+        'description' => __('Select a minimum amount per transaction', 'woocommerce-gateway-placetopay')
+    ],
+    'maximum_amount' => [
+        'title' => __('Maximum Amount', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+        'default' => '',
+        'description' => __('Select a maximum amount per transaction', 'woocommerce-gateway-placetopay')
+    ],
     'expiration_time_minutes' => [
         'title' => __('Expiration time session', 'woocommerce-gateway-placetopay'),
         'type' => 'select',

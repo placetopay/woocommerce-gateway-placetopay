@@ -90,6 +90,27 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
                     <strong><?php echo wc_format_datetime($order->get_date_created()); ?></strong>
                 </li>
 
+                <?php
+                $metaStatus = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true );
+
+                if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
+                    $total = get_post_meta($order->get_id(), '_order_total', true);
+                    $balance = get_post_meta($order->get_id(), '_order_total_partial', true);
+                ?>
+
+                    <li class="woocommerce-order-overview__total total">
+                        <?php _e('Total Paid:', 'woocommerce-gateway-placetopay'); ?>
+                        <strong><?php echo wc_price($total - $balance); ?></strong>
+                    </li>
+
+
+                    <li class="woocommerce-order-overview__total total">
+                        <?php _e('Balance:', 'woocommerce-gateway-placetopay'); ?>
+                        <strong><?php echo wc_price($balance); ?></strong>
+                    </li>
+
+                <?php } ?>
+
                 <li class="woocommerce-order-overview__total total">
                     <?php _e('Total:', 'woocommerce-gateway-placetopay'); ?>
                     <strong><?php echo $order->get_formatted_order_total(); ?></strong>
