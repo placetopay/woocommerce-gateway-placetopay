@@ -20,7 +20,7 @@
 	},
 	"require": {
 		"php": "^5.5 || ^7.0",
-		"dnetix/redirection": "^0.4.4"
+		"dnetix/redirection": "^0.6.1"
 	},
 	"require-dev": {
 		"larapack/dd": "1.*"

@@ -125,11 +125,15 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
 
                 <?php endif; ?>
 
-                <li class="order">
-                    <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
-                    <strong><?php echo get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS,
-                            true); ?></strong>
-                </li>
+                <?php if (get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS, true)) : ?>
+
+                    <li class="order">
+                        <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
+                        <strong><?php echo get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS,
+                                true); ?></strong>
+                    </li>
+
+                <?php endif; ?>
 
             </ul>
 

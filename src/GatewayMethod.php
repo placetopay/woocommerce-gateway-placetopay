@@ -1,6 +1,5 @@
 <?php namespace PlacetoPay\PaymentMethod;
 
-
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
@@ -20,12 +19,10 @@ use WC_Order;
 use WC_Payment_Gateway;
 
 /**
- * Class GatewayMethod
- * @package PlacetoPay\PaymentMethod
+ * Class GatewayMethod.
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-
     /**
      * Constant key for the session requestId
      * @var string
@@ -64,7 +61,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * Instance of placetopay to manage the connection with the webservice
-     * @var \Dnetix\Redirection\PlacetoPay
+     * @var PlacetoPay
      */
     private $placetopay;
 
@@ -107,6 +104,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $maximum_amount;
     private $allow_to_pay_with_pending_orders;
     private $allow_partial_payments;
+    private $skip_result;
 
     /**
      * GatewayMethod constructor.
@@ -147,6 +145,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->form_method = $this->get_option('form_method');
         $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
         $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes" ? true : false;
+        $this->skip_result = $this->get_option('skip_result') == "yes" ? true : false;
 
         $this->taxes = [
             'taxes_others' => $this->get_option('taxes_others', []),
@@ -313,6 +312,7 @@ class GatewayMethod extends WC_Payment_Gateway
             'noBuyerFill' => !($this->fill_buyer_information === 'yes'),
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+            'skipResult' => $this->skip_result,
             'buyer' => [
                 'name' => $order->get_billing_first_name(),
                 'surname' => $order->get_billing_last_name(),
@@ -548,10 +548,17 @@ class GatewayMethod extends WC_Payment_Gateway
             $status
         ], __METHOD__);
 
-        $authorizationCode = count($transactionInfo->payment) > 0
+        $transactions = [];
+
+        foreach ($transactionInfo->payment as $transaction) {
+            if ($transaction->status()->status() == $sessionStatusInstance::ST_APPROVED)
+                $transactions[] = $transaction;
+        }
+
+        $authorizationCode = count($transactions) > 0
             ? array_map(function (Transaction $trans) {
                 return $trans->authorization();
-            }, $transactionInfo->payment)
+            }, $transactions)
             : [];
 
         // Payment Details
@@ -592,7 +599,8 @@ class GatewayMethod extends WC_Payment_Gateway
                     $pendingAmount = 0;
 
                     foreach ($transactionInfo->payment() as $transaction) {
-                        $pendingAmount += $transaction->amount()->from()->total();
+                        if ($transaction->status()->status() == $sessionStatusInstance::ST_APPROVED)
+                            $pendingAmount += $transaction->amount()->from()->total();
                     }
 
                     $totalAmount = $totalAmount - $pendingAmount;
@@ -635,11 +643,13 @@ class GatewayMethod extends WC_Payment_Gateway
                     $this->msg['class'] = 'woocommerce-message';
 
                     $order->add_order_note(__('PlacetoPay payment approved', 'woocommerce-gateway-placetopay'));
-//                    $this->restoreOrderStock($order->get_id(), false);
                     $order->payment_complete();
                     $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
 
                 } else {
+                    if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED)
+                        update_post_meta($order->get_id(), self::META_STATUS, $sessionStatusInstance::ST_APPROVED_PARTIAL);
+
                     $statusOrder = $paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_PENDING
                         ? 'on-hold'
                         : 'pending';
@@ -667,7 +677,9 @@ class GatewayMethod extends WC_Payment_Gateway
                         $this->logger($paymentFirstStatus->message(), $status);
                     }
 
-                    $this->restoreOrderStock($order->get_id());
+                    if (! self::versionCheck()) {
+                        $this->restoreOrderStock($order->get_id());
+                    }
 
                 } else {
                     $order->update_status(
@@ -682,15 +694,23 @@ class GatewayMethod extends WC_Payment_Gateway
 
                 break;
 
-            case $sessionStatusInstance::ST_ERROR :
             case $sessionStatusInstance::ST_FAILED :
+                update_post_meta($order->get_id(), self::META_STATUS, $sessionStatusInstance::ST_PENDING);
+
+                $this->logger('Payment failed for order # ' . $order->get_id(), __METHOD__);
+                $this->msg['class'] = 'woocommerce-error';
+
+                break;
+            case $sessionStatusInstance::ST_ERROR :
             default:
                 $order->update_status('failed',
                     sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status));
                 $this->msg['message'] = $this->msg_cancel;
                 $this->msg['class'] = 'woocommerce-error';
 
-                $this->restoreOrderStock($order->get_id());
+                if (! self::versionCheck()) {
+                    $this->restoreOrderStock($order->get_id());
+                }
 
                 break;
         }
@@ -919,14 +939,12 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param $order
-     * @param int $len
-     * @param string $symbol
      * @return string
      */
-    public static function getOrderNumber($order, $len = 4, $symbol = '0')
+    public static function getOrderNumber($order)
     {
         /** @var \WC_Order $order */
-        return str_pad($order->get_order_number(), $len, $symbol, STR_PAD_LEFT);
+        return $order->get_order_number();
     }
 
     /**
@@ -1292,5 +1310,22 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return null;
+    }
+
+    /**
+     * @param string $version
+     *
+     * @return bool
+     */
+    public static function versionCheck($version = '3.0') {
+        if (class_exists('WooCommerce')) {
+            global $woocommerce;
+
+            if (version_compare($woocommerce->version, $version, ">=")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

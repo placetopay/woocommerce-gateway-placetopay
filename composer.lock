@@ -1,23 +1,23 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "94cabaef1006c70b6e5b5f6a631dbc53",
+    "content-hash": "a51309f677e61c0f2c3268feeae42a3a",
     "packages": [
         {
             "name": "dnetix/redirection",
-            "version": "0.4.4",
+            "version": "0.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dnetix/redirection.git",
-                "reference": "4b344525f34b7e97183fb4f24d41de357cd8e9d2"
+                "reference": "917666e0b87d731cb738c034c24b656642ad19e3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dnetix/redirection/zipball/4b344525f34b7e97183fb4f24d41de357cd8e9d2",
-                "reference": "4b344525f34b7e97183fb4f24d41de357cd8e9d2",
+                "url": "https://api.github.com/repos/dnetix/redirection/zipball/917666e0b87d731cb738c034c24b656642ad19e3",
+                "reference": "917666e0b87d731cb738c034c24b656642ad19e3",
                 "shasum": ""
             },
             "require": {
@@ -46,7 +46,7 @@
                 }
             ],
             "description": "Library to connect with PlacetoPay Redirection service",
-            "time": "2018-05-22T16:30:46+00:00"
+            "time": "2019-04-04T19:58:09+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

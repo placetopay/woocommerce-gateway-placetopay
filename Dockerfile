@@ -1,4 +1,4 @@
-FROM "wordpress:php7.0-apache"
+FROM "wordpress:php7.2-apache"
 
 ENV WORDPRESS_VERSION 4.8.4
 ENV WOOCOMMERCE_VERSION 3.3.4

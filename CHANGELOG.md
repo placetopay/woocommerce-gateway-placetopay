@@ -1,5 +1,17 @@
 ## Changelog
 
+### [2.16.0] - 2020-01-16
+- Add skip result to admin panel
+- Add skip result to payment request
+
+### [2.15.1] - 2019-09-23
+- Update dnetix library in composer.json
+
+### [2.14.5] - 2019-07-10
+- Added support to partial payments
+- Fix transactions detail for partial payments
+- Fix order reference number 
+
 ### [2.13.1] - 2018-05-22
 - Upgraded redirection dependency for support multiples currencies in validation
 - Added support for cancelled orders
