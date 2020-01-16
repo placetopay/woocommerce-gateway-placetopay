@@ -12,6 +12,10 @@
 - Fix transactions detail for partial payments
 - Fix order reference number 
 
+### [2.14.0] - 2019-06-06
+- Add support for partial payments
+- Improve admin form
+
 ### [2.13.1] - 2018-05-22
 - Upgraded redirection dependency for support multiples currencies in validation
 - Added support for cancelled orders
