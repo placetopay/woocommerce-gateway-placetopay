@@ -955,7 +955,11 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $gatewayMethod = new self();
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
-        $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
+
+        if ($transactionInfo->requestId() != null) {
+            $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
+        }
+
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
     }
 
