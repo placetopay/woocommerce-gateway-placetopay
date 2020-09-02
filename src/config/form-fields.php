@@ -43,6 +43,12 @@ return [
             'woocommerce-gateway-placetopay'),
         'default' => 'yes',
     ],
+    'skip_result' => [
+        'title' => __('Skip result?', 'woocommerce-gateway-placetopay'),
+        'type' => 'checkbox',
+        'label' => __('Allow to skip the placetopay result screen.', 'woocommerce-gateway-placetopay'),
+        'default' => 'no',
+    ],
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
