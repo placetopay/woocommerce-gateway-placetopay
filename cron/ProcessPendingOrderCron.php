@@ -1,5 +1,7 @@
 <?php
 
+use PlacetoPay\PaymentMethod\GatewayMethod;
+
 require_once(dirname(__FILE__) . '/../../../../wp-blog-header.php');
 
 $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
@@ -13,19 +15,22 @@ $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_
 
 if ($customerOrders) {
     foreach ($customerOrders as $orderPost) {
-        $requestId = get_post_meta($orderPost->ID, \PlacetoPay\PaymentMethod\GatewayMethod::META_REQUEST_ID, true);
+        $requestId = get_post_meta(
+            $orderPost->get_id(),
+            GatewayMethod::META_REQUEST_ID,
+            true
+        );
 
         if (!$requestId) {
             continue;
         }
 
-        $order = new WC_Order();
-        $order->populate($orderPost);
+        $order = wc_get_order($orderPost->get_id());
 
-        if (!\PlacetoPay\PaymentMethod\GatewayMethod::isPendingStatusOrder($order->get_id())) {
+        if (!GatewayMethod::isPendingStatusOrder($order->get_id())) {
             continue;
         }
 
-        \PlacetoPay\PaymentMethod\GatewayMethod::processPendingOrder($order->get_id(), $requestId);
+        GatewayMethod::processPendingOrder($order->get_id(), $requestId);
     }
 }
