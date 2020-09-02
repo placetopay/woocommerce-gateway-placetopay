@@ -7,6 +7,7 @@
 - Added default status to payment order
 - Fixed notification sonda error
 - Added Costa Rica to countries list
+- Updated placetopay endpoint for production environment
 
 ### [2.15.1] - 2019-09-23
 - Update dnetix library in composer.json

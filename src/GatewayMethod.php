@@ -1339,17 +1339,17 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $environmentByCountry = [
             Country::CO => [
-                Environment::PROD => 'https://secure.placetopay.com/redirection',
+                Environment::PROD => 'https://checkout.placetopay.com/redirection',
                 Environment::TEST => 'https://test.placetopay.com/redirection',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
             Country::EC => [
-                Environment::PROD => 'https://secure.placetopay.ec/redirection',
+                Environment::PROD => 'https://checkout.placetopay.ec/redirection',
                 Environment::TEST => 'https://test.placetopay.ec/redirection',
                 Environment::DEV => 'https://dev.placetopay.ec/redirection',
             ],
             Country::CR => [
-                Environment::PROD => 'https://secure.placetopay.com/redirection',
+                Environment::PROD => 'https://checkout.placetopay.com/redirection',
                 Environment::TEST => 'https://test.placetopay.com/redirection',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ]
