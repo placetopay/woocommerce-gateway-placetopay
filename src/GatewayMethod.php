@@ -593,7 +593,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ? $transactionInfo->payment()[0]->status()
             : null;
 
-        $authorizationCode = empty($transactions)
+        $authorizationCode = !empty($transactions)
             ? array_map(function (Transaction $trans) {
                 return $trans->authorization();
             }, $transactions)
