@@ -65,7 +65,7 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
                 if (!empty($processUrl)) { ?>
 
                     <?php echo sprintf(
-                        __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in placetopay</a>',
+                        __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in Placetopay</a>',
                             'woocommerce-gateway-placetopay'),
                         urldecode($processUrl)
                     ); ?>

@@ -1,5 +1,11 @@
 ## Changelog
 
+### [2.17.0] - 2020-10.23
+- Added ico tax rate
+- Added base devolution amount to tax detail object
+- Changed PlacetoPay text to Placetopay
+- Fixed authorization code problem
+
 ### [2.16.1] - 2020-09-02
 - Fixed placetopay production url
 - Added Costa Rica to countries list 

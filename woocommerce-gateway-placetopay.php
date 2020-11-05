@@ -1,19 +1,19 @@
 <?php
 /**
- * Plugin Name: WooCommerce PlacetoPay Gateway
- * Plugin URI:  https://www.placetopay.com/component/placetopay-for-woocommerce/
- * Description: Adds Place to Pay Payment Gateway to Woocommerce e-commerce plugin
- * Author:      PlacetoPay
- * Author URI:  https://www.placetopay.com/
- * Developer:   PlacetoPay
- * Version:     2.16.1
+ * Plugin Name: WooCommerce Placetopay Gateway
+ * Plugin URI: https://www.placetopay.com/component/placetopay-for-woocommerce/
+ * Description: Adds Placetopay Payment Gateway to Woocommerce e-commerce plugin
+ * Author: Placetopay
+ * Author URI: https://www.placetopay.com/
+ * Developer: Placetopay
+ * Version: 2.17.0
  *
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2017 EGM Ingenieria sin fronteras S.A.S.
- * @version 2.16.0
+ * @version 2.17.0
  */
 
 if (!defined('ABSPATH')) {
