@@ -1,4 +1,7 @@
-<?php namespace PlacetoPay\PaymentMethod;
+<?php
+
+namespace PlacetoPay\PaymentMethod;
+
 /**
  * Zend Framework (http://framework.zend.com/)
  *
@@ -11,7 +14,8 @@
 /**
  * Functionality for determining client IP address.
  */
-class RemoteAddress {
+class RemoteAddress
+{
     /**
      * Whether to use proxy addresses or not.
      *
@@ -23,18 +27,21 @@ class RemoteAddress {
      * @var bool
      */
     protected $useProxy = false;
+
     /**
      * List of trusted proxy IP addresses
      *
      * @var array
      */
     protected $trustedProxies = [];
+
     /**
      * HTTP header to introspect for proxies
      *
      * @var string
      */
     protected $proxyHeader = 'HTTP_X_FORWARDED_FOR';
+
     /**
      * Changes proxy handling setting.
      *
@@ -47,8 +54,10 @@ class RemoteAddress {
     public function setUseProxy($useProxy = true)
     {
         $this->useProxy = $useProxy;
+
         return $this;
     }
+
     /**
      * Checks proxy handling setting.
      *
@@ -58,6 +67,7 @@ class RemoteAddress {
     {
         return $this->useProxy;
     }
+
     /**
      * Set list of trusted proxy addresses
      *
@@ -67,8 +77,10 @@ class RemoteAddress {
     public function setTrustedProxies(array $trustedProxies)
     {
         $this->trustedProxies = $trustedProxies;
+
         return $this;
     }
+
     /**
      * Set the header to introspect for proxy IPs
      *
@@ -78,8 +90,10 @@ class RemoteAddress {
     public function setProxyHeader($header = 'X-Forwarded-For')
     {
         $this->proxyHeader = $this->normalizeProxyHeader($header);
+
         return $this;
     }
+
     /**
      * Returns client IP address.
      *
@@ -88,15 +102,19 @@ class RemoteAddress {
     public function getIpAddress()
     {
         $ip = $this->getIpAddressFromProxy();
+
         if ($ip) {
             return $ip;
         }
+
         // direct IP address
         if (isset($_SERVER['REMOTE_ADDR'])) {
             return $_SERVER['REMOTE_ADDR'];
         }
+
         return '';
     }
+
     /**
      * Attempt to get the IP address for a proxied client
      *
@@ -110,28 +128,33 @@ class RemoteAddress {
         ) {
             return false;
         }
+
         $header = $this->proxyHeader;
+
         if (!isset($_SERVER[$header]) || empty($_SERVER[$header])) {
             return false;
         }
+
         // Extract IPs
         $ips = explode(',', $_SERVER[$header]);
         // trim, so we can compare against trusted proxies properly
         $ips = array_map('trim', $ips);
         // remove trusted proxy IPs
         $ips = array_diff($ips, $this->trustedProxies);
+
         // Any left?
         if (empty($ips)) {
             return false;
         }
+
         // Since we've removed any known, trusted proxy servers, the right-most
         // address represents the first IP we do not know about -- i.e., we do
         // not know if it is a proxy server, or a client. As such, we treat it
         // as the originating IP.
         // @see http://en.wikipedia.org/wiki/X-Forwarded-For
-        $ip = array_pop($ips);
-        return $ip;
+        return array_pop($ips);
     }
+
     /**
      * Normalize a header string
      *
@@ -145,9 +168,11 @@ class RemoteAddress {
     {
         $header = strtoupper($header);
         $header = str_replace('-', '_', $header);
+
         if (0 !== strpos($header, 'HTTP_')) {
             $header = 'HTTP_' . $header;
         }
+
         return $header;
     }
 }

@@ -16,14 +16,14 @@ return [
     'enabled' => [
         'title' => __('Enable/Disable', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
-        'label' => __('Enable PlacetoPay payment method.', 'woocommerce-gateway-placetopay'),
+        'label' => __('Enable Placetopay payment method.', 'woocommerce-gateway-placetopay'),
         'default' => 'no',
         'description' => __('Show in the Payment List as a payment option', 'woocommerce-gateway-placetopay')
     ],
     'fill_buyer_information' => [
         'title' => __('Predicting the buyer\'s information?', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
-        'label' => __('Enable to preload the buyer\'s information on the PlacetoPay platform.',
+        'label' => __('Enable to preload the buyer\'s information on the Placetopay platform.',
             'woocommerce-gateway-placetopay'),
         'default' => 'yes',
     ],
@@ -52,7 +52,7 @@ return [
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'default' => __('PlacetoPay', 'woocommerce-gateway-placetopay'),
+        'default' => __('Placetopay', 'woocommerce-gateway-placetopay'),
         'description' => __('This controls the title which the user sees during checkout.',
             'woocommerce-gateway-placetopay'),
         'desc_tip' => true
@@ -60,7 +60,7 @@ return [
     'description' => [
         'title' => __('Description:', 'woocommerce-gateway-placetopay'),
         'type' => 'textarea',
-        'default' => __('Pay securely through PlacetoPay.', 'woocommerce-gateway-placetopay'),
+        'default' => __('Pay securely through Placetopay.', 'woocommerce-gateway-placetopay'),
         'description' => __('This controls the description which the user sees during checkout.',
             'woocommerce-gateway-placetopay'),
         'desc_tip' => true
@@ -68,13 +68,13 @@ return [
     'login' => [
         'title' => __('Login', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'description' => __('Given to login by PlacetoPay', 'woocommerce-gateway-placetopay'),
+        'description' => __('Given to login by Placetopay', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ],
     'tran_key' => [
         'title' => __('Transactional Key', 'woocommerce-gateway-placetopay'),
         'type' => 'password',
-        'description' => __('Given to transactional key by PlacetoPay', 'woocommerce-gateway-placetopay'),
+        'description' => __('Given to transactional key by Placetopay', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ],
     'country' => [
@@ -90,7 +90,7 @@ return [
         'class' => 'wc-enhanced-select',
         'default' => 'dev',
         'options' => $this->getEnvironments(),
-        'description' => __('Enable the environment PlacetoPay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
+        'description' => __('Enable the environment Placetopay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
             'woocommerce-gateway-placetopay')
     ],
     'redirect_page_id' => [
@@ -105,7 +105,7 @@ return [
         'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
         'class' => 'readonly',
-        'description' => __('Url of notification where PlacetoPay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
+        'description' => __('Url of notification where Placetopay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
             'woocommerce-gateway-placetopay')
     ],
     'minimum_amount' => [
@@ -126,7 +126,7 @@ return [
         'class' => 'wc-enhanced-select',
         'default' => 2880,
         'options' => $this->getListOptionExpirationMinutes(),
-        'description' => __('Expiration of the session for payment in PlacetoPay', 'woocommerce-gateway-placetopay'),
+        'description' => __('Expiration of the session for payment in Placetopay', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ],
     'taxes_others' => [
@@ -134,7 +134,15 @@ return [
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as VAT or other types of taxes for PlacetoPay',
+        'description' => __('Select the taxes that are included as VAT or other types of taxes for Placetopay',
+            'woocommerce-gateway-placetopay'),
+    ],
+    'taxes_ico' => [
+        'title' => __('Select ICO taxes to include', 'woocommerce-gateway-placetopay'),
+        'type' => 'multiselect',
+        'class' => 'wc-enhanced-select',
+        'options' => $this->getListTaxes(),
+        'description' => __('Select the taxes that are included as an ICO tax rate for Placetopay',
             'woocommerce-gateway-placetopay'),
     ],
     'taxes_ice' => [
@@ -142,7 +150,7 @@ return [
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as an ICE tax rate for PlacetoPay',
+        'description' => __('Select the taxes that are included as an ICE tax rate for Placetopay',
             'woocommerce-gateway-placetopay'),
     ],
     'merchant_phone' => [
@@ -163,7 +171,7 @@ return [
     'msg_approved' => [
         'title' => __('Message for approved transaction', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'default' => __('PlacetoPay Payment Approved', 'woocommerce-gateway-placetopay'),
+        'default' => __('Placetopay Payment Approved', 'woocommerce-gateway-placetopay'),
         'description' => __('Message for approved transaction', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ],
@@ -184,7 +192,7 @@ return [
     'msg_declined' => [
         'title' => __('Message for rejected transaction', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'default' => __('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'),
+        'default' => __('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'),
         'description' => __('Message for rejected transaction', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ]

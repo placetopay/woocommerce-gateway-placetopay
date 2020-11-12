@@ -2,11 +2,9 @@
 
 namespace PlacetoPay\PaymentMethod;
 
-
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
-
 
 /**
  * @package \PlacetoPay;
@@ -111,7 +109,7 @@ class WC_Gateway_PlacetoPay
                 echo '<div class="error fade">
                     <p>
                         <strong>
-                            [WooCommerce Gateway PlacetoPay] plugin requires WooCommerce to run
+                            [WooCommerce Gateway Placetopay] plugin requires WooCommerce to run
                         </strong>
                     </p>
                 </div>';
