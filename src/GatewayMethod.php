@@ -594,34 +594,24 @@ class GatewayMethod extends WC_Payment_Gateway
             $status
         ], __METHOD__);
 
-        $transactions = [];
-
-        if (!is_null($transactionInfo->payment())) {
-            foreach ($transactionInfo->payment() as $transaction) {
-                if ($transaction->status()->status() == $sessionStatusInstance::ST_APPROVED) {
-                    $transactions[] = $transaction;
-                }
-            }
+        if ($sessionStatusInstance->status() !== $sessionStatusInstance::ST_PENDING) {
+            $authorizationCode = $this->getAuthorizationCode($transactionInfo);
         }
-
-        $paymentFirstStatus = !is_null($transactionInfo->payment()) && count($transactionInfo->payment()) > 0
-            ? $transactionInfo->payment()[0]->status()
-            : null;
-
-        $authorizationCode = !empty($transactions)
-            ? array_map(function (Transaction $trans) {
-                return $trans->authorization();
-            }, $transactions)
-            : [];
 
         // Payment Details
         if (!empty($authorizationCode) && count($authorizationCode) > 0) {
             update_post_meta(
                 $order->get_id(),
                 self::META_AUTHORIZATION_CUS,
-                implode(',', $authorizationCode)
+                is_array($authorizationCode)
+                    ? implode(',', $authorizationCode)
+                    : $authorizationCode
             );
         }
+
+        $paymentFirstStatus = count($transactionInfo->payment()) > 0
+            ? $transactionInfo->payment()[0]->status()
+            : null;
 
         // Get order updated with metas refreshed
         $order = wc_get_order($order->get_id());
@@ -806,6 +796,31 @@ class GatewayMethod extends WC_Payment_Gateway
         wp_redirect($redirectUrl);
 
         exit;
+    }
+
+    /**
+     * @param RedirectInformation $transaction
+     * @return array
+     */
+    private function getAuthorizationCode(RedirectInformation $transaction)
+    {
+        if (!$this->allow_partial_payments) {
+            return $transaction->payment()[0]->authorization();
+        } else {
+            $transactions = [];
+
+            if (!is_null($transaction->payment())) {
+                foreach ($transaction->payment() as $transaction) {
+                    $transactions[] = $transaction;
+                }
+            }
+
+            return !empty($transactions)
+                ? array_map(function (Transaction $trans) {
+                    return $trans->authorization();
+                }, $transactions)
+                : [];
+        }
     }
 
     /**
