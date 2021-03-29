@@ -6,9 +6,6 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-/**
- * @package \PlacetoPay;
- */
 class WC_Gateway_PlacetoPay
 {
 

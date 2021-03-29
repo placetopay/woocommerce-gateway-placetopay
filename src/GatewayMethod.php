@@ -584,6 +584,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $order = $this->getOrder($request);
         $sessionStatusInstance = $transactionInfo->status();
         $status = $sessionStatusInstance->status();
+        $authorizationCode = [];
 
         // Register status PlacetoPay for the order
         update_post_meta($order->get_id(), self::META_STATUS, $status);
@@ -599,7 +600,7 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Payment Details
-        if (!empty($authorizationCode) && count($authorizationCode) > 0) {
+        if (is_array($authorizationCode) && !empty($authorizationCode) && count($authorizationCode) > 0) {
             update_post_meta(
                 $order->get_id(),
                 self::META_AUTHORIZATION_CUS,
@@ -708,6 +709,7 @@ class GatewayMethod extends WC_Payment_Gateway
                         );
                     }
 
+                    // TODO: This is the bug that set order to on-old
                     $statusOrder = ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_PENDING)
                         ? 'on-hold'
                         : 'pending';
@@ -804,8 +806,10 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     private function getAuthorizationCode(RedirectInformation $transaction)
     {
-        if (!$this->allow_partial_payments) {
-            return $transaction->payment()[0]->authorization();
+        if (!$this->allow_partial_payments && !is_null($transaction->payment())) {
+            return !is_null($transaction->payment())
+                ? $transaction->payment()[0]->authorization()
+                : [];
         } else {
             $transactions = [];
 
@@ -1251,14 +1255,14 @@ class GatewayMethod extends WC_Payment_Gateway
             $isValid = false;
         }
 
-        if (preg_match(PersonValidator::PATTERN_STATE, trim($request['billing_state'])) !== 1) {
+        if (! is_numeric($request['billing_state']) && preg_match(PersonValidator::PATTERN_STATE, trim($request['billing_state'])) !== 1) {
             wc_add_notice(__('<strong>State / Country</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'), 'error');
 
             $isValid = false;
         }
 
-        if (preg_match(PersonValidator::PATTERN_CITY, trim($request['billing_city'])) !== 1) {
+        if (! is_numeric($request['billing_state']) && preg_match(PersonValidator::PATTERN_CITY, trim($request['billing_city'])) !== 1) {
             wc_add_notice(__('<strong>Town / City</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'), 'error');
 

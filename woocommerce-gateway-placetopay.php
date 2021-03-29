@@ -6,14 +6,14 @@
  * Author: Placetopay
  * Author URI: https://www.placetopay.com/
  * Developer: Placetopay
- * Version: 2.17.0
+ * Version: 2.17.2
  *
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2017 EGM Ingenieria sin fronteras S.A.S.
- * @version 2.17.0
+ * @version 2.17.2
  */
 
 if (!defined('ABSPATH')) {
@@ -67,7 +67,7 @@ function wc_gateway_placetopay()
     }
 
     require_once(__DIR__ . '/vendor/autoload.php');
-    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance('2.16.1', __FILE__);
+    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance('2.17.2', __FILE__);
 }
 
 add_action('plugins_loaded', 'wc_gateway_placetopay', 0);
