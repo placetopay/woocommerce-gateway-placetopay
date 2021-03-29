@@ -377,10 +377,8 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
         ];
 
-        $orderTaxes = $order->get_taxes();
-
-        if (count($orderTaxes) > 0) {
-            $req['payment']['amount']['taxes'] = $this->getOrderTaxes($orderTaxes, floatval($order->get_subtotal()));
+        if (count($order->get_taxes()) > 0) {
+            $req['payment']['amount']['taxes'] = $this->getOrderTaxes($order);
         }
 
         try {
@@ -422,25 +420,28 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * @param \WC_Order_Item_Tax[] $taxes
-     * @param float $subTotal
+     * @param WC_Order $order
      * @return array
      */
-    public function getOrderTaxes($taxes, $subTotal)
+    public function getOrderTaxes($order)
     {
+        $subTotal = floatval($order->get_subtotal());
         $valueAddedTaxType = array_map('intval', $this->taxes['taxes_others']);
         $exciseDutyType = array_map('intval', $this->taxes['taxes_ico']);
         $iceType = array_map('intval', $this->taxes['taxes_ice']);
         $taxForP2P = [];
 
-        foreach ($taxes as $tax) {
+        foreach ($order->get_taxes() as $tax) {
             $taxData = $tax->get_data();
 
             if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
+                $totalTax = floatval((float) $order->get_shipping_tax() + $taxData['tax_total']);
+                $totalBase = floatval((float) $order->get_shipping_total() + $subTotal);
+
                 $taxForP2P[] = [
                     'kind' => 'valueAddedTax',
-                    'amount' => floatval($taxData['tax_total']),
-                    'base' => $subTotal,
+                    'amount' => $totalTax,
+                    'base' => $totalBase,
                 ];
             }
 
