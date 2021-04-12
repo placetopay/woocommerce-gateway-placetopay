@@ -420,12 +420,31 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
+     * @param $items
+     * @return float
+     */
+    public function calculateSubtotalTax($items)
+    {
+        $subtotal = 0.00;
+
+        foreach ($items as $item) {
+            $data = $item->get_data();
+
+            if ($data['total_tax'] !== '0') {
+                $subtotal += $data['total'];
+            }
+        }
+
+        return $subtotal;
+    }
+
+    /**
      * @param WC_Order $order
      * @return array
      */
     public function getOrderTaxes($order)
     {
-        $subTotal = floatval($order->get_subtotal());
+        $subTotal = $this->calculateSubtotalTax($order->get_items());
         $valueAddedTaxType = array_map('intval', $this->taxes['taxes_others']);
         $exciseDutyType = array_map('intval', $this->taxes['taxes_ico']);
         $iceType = array_map('intval', $this->taxes['taxes_ice']);
