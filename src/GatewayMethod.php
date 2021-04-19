@@ -620,15 +620,13 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Payment Details
-        if (is_array($authorizationCode) && !empty($authorizationCode) && count($authorizationCode) > 0) {
-            update_post_meta(
-                $order->get_id(),
-                self::META_AUTHORIZATION_CUS,
-                is_array($authorizationCode)
-                    ? implode(',', $authorizationCode)
-                    : $authorizationCode
-            );
-        }
+        update_post_meta(
+            $order->get_id(),
+            self::META_AUTHORIZATION_CUS,
+            is_array($authorizationCode)
+                ? implode(',', $authorizationCode)
+                : $authorizationCode
+        );
 
         $paymentFirstStatus = count($transactionInfo->payment()) > 0
             ? $transactionInfo->payment()[0]->status()
@@ -1129,6 +1127,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
             Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
             Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
+            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1406,6 +1405,11 @@ class GatewayMethod extends WC_Payment_Gateway
                 Environment::PROD => 'https://checkout.placetopay.com',
                 Environment::TEST => 'https://test.placetopay.com/redirection',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+            Country::CL => [
+                Environment::PROD => 'https://uat-checkout.placetopay.ws',
+                Environment::TEST => 'https://uat-checkout.placetopay.ws',
+                Environment::DEV => 'https://uat-checkout.placetopay.ws',
             ]
         ][$this->settings['country']];
 

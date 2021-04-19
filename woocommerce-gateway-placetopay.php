@@ -8,7 +8,6 @@
  * Developer: Placetopay
  * Version: 2.17.3
  *
- *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
