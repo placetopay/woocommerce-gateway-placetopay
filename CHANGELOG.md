@@ -1,5 +1,8 @@
 ## Changelog
 
+### [2.17.5] - 2021-04-27
+- Added Chile payment gateway
+
 ### [2.17.1] - 2020-10.23
 - Updated dnetix/redirection plugin
 

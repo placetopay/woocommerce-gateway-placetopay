@@ -6,13 +6,13 @@
  * Author: Placetopay
  * Author URI: https://www.placetopay.com/
  * Developer: Placetopay
- * Version: 2.17.3
+ * Version: 2.17.5
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2017 EGM Ingenieria sin fronteras S.A.S.
- * @version 2.17.3
+ * @version 2.17.5
  */
 
 if (!defined('ABSPATH')) {

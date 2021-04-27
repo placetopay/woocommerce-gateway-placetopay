@@ -26,12 +26,6 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    /**
-     * Constant key for the session requestId
-     * @var string
-     */
-    const SESSION_REQ_ID = 'placetopay_request_id';
-
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
     const META_REQUEST_ID = '_p2p_request_id';
@@ -364,7 +358,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 'description' => $productInfo,
                 'amount' => [
                     'currency' => $this->currency,
-                    'total' => floatval($order->get_total())
+                    'total' => $order->get_total()
                 ],
                 'allowPartial' => $this->allow_partial_payments
             ],
@@ -385,8 +379,6 @@ class GatewayMethod extends WC_Payment_Gateway
             $res = $this->placetopay->request($req);
 
             if ($res->isSuccessful()) {
-                // Store the requestId in the session
-                WC()->session->set(self::SESSION_REQ_ID, $res->requestId());
                 update_post_meta($order->get_id(), self::META_REQUEST_ID, $res->requestId());
                 update_post_meta($order->get_id(), self::META_STATUS, $res->status()->status());
 
@@ -442,7 +434,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param WC_Order $order
      * @return array
      */
-    public function getOrderTaxes($order)
+    public function getOrderTaxes(WC_Order $order): array
     {
         $subTotal = $this->calculateSubtotalTax($order->get_items());
         $valueAddedTaxType = array_map('intval', $this->taxes['taxes_others']);
@@ -455,7 +447,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
             if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
                 $totalTax = floatval((float) $order->get_shipping_tax() + $taxData['tax_total']);
-                $totalBase = floatval((float) $order->get_shipping_total() + $subTotal);
+                $totalBase = (float) $order->get_shipping_total() + $subTotal;
 
                 $taxForP2P[] = [
                     'kind' => 'valueAddedTax',
@@ -489,10 +481,10 @@ class GatewayMethod extends WC_Payment_Gateway
      *
      * @param $orderId
      */
-    public function receiptPage($orderId)
+    public function receiptPage($orderId): void
     {
         try {
-            $requestId = WC()->session->get(self::SESSION_REQ_ID);
+            $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
             if (!is_null($transactionInfo->payment)) {
@@ -571,11 +563,11 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param array $req Response data in array format
      * @return void
      */
-    public function successfulRequest($req)
+    public function successfulRequest(array $req): void
     {
         // When the user is returned to the page specified by redirectUrl
         if (!empty($req['key']) && !empty($req['wc-api'])) {
-            $requestId = WC()->session->get(self::SESSION_REQ_ID);
+            $requestId = get_post_meta($req['order_id'], self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
             $this->returnProcess($req, $transactionInfo);
@@ -620,17 +612,21 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Payment Details
-        update_post_meta(
-            $order->get_id(),
-            self::META_AUTHORIZATION_CUS,
-            is_array($authorizationCode)
-                ? implode(',', $authorizationCode)
-                : $authorizationCode
-        );
+        if ($status === Status::ST_APPROVED || $status === Status::ST_APPROVED_PARTIAL) {
+            update_post_meta(
+                $order->get_id(),
+                self::META_AUTHORIZATION_CUS,
+                is_array($authorizationCode)
+                    ? implode(',', $authorizationCode)
+                    : $authorizationCode
+            );
+        }
 
-        $paymentFirstStatus = count($transactionInfo->payment()) > 0
-            ? $transactionInfo->payment()[0]->status()
-            : null;
+        if ($transactionInfo->payment() !== null) {
+            $paymentFirstStatus = count($transactionInfo->payment()) > 0
+                ? $transactionInfo->payment()[0]->status()
+                : null;
+        }
 
         // Get order updated with metas refreshed
         $order = wc_get_order($order->get_id());
@@ -717,7 +713,6 @@ class GatewayMethod extends WC_Payment_Gateway
                     $order->add_order_note(__('Placetopay payment approved', 'woocommerce-gateway-placetopay'));
                     $order->payment_complete();
                     $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
-
                 } else {
                     if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
                         update_post_meta(
@@ -849,14 +844,14 @@ class GatewayMethod extends WC_Payment_Gateway
      *  Get order instance with a given order key
      *
      * @param mixed $request
-     * @return \WC_Order
+     * @return WC_Order
      */
-    public function getOrder($request)
+    public function getOrder($request): WC_Order
     {
         $orderId = isset($request['order_id']) ? (int)$request['order_id'] : null;
-        $key = isset($request['key']) ? $request['key'] : '';
+        $key = $request['key'] ?? '';
         $orderKey = explode('-', $key);
-        $orderKey = $orderKey[0] ? $orderKey[0] : $orderKey;
+        $orderKey = $orderKey[0] ?: $orderKey;
 
         $order = new WC_Order($orderId);
 
@@ -866,7 +861,7 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Validate key
-        if ((bool)$key && $order->get_order_key() !== $orderKey) {
+        if ($key && $order->get_order_key() !== $orderKey) {
             $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'), 'getOrder');
             exit;
         }
@@ -944,7 +939,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param $message
      * @param null $type
      */
-    public function logger($message, $type = null)
+    public function logger($message, $type = null): void
     {
         if ($this->debug != 'yes') {
             return;
@@ -1407,9 +1402,9 @@ class GatewayMethod extends WC_Payment_Gateway
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
             Country::CL => [
-                Environment::PROD => 'https://uat-checkout.placetopay.ws',
+                Environment::PROD => 'https://checkout-getnet-cl.placetopay.com',
                 Environment::TEST => 'https://uat-checkout.placetopay.ws',
-                Environment::DEV => 'https://uat-checkout.placetopay.ws',
+                Environment::DEV => 'https://dev.placetopay.com/redirection/',
             ]
         ][$this->settings['country']];
 
