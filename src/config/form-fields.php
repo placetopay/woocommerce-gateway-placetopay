@@ -93,6 +93,11 @@ return [
         'description' => __('Enable the environment Placetopay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
             'woocommerce-gateway-placetopay')
     ],
+    'custom_connection_url' => [
+        'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+        'description' => __('By example: "https://alternative.placetopay.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
+    ],
     'redirect_page_id' => [
         'title' => __('Return Page', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
@@ -107,6 +112,11 @@ return [
         'class' => 'readonly',
         'description' => __('Url of notification where Placetopay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
             'woocommerce-gateway-placetopay')
+    ],
+    'payment_button_image' => [
+        'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+        'description' => __('It can be a URL, an image name (provide the image to the placetopay team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder', 'woocommerce-gateway-placetopay'),
     ],
     'minimum_amount' => [
         'title' => __('Minimum Amount', 'woocommerce-gateway-placetopay'),

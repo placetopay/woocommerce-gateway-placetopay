@@ -102,6 +102,8 @@ class GatewayMethod extends WC_Payment_Gateway
     private $allow_to_pay_with_pending_orders;
     private $allow_partial_payments;
     private $skip_result;
+    private $custom_connection_url;
+    private $payment_button_image;
 
     /**
      * GatewayMethod constructor.
@@ -122,7 +124,6 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->id = 'placetopay';
         $this->method_title = __('Placetopay', 'woocommerce-gateway-placetopay');
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
-        $this->icon = 'https://static.placetopay.com/placetopay-logo.svg';
         $this->has_fields = false;
 
         // Init settings
@@ -143,6 +144,9 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
         $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes";
         $this->skip_result = $this->get_option('skip_result') == "yes";
+        $this->custom_connection_url = $this->get_option('custom_connection_url');
+        $this->payment_button_image = $this->get_option('payment_button_image');
+        $this->icon = $this->getImageUrl();
 
         $this->taxes = [
             'taxes_others' => $this->get_option('taxes_others', []),
@@ -192,6 +196,37 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $this->form_fields = include(__DIR__ . '/config/form-fields.php');
         $this->init_settings();
+    }
+
+    private function getImageUrl(): ?string
+    {
+        $url = $this->payment_button_image;
+
+        if (is_null($url) || empty($url)) {
+            // format: null
+            $image = 'https://static.placetopay.com/placetopay-logo.svg';
+        } elseif ($this->checkValidUrl($url)) {
+            // format: https://www.domain.test/image.svg
+            $image = $url;
+        } elseif ($this->checkDirectory($url)) {
+            // format: /folder/image.svg
+            $image = home_url('/wp-content/uploads/').$url;
+        } else {
+            // format: image
+            $image = 'https://static.placetopay.com/'.$url.'.svg';
+        }
+
+        return $image;
+    }
+
+    protected function checkDirectory(string $path): bool
+    {
+        return substr($path, 0, 1) === '/';
+    }
+
+    protected function checkValidUrl(string $url): bool
+    {
+        return filter_var($url, FILTER_VALIDATE_URL);
     }
 
     /**
@@ -1137,6 +1172,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Environment::DEV => __('Development', 'woocommerce-gateway-placetopay'),
             Environment::TEST => __('Test', 'woocommerce-gateway-placetopay'),
             Environment::PROD => __('Production', 'woocommerce-gateway-placetopay'),
+            Environment::CUSTOM => __('Custom', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1403,27 +1439,31 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::CL => [
                 Environment::PROD => 'https://checkout-getnet-cl.placetopay.com',
-                Environment::TEST => 'https://uat-checkout.placetopay.ws',
+                Environment::TEST => 'https://uat-checkout.placetopay.ws/redirection',
                 Environment::DEV => 'https://dev.placetopay.com/redirection/',
             ]
         ][$this->settings['country']];
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
-        if ($this->testmode == 'yes') {
-            $this->debug = 'yes';
-            $this->log = $this->wooCommerceVersionCompare('2.1')
-                ? new \WC_Logger()
-                : WC()->logger();
-
-            $this->uri_service = $this->enviroment_mode === Environment::DEV
-                ? $environmentByCountry[Environment::DEV]
-                : $environmentByCountry[Environment::TEST];
-
+        if ($this->enviroment_mode == Environment::CUSTOM) {
+            $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
         } else {
-            if ($this->enviroment_mode === Environment::PROD) {
-                $this->debug = 'no';
-                $this->uri_service = $environmentByCountry[Environment::PROD];
+            if ($this->testmode == 'yes') {
+                $this->debug = 'yes';
+                $this->log = $this->wooCommerceVersionCompare('2.1')
+                    ? new \WC_Logger()
+                    : WC()->logger();
+
+                $this->uri_service = $this->enviroment_mode === Environment::DEV
+                    ? $environmentByCountry[Environment::DEV]
+                    : $environmentByCountry[Environment::TEST];
+
+            } else {
+                if ($this->enviroment_mode === Environment::PROD) {
+                    $this->debug = 'no';
+                    $this->uri_service = $environmentByCountry[Environment::PROD];
+                }
             }
         }
 
@@ -1481,7 +1521,8 @@ class GatewayMethod extends WC_Payment_Gateway
      *
      * @return bool
      */
-    public static function versionCheck($version = '3.0') {
+    public static function versionCheck(string $version = '3.0'): bool
+    {
         if (class_exists('WooCommerce')) {
             global $woocommerce;
 

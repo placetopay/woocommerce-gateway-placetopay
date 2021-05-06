@@ -1,5 +1,9 @@
 ## Changelog
 
+### [2.18.0] - 2021-05-06
+- Added custom connection url
+- Added custom payment button image
+
 ### [2.17.5] - 2021-04-27
 - Added Chile payment gateway
 
