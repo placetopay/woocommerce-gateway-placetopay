@@ -117,6 +117,7 @@ return [
         'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
         'class' => 'readonly',
+        'default' => $this->getScheduleTaskPath(),
         'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
     ],
     'payment_button_image' => [
