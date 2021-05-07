@@ -2,14 +2,14 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
 "POT-Creation-Date: 2020-11-05 15:50-0500\n"
-"PO-Revision-Date: 2020-11-05 16:26-0500\n"
+"PO-Revision-Date: 2021-05-06 19:08-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_CO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 2.4.3\n"
 "X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-KeywordsList: __;_e;_n\n"
@@ -62,12 +62,8 @@ msgid "Redirecting to Placetopay"
 msgstr "Redireccionando a Placetopay"
 
 #: src/GatewayMethod.php:498
-msgid ""
-"We are now redirecting you to Placetopay to make payment, if you are not redirected please "
-"press the bottom."
-msgstr ""
-"Ahora estamos redirigiéndolo a Placetopay para hacer el pago, si no es redirigido por favor "
-"presione la parte inferior."
+msgid "We are now redirecting you to Placetopay to make payment, if you are not redirected please press the bottom."
+msgstr "Ahora estamos redirigiéndolo a Placetopay para hacer el pago, si no es redirigido por favor presione la parte inferior."
 
 #: src/GatewayMethod.php:545
 msgid "Placetopay Request Failure"
@@ -75,9 +71,7 @@ msgstr "Fallo la petición a Placetopay"
 
 #: src/GatewayMethod.php:566
 msgid "There was an error on the request. please contact the website administrator."
-msgstr ""
-"Ha ocurrido un error en la solicitud. Por favor comuniquese con el administrador del sitio "
-"web."
+msgstr "Ha ocurrido un error en la solicitud. Por favor comuniquese con el administrador del sitio web."
 
 #: src/GatewayMethod.php:677
 msgid "Payment type"
@@ -117,19 +111,13 @@ msgstr "Error: La llave de la orden no coincide."
 #: src/GatewayMethod.php:856
 #, php-format
 msgid ""
-"At this time your order #%s display a checkout transaction which is pending receipt of "
-"confirmation from your financial institution,\n"
-"                please wait a few minutes and check back later to see if your payment was "
-"successfully confirmed. For more information about the current\n"
-"                state of your operation you may contact our customer service line at %s or "
-"send your concerns to the email %s and ask for the status of the transaction: '%s'"
+"At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,\n"
+"                please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current\n"
+"                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: '%s'"
 msgstr ""
-"En este momento su orden # %s presenta un proceso de pago cuya transacción se encuentra "
-"PENDIENTE de recibir confirmación por parte de su entidad financiera,\n"
-" por favor espere unos minutos y vuelva a consultar más tarde para verificar si su pago fue "
-"confirmado de forma exitosa.\n"
-" Si desea mayor información sobre el estado actual de su operación puede comunicarse a "
-"nuestras líneas de atención al cliente %s o enviar un correo electrónico a %s\n"
+"En este momento su orden # %s presenta un proceso de pago cuya transacción se encuentra PENDIENTE de recibir confirmación por parte de su entidad financiera,\n"
+" por favor espere unos minutos y vuelva a consultar más tarde para verificar si su pago fue confirmado de forma exitosa.\n"
+" Si desea mayor información sobre el estado actual de su operación puede comunicarse a nuestras líneas de atención al cliente %s o enviar un correo electrónico a %s\n"
 " y preguntar por el estado de la transacción: %s"
 
 #: src/GatewayMethod.php:867
@@ -173,6 +161,34 @@ msgstr "Pruebas"
 msgid "Production"
 msgstr "Producción"
 
+#: src/GatewayMethod.php:1175
+msgid "Custom"
+msgstr "Personalizado"
+
+#: src/GatewayMethod.php:1175
+msgid "Custom connection URL"
+msgstr "URL de conexión personalizada"
+
+#: src/GatewayMethod.php:1175
+msgid "It can be a URL, an image name (provide the image to the placetopay team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder"
+msgstr "Puede ser una URL, un nombre de imagen (proporcione la imagen al equipo de placetopay en formato svg para que esto funcione) o una ruta local (guarde la imagen en la carpeta wp-content/uploads)"
+
+#: src/GatewayMethod.php:1175
+msgid "Payment button image"
+msgstr "Imagen Botón de Pago"
+
+#: src/GatewayMethod.php:1175
+msgid "By example: \"https://alternative.placetopay.com/redirection\". This value only is required when you select custom environment"
+msgstr "Por ejemplo: \"https://alternative.placetopay.com/redirection\". Es obligatiorio cuando seleccionas en modo personalizado"
+
+#: src/GatewayMethod.php:1175
+msgid "Scheduler task path"
+msgstr "Ubicación tarea programada"
+
+#: src/GatewayMethod.php:1175
+msgid "Set this task to validate payments with pending status in your site."
+msgstr "Configure esta tarea para validar los pagos con estado pendiente en su sitio."
+
 #: src/GatewayMethod.php:1123
 msgid "Minutes"
 msgstr "Minutos"
@@ -194,12 +210,8 @@ msgid "Month(s)"
 msgstr "Mes"
 
 #: src/GatewayMethod.php:1212
-msgid ""
-"<strong>Pending order</strong>, the payment could not be continued because a pending order "
-"has been found."
-msgstr ""
-"<strong>Pedido pendiente</ strong>, el pago no pudo continuar porque se encontró una orden "
-"pendiente."
+msgid "<strong>Pending order</strong>, the payment could not be continued because a pending order has been found."
+msgstr "<strong>Pedido pendiente</ strong>, el pago no pudo continuar porque se encontró una orden pendiente."
 
 #: src/GatewayMethod.php:1219
 msgid "<strong>First Name</strong>, does not have a valid format"
@@ -231,21 +243,13 @@ msgstr "El <strong>Correo</strong>, no tiene un formato válido"
 
 #: src/GatewayMethod.php:1268
 #, php-format
-msgid ""
-"<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the "
-"minimum amount must be greater or equal to %s to use this payment gateway."
-msgstr ""
-"<strong>Monto mínimo</strong>, no cumple con la cantidad mínima para procesar el pedido, la "
-"cantidad mínima debe ser mayor o igual a %s para usar esta pasarela de pago."
+msgid "<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway."
+msgstr "<strong>Monto mínimo</strong>, no cumple con la cantidad mínima para procesar el pedido, la cantidad mínima debe ser mayor o igual a %s para usar esta pasarela de pago."
 
 #: src/GatewayMethod.php:1275
 #, php-format
-msgid ""
-"<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it "
-"must be less or equal to %s to use this payment gateway."
-msgstr ""
-"<strong>Monto máximo</strong>, supera el monto máximo permitido para procesar el pedido, la "
-"cantidad máxima debe ser menor o igual a %s para usar esta pasarela de pago."
+msgid "<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway."
+msgstr "<strong>Monto máximo</strong>, supera el monto máximo permitido para procesar el pedido, la cantidad máxima debe ser menor o igual a %s para usar esta pasarela de pago."
 
 #: src/GatewayMethod.php:1304
 #, php-format
@@ -281,15 +285,12 @@ msgid "Allow to pay with pending orders"
 msgstr "Permitir pagar con órdenes pendientes"
 
 #: src/config/form-fields.php:33
-msgid ""
-"If it is selected, it will allow the user to pay even if he has orders in pending status."
-msgstr ""
-"Si se selecciona, le permitirá al usuario pagar incluso si tiene pedidos en estado pendiente."
+msgid "If it is selected, it will allow the user to pay even if he has orders in pending status."
+msgstr "Si se selecciona, le permitirá al usuario pagar incluso si tiene pedidos en estado pendiente."
 
 #: src/config/form-fields.php:36
 msgid "If it is disabled, it displays a message when paying if the user has a pending order"
-msgstr ""
-"Si está deshabilitado, muestra un mensaje al pagar si el usuario tiene una orden pendiente"
+msgstr "Si está deshabilitado, muestra un mensaje al pagar si el usuario tiene una orden pendiente"
 
 #: src/config/form-fields.php:40
 msgid "Allow partial payments"
@@ -352,12 +353,8 @@ msgid "Mode"
 msgstr "Ambiente"
 
 #: src/config/form-fields.php:93
-msgid ""
-"Enable the environment Placetopay for testing or production transactions.<br />Note: <b>By "
-"default is \"Development Test\", if WP_DEBUG is activated</b>"
-msgstr ""
-"Habilite el entorno Placetopay para realizar pruebas o transacciones de producción. <br /> "
-"Nota: <b> Por defecto es \"Prueba de desarrollo\", si WP_DEBUG está activado </ b>"
+msgid "Enable the environment Placetopay for testing or production transactions.<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is activated</b>"
+msgstr "Habilite el entorno Placetopay para realizar pruebas o transacciones de producción. <br /> Nota: <b> Por defecto es \"Prueba de desarrollo\", si WP_DEBUG está activado </ b>"
 
 #: src/config/form-fields.php:97
 msgid "Return Page"
@@ -372,14 +369,10 @@ msgid "Notification url. EndPoint (WP >= 4.6)"
 msgstr "Url de notificación. (WP >= 4.6)"
 
 #: src/config/form-fields.php:108
-msgid ""
-"Url of notification where Placetopay will send a notification of a transaction for "
-"Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/"
-"plugins/rest-api/"
+msgid "Url of notification where Placetopay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/"
 msgstr ""
-"Url de notificación donde Placetopay enviará una notificación como respuesta a una "
-"transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-API, por favor visita: "
-"https://wordpress.org/plugins/rest-api/"
+"Url de notificación donde Placetopay enviará una notificación como respuesta a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-API, por favor visita: https://wordpress.org/"
+"plugins/rest-api/"
 
 #: src/config/form-fields.php:112
 msgid "Minimum Amount"
@@ -411,9 +404,7 @@ msgstr "Seleccione impuestos para incluir"
 
 #: src/config/form-fields.php:137
 msgid "Select the taxes that are included as VAT or other types of taxes for Placetopay"
-msgstr ""
-"Seleccione los impuestos que se incluyen como el IVA u otros tipos de impuestos para "
-"Placetopay"
+msgstr "Seleccione los impuestos que se incluyen como el IVA u otros tipos de impuestos para Placetopay"
 
 #: src/config/form-fields.php:141
 msgid "Select ICO taxes to include"
@@ -475,34 +466,23 @@ msgstr "Transacción cancelada."
 msgid "Message for rejected transaction"
 msgstr "Mensaje para una transacción rechazada"
 
-#: woocommerce/checkout/form-pay.php:64 woocommerce/checkout/thankyou.php:106
-#: woocommerce/order/order-details.php:79
+#: woocommerce/checkout/form-pay.php:64 woocommerce/checkout/thankyou.php:106 woocommerce/order/order-details.php:79
 msgid "Total Paid:"
 msgstr "Total Pagado:"
 
-#: woocommerce/checkout/form-pay.php:69 woocommerce/checkout/thankyou.php:112
-#: woocommerce/order/order-details.php:84
+#: woocommerce/checkout/form-pay.php:69 woocommerce/checkout/thankyou.php:112 woocommerce/order/order-details.php:84
 msgid "Balance:"
 msgstr "Saldo:"
 
 #: woocommerce/checkout/form-pay.php:102
-msgid ""
-"Sorry, it seems that there are no available payment methods for your location. Please contact "
-"us if you require assistance or wish to make alternate arrangements."
-msgstr ""
-"Lo sentimos, parece que no hay métodos de pago disponibles para tu ubicación. Comuníquese con "
-"nosotros si necesita ayuda o desea hacer arreglos alternativos."
+msgid "Sorry, it seems that there are no available payment methods for your location. Please contact us if you require assistance or wish to make alternate arrangements."
+msgstr "Lo sentimos, parece que no hay métodos de pago disponibles para tu ubicación. Comuníquese con nosotros si necesita ayuda o desea hacer arreglos alternativos."
 
 #: woocommerce/checkout/thankyou.php:35
-msgid ""
-"Unfortunately your order cannot be processed as the originating bank/merchant has declined "
-"your transaction. Please attempt your purchase again."
-msgstr ""
-"Lamentablemente, tu pedido no puede procesarse el banco/comercio ha rechazado tu transacción. "
-"Por favor, intenta realizar la compra de nuevo."
+msgid "Unfortunately your order cannot be processed as the originating bank/merchant has declined your transaction. Please attempt your purchase again."
+msgstr "Lamentablemente, tu pedido no puede procesarse el banco/comercio ha rechazado tu transacción. Por favor, intenta realizar la compra de nuevo."
 
-#: woocommerce/checkout/thankyou.php:40 woocommerce/checkout/thankyou.php:135
-#: woocommerce/myaccount/orders.php:44 woocommerce/myaccount/orders.php:95
+#: woocommerce/checkout/thankyou.php:40 woocommerce/checkout/thankyou.php:135 woocommerce/myaccount/orders.php:44 woocommerce/myaccount/orders.php:95
 msgid "Authorization/CUS"
 msgstr "Autorización/CUS"
 
@@ -520,12 +500,8 @@ msgstr "Gracias. Su orden ha sido recibida."
 
 #: woocommerce/checkout/thankyou.php:68
 #, php-format
-msgid ""
-"<br>For more information about the status of your order: <a href=\"%s\" target=\"_blank"
-"\">view order detail in Placetopay</a>"
-msgstr ""
-"<br> Para obtener más información sobre el estado de su pedido: <a href=\"%s\" target=\"_blank"
-"\">ver detalles de la orden en Placetopay</a>"
+msgid "<br>For more information about the status of your order: <a href=\"%s\" target=\"_blank\">view order detail in Placetopay</a>"
+msgstr "<br> Para obtener más información sobre el estado de su pedido: <a href=\"%s\" target=\"_blank\">ver detalles de la orden en Placetopay</a>"
 
 #: woocommerce/checkout/thankyou.php:79
 msgid "Order status:"
@@ -563,8 +539,7 @@ msgstr "Fecha"
 msgid "Status"
 msgstr "Estado"
 
-#: woocommerce/myaccount/orders.php:45 woocommerce/myaccount/orders.php:101
-#: woocommerce/myaccount/orders.php:109 woocommerce/order/order-details.php:45
+#: woocommerce/myaccount/orders.php:45 woocommerce/myaccount/orders.php:101 woocommerce/myaccount/orders.php:109 woocommerce/order/order-details.php:45
 msgid "Total"
 msgstr "Total"
 
@@ -632,12 +607,8 @@ msgstr "Nota:"
 #~ msgid "Select ICE taxes to included"
 #~ msgstr "Seleccione impuestos ICE para incluir"
 
-#~ msgid ""
-#~ "Enable the environment PlacetoPay for testing or production transactions.<br />Note: <b>By "
-#~ "default is \"Development Test\", if WP_DEBUG is actived</b>"
-#~ msgstr ""
-#~ "Habilite el entorno PlacetoPay para realizar pruebas o transacciones de producción. <br /> "
-#~ "Nota: <b> Por defecto es \"Prueba de desarrollo\", si WP_DEBUG está activado </ b>"
+#~ msgid "Enable the environment PlacetoPay for testing or production transactions.<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is actived</b>"
+#~ msgstr "Habilite el entorno PlacetoPay para realizar pruebas o transacciones de producción. <br /> Nota: <b> Por defecto es \"Prueba de desarrollo\", si WP_DEBUG está activado </ b>"
 
 #~ msgid "Payment error:"
 #~ msgstr "Error al pagar:"
@@ -657,12 +628,8 @@ msgstr "Nota:"
 #~ msgid "Enviroment mode"
 #~ msgstr "Entorno de desarrollo"
 
-#~ msgid ""
-#~ "Enable the enviroment PlacetoPay for testing or production transactions.<br />Note: <b>By "
-#~ "default is \"Development Test\", if WP_DEBUG is actived</b>"
-#~ msgstr ""
-#~ "Habilite el ambiente PlacetoPay para realizar transacciones en modo pruebas o producción."
-#~ "<br />Nota: <b>Por defecto es \"Desarrollo pruebas\", sí WP_DEBUG esta activado</b>"
+#~ msgid "Enable the enviroment PlacetoPay for testing or production transactions.<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is actived</b>"
+#~ msgstr "Habilite el ambiente PlacetoPay para realizar transacciones en modo pruebas o producción.<br />Nota: <b>Por defecto es \"Desarrollo pruebas\", sí WP_DEBUG esta activado</b>"
 
 #~ msgid "Payment Method:"
 #~ msgstr "Método de pago:"
@@ -670,14 +637,10 @@ msgstr "Nota:"
 #~ msgid "Return url. EndPoint (WP >= 4.6)"
 #~ msgstr "Url de retorno. Endpoint (WP >= 4.6)"
 
-#~ msgid ""
-#~ "Url of return where PlacetoPay will send a notification of a transaction for Woocommerce."
-#~ "<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/"
-#~ "rest-api/"
+#~ msgid "Url of return where PlacetoPay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/"
 #~ msgstr ""
-#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a una transacción "
-#~ "para Woocommerce .<br />Si tu Wordpress no soporta REST-API, por favor visita: https://"
-#~ "wordpress.org/plugins/rest-api/"
+#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-API, por favor visita: https://wordpress.org/"
+#~ "plugins/rest-api/"
 
 #~ msgid "The <strong>Name</strong>, does not have a valid format"
 #~ msgstr "El <strong>nombre</strong>, no tiene un formato válido"
@@ -695,22 +658,14 @@ msgstr "Nota:"
 #~ msgstr "Activar para hacer transacciones de prueba con la plataforma de PlacetoPay."
 
 #~ msgid ""
-#~ "En este momento su orden # %s presenta un proceso de pago cuya transacción se encuentra "
-#~ "PENDIENTE de recibir confirmación por parte de su entidad financiera,\n"
-#~ "                            por favor espere unos minutos y vuelva a consultar más tarde "
-#~ "para verificar si su pago fue confirmado de forma exitosa.\n"
-#~ "                            Si desea mayor información sobre el estado actual de su "
-#~ "operación puede comunicarse a nuestras líneas de atención al cliente %s o enviar un correo "
-#~ "electrónico a %s\n"
+#~ "En este momento su orden # %s presenta un proceso de pago cuya transacción se encuentra PENDIENTE de recibir confirmación por parte de su entidad financiera,\n"
+#~ "                            por favor espere unos minutos y vuelva a consultar más tarde para verificar si su pago fue confirmado de forma exitosa.\n"
+#~ "                            Si desea mayor información sobre el estado actual de su operación puede comunicarse a nuestras líneas de atención al cliente %s o enviar un correo electrónico a %s\n"
 #~ "                            y preguntar por el estado de la transacción: %s"
 #~ msgstr ""
-#~ "En este momento su orden # %s presenta un proceso de pago cuya transacción se encuentra "
-#~ "PENDIENTE de recibir confirmación por parte de su entidad financiera,\n"
-#~ "                        por favor espere unos minutos y vuelva a consultar más tarde para "
-#~ "verificar si su pago fue confirmado de forma exitosa.\n"
-#~ "                        Si desea mayor información sobre el estado actual de su operación "
-#~ "puede comunicarse a nuestras líneas de atención al cliente %s o enviar un correo "
-#~ "electrónico a %s\n"
+#~ "En este momento su orden # %s presenta un proceso de pago cuya transacción se encuentra PENDIENTE de recibir confirmación por parte de su entidad financiera,\n"
+#~ "                        por favor espere unos minutos y vuelva a consultar más tarde para verificar si su pago fue confirmado de forma exitosa.\n"
+#~ "                        Si desea mayor información sobre el estado actual de su operación puede comunicarse a nuestras líneas de atención al cliente %s o enviar un correo electrónico a %s\n"
 #~ "                        y preguntar por el estado de la transacción: %s"
 
 #~ msgid "Message for declined transaction"
@@ -720,29 +675,19 @@ msgstr "Nota:"
 #~ msgid "Message for declined transaction "
 #~ msgstr "ID de la transacción"
 
-#~ msgid ""
-#~ "Url of return to PlacetoPay send a notification response to Woocommerce.<br />If your "
-#~ "Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/"
+#~ msgid "Url of return to PlacetoPay send a notification response to Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/"
 #~ msgstr ""
-#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a una transacción "
-#~ "para Woocommerce .<br />Si tu Wordpress no soporta REST-API, por favor visita: https://"
-#~ "wordpress.org/plugins/rest-api/"
+#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-API, por favor visita: https://wordpress.org/"
+#~ "plugins/rest-api/"
 
-#~ msgid ""
-#~ "Url of return or callback url to PlacetoPay send a notification response to Woocommerce."
-#~ "<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/"
-#~ "rest-api/"
+#~ msgid "Url of return or callback url to PlacetoPay send a notification response to Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/"
 #~ msgstr "Url de retorno "
 
 #~ msgid "Return page EndPoint (WP >= 4.6)"
 #~ msgstr "Url de retorno. Endpoint (WP >= 4.6)"
 
-#~ msgid ""
-#~ "If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-"
-#~ "api/"
-#~ msgstr ""
-#~ "Si tu WordPress no soporta la funcionalidad de Rest-API, por favor visita: https://"
-#~ "wordpress.org/plugins/rest-api/"
+#~ msgid "If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/"
+#~ msgstr "Si tu WordPress no soporta la funcionalidad de Rest-API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
 #~ msgid "Page End Point (WP >= 4.6)"
 #~ msgstr "Endpoint para pagina de regreso (WP >= 4.6)"

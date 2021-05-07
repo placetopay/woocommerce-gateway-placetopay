@@ -104,6 +104,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $skip_result;
     private $custom_connection_url;
     private $payment_button_image;
+    private $schedule_task_path;
 
     /**
      * GatewayMethod constructor.
@@ -129,8 +130,10 @@ class GatewayMethod extends WC_Payment_Gateway
         // Init settings
         $this->initFormFields();
         $this->settings['endpoint'] = home_url('/wp-json/') . self::getPaymentEndpoint();
+        $this->settings['schedule_path'] = plugin_dir_path(__FILE__).'cron/ProcessPendingOrderCron.php';
 
         $this->endpoint = $this->settings['endpoint'];
+        $this->schedule_task_path = 'This is a test';
         $this->expiration_time_minutes = $this->settings['expiration_time_minutes'];
         $this->fill_buyer_information = $this->get_option('fill_buyer_information');
         $this->country = $this->get_option('country');
@@ -1439,7 +1442,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::CL => [
                 Environment::PROD => 'https://checkout-getnet-cl.placetopay.com',
-                Environment::TEST => 'https://uat-checkout.placetopay.ws/redirection',
+                Environment::TEST => 'https://uat-checkout.placetopay.ws',
                 Environment::DEV => 'https://dev.placetopay.com/redirection/',
             ]
         ][$this->settings['country']];

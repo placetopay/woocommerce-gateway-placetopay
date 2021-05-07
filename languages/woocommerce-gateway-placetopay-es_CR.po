@@ -618,6 +618,34 @@ msgstr "Producto"
 msgid "Note:"
 msgstr "Nota:"
 
+#: src/GatewayMethod.php:1175
+msgid "Custom"
+msgstr "Personalizado"
+
+#: src/GatewayMethod.php:1175
+msgid "Custom connection URL"
+msgstr "URL de conexión personalizada"
+
+#: src/GatewayMethod.php:1175
+msgid "It can be a URL, an image name (provide the image to the placetopay team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder"
+msgstr "Puede ser una URL, un nombre de imagen (proporcione la imagen al equipo de placetopay en formato svg para que esto funcione) o una ruta local (guarde la imagen en la carpeta wp-content/uploads)"
+
+#: src/GatewayMethod.php:1175
+msgid "Payment button image"
+msgstr "Imagen Botón de Pago"
+
+#: src/GatewayMethod.php:1175
+msgid "By example: \"https://alternative.placetopay.com/redirection\". This value only is required when you select custom environment"
+msgstr "Por ejemplo: \"https://alternative.placetopay.com/redirection\". Es obligatiorio cuando seleccionas en modo personalizado"
+
+#: src/GatewayMethod.php:1175
+msgid "Scheduler task path"
+msgstr "Ubicación tarea programada"
+
+#: src/GatewayMethod.php:1175
+msgid "Set this task to validate payments with pending status in your site."
+msgstr "Configure esta tarea para validar los pagos con estado pendiente en su sitio."
+
 #, fuzzy
 #~| msgid "<strong>Country</strong>, is not valid."
 #~ msgid "<strong>TOTAL</strong>, dno cumnple"

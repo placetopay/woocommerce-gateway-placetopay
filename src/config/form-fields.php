@@ -113,6 +113,12 @@ return [
         'description' => __('Url of notification where Placetopay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
             'woocommerce-gateway-placetopay')
     ],
+    'schedule_task_path' => [
+        'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+        'class' => 'readonly',
+        'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
+    ],
     'payment_button_image' => [
         'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
