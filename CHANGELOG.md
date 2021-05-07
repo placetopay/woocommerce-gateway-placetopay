@@ -1,5 +1,9 @@
 ## Changelog
 
+### [2.18.1] - 2021-05-06
+- Added sonda path on admin panel
+- Fixed translations on custom image and url
+
 ### [2.18.0] - 2021-05-06
 - Added custom connection url
 - Added custom payment button image
