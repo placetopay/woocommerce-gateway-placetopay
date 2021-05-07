@@ -133,7 +133,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->settings['schedule_path'] = plugin_dir_path(__FILE__).'cron/ProcessPendingOrderCron.php';
 
         $this->endpoint = $this->settings['endpoint'];
-        $this->schedule_task_path = 'This is a test';
+        $this->schedule_task_path = $this->settings['schedule_path'];
         $this->expiration_time_minutes = $this->settings['expiration_time_minutes'];
         $this->fill_buyer_information = $this->get_option('fill_buyer_information');
         $this->country = $this->get_option('country');
