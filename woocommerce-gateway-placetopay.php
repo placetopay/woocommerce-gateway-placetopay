@@ -6,7 +6,7 @@
  * Author: Placetopay
  * Author URI: https://www.placetopay.com/
  * Developer: Placetopay
- * Version: 2.18.1
+ * Version: 2.18.2
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
