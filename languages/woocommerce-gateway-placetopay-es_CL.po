@@ -143,7 +143,7 @@ msgstr "Item #%s incremento de %s a %s."
 
 #: src/GatewayMethod.php:1075
 msgid "Default Page"
-msgstr "Pagina por defecto"
+msgstr "Página por defecto"
 
 #: src/GatewayMethod.php:1082
 msgid "My Orders"
@@ -342,11 +342,11 @@ msgstr "Habilite el entorno Getnet para realizar pruebas o transacciones de prod
 
 #: src/config/form-fields.php:97
 msgid "Return Page"
-msgstr "Pagina de regreso"
+msgstr "Página de regreso"
 
 #: src/config/form-fields.php:101
 msgid "URL of success page"
-msgstr "Dirección de la pagina de retorno"
+msgstr "Dirección de la página de retorno"
 
 #: src/config/form-fields.php:105
 msgid "Notification url. EndPoint (WP >= 4.6)"
@@ -587,7 +587,7 @@ msgstr "URL de conexión personalizada"
 
 #: src/GatewayMethod.php:1175
 msgid "It can be a URL, an image name (provide the image to the placetopay team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder"
-msgstr "Puede ser una URL, un nombre de imagen (proporcione la imagen al equipo de getnet en formato svg para que esto funcione) o una ruta local (guarde la imagen en la carpeta wp-content/uploads)"
+msgstr "Puede ser una URL, un nombre de imagen (proporcione la imagen al equipo de Getnet en formato svg para que esto funcione) o una ruta local (guarde la imagen en la carpeta wp-content/uploads)"
 
 #: src/GatewayMethod.php:1175
 msgid "Payment button image"
@@ -702,10 +702,10 @@ msgstr "Configure esta tarea para validar los pagos con estado pendiente en su s
 #~ msgstr "Si tu WordPress no soporta la funcionalidad de Rest-API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
 #~ msgid "Page End Point (WP >= 4.6)"
-#~ msgstr "Endpoint para pagina de regreso (WP >= 4.6)"
+#~ msgstr "Endpoint para página de regreso (WP >= 4.6)"
 
 #~ msgid "Return Page End Point."
-#~ msgstr "Endpoint para pagina de regreso"
+#~ msgstr "Endpoint para página de regreso"
 
 #, fuzzy
 #~ msgid "Redirecting to Place to Pay"
