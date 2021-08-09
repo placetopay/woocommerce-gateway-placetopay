@@ -373,6 +373,7 @@ class GatewayMethod extends WC_Payment_Gateway
             : '+2 days';
 
         $req = [
+            'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
             'returnUrl' => $redirectUrl . '&key=' . $ref,
             'noBuyerFill' => $this->fill_buyer_information !== 'yes',
@@ -1444,7 +1445,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::CL => [
                 Environment::PROD => 'https://checkout-getnet-cl.placetopay.com',
-                Environment::TEST => 'https://uat-checkout.placetopay.ws',
+                Environment::TEST => 'https://cl-uat-checkout.placetopay.com/',
                 Environment::DEV => 'https://dev.placetopay.com/redirection/',
             ]
         ][$this->settings['country']];
