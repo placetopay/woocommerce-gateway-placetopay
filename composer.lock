@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "dnetix/redirection",
-            "version": "1.0.8",
+            "version": "1.0.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dnetix/redirection.git",
-                "reference": "d741b59e3154f3e0d27c523904a95742c2c8d477"
+                "reference": "4c1b164be5c2feaf48407aa44601a84a396a1223"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dnetix/redirection/zipball/d741b59e3154f3e0d27c523904a95742c2c8d477",
-                "reference": "d741b59e3154f3e0d27c523904a95742c2c8d477",
+                "url": "https://api.github.com/repos/dnetix/redirection/zipball/4c1b164be5c2feaf48407aa44601a84a396a1223",
+                "reference": "4c1b164be5c2feaf48407aa44601a84a396a1223",
                 "shasum": ""
             },
             "require": {
@@ -49,7 +49,11 @@
                 }
             ],
             "description": "Library to connect with PlacetoPay Redirection service",
-            "time": "2020-09-24T02:01:30+00:00"
+            "support": {
+                "issues": "https://github.com/dnetix/redirection/issues",
+                "source": "https://github.com/dnetix/redirection/tree/1.0.9"
+            },
+            "time": "2021-03-03T15:08:32+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",
@@ -733,5 +737,5 @@
         "php": "^5.5 || ^7.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "1.1.0"
+    "plugin-api-version": "2.1.0"
 }
