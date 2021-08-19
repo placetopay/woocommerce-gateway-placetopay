@@ -1,5 +1,8 @@
 ## Changelog
 
+### [2.18.5] - 2021-08-19
+- Updated Getnet endpoints
+
 ### [2.18.1] - 2021-05-06
 - Added sonda path on admin panel
 - Fixed translations on custom image and url

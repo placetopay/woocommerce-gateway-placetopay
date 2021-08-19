@@ -1126,8 +1126,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($this->icon) {
             $icon = sprintf(
-                '<a href="%s" target="_blank"><img src="%s" style="max-height: 24px; max-width: 200px;" alt="%s"/></a>',
-                'https://www.placetopay.com/',
+                '<img src="%s" style="max-height: 24px; max-width: 200px;" alt="%s"/>',
                 WC_HTTPS::force_https_url($this->icon),
                 esc_attr($this->get_title())
             );
@@ -1444,9 +1443,9 @@ class GatewayMethod extends WC_Payment_Gateway
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
             Country::CL => [
-                Environment::PROD => 'https://checkout-getnet-cl.placetopay.com',
-                Environment::TEST => 'https://cl-uat-checkout.placetopay.com/',
-                Environment::DEV => 'https://dev.placetopay.com/redirection/',
+                Environment::PROD => 'https://checkout.getnet.cl',
+                Environment::TEST => 'https://checkout.uat.getnet.cl',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
             ]
         ][$this->settings['country']];
 
