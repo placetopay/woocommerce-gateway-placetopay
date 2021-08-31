@@ -1,5 +1,8 @@
 ## Changelog
 
+### [2.18.7] - 2021-08-31
+- Changed branding.
+
 ### [2.18.6] - 2021-08-19
 - Updated dnetix/redirection package
 
