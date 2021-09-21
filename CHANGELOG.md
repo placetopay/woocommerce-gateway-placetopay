@@ -1,5 +1,28 @@
 ## Changelog
 
+### [2.18.7] - 2021-08-31
+- Changed branding.
+
+### [2.18.6] - 2021-08-19
+- Updated dnetix/redirection package
+
+### [2.18.5] - 2021-08-19
+- Updated Getnet endpoints
+
+### [2.18.1] - 2021-05-06
+- Added sonda path on admin panel
+- Fixed translations on custom image and url
+
+### [2.18.0] - 2021-05-06
+- Added custom connection url
+- Added custom payment button image
+
+### [2.17.5] - 2021-04-27
+- Added Chile payment gateway
+
+### [2.17.1] - 2020-10.23
+- Updated dnetix/redirection plugin
+
 ### [2.17.0] - 2020-10.23
 - Added ico tax rate
 - Added base devolution amount to tax detail object
