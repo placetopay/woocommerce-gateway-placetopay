@@ -1,7 +1,7 @@
 # Gateway PlacetoPay for Woocommerce
 Un plugin para agregar un nuevo método de pago a tu tienda por PlacetoPay.
 
-## Version 2.18.7
+## Version 2.18.8
 
 ## Requerimientos
 - WordPress >= 4.4.1

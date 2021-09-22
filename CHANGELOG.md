@@ -1,4 +1,6 @@
 ## Changelog
+
+### [2.18.8] - 2021-09-22
 - Changed production endpoints
 
 ### [2.18.7] - 2021-08-31
