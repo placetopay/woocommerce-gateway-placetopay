@@ -1,4 +1,5 @@
 ## Changelog
+- Changed production endpoints
 
 ### [2.18.7] - 2021-08-31
 - Changed branding.
