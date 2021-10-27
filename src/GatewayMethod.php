@@ -171,7 +171,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public function getScheduleTaskPath(): string
     {
-        return plugin_dir_path(__FILE__) . 'cron/ProcessPendingOrderCron.php';
+        return WP_PLUGIN_DIR . '/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php';
     }
 
     /**

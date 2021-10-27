@@ -1,10 +1,13 @@
 ## Changelog
 
+### [2.18.9] - 2021-10-27
+- Fixed cron job path
+
 ### [2.18.8] - 2021-09-22
 - Changed production endpoints
 
 ### [2.18.7] - 2021-08-31
-- Changed branding.
+- Changed branding
 
 ### [2.18.6] - 2021-08-19
 - Updated dnetix/redirection package
