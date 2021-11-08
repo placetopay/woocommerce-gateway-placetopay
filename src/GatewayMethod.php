@@ -1163,6 +1163,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
             Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
             Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
+            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1468,7 +1469,12 @@ class GatewayMethod extends WC_Payment_Gateway
                 Environment::PROD => 'https://checkout.getnet.cl',
                 Environment::TEST => 'https://checkout.uat.getnet.cl',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ]
+            ],
+            Country::PR => [
+                Environment::PROD => 'https://checkout.placetopay.com',
+                Environment::TEST => 'https://checkout-test.placetopay.com',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
         ][$this->settings['country']];
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';

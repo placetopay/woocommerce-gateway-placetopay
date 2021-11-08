@@ -1,5 +1,8 @@
 ## Changelog
 
+### [2.19.0] - 2021-11-08
+- Added Puerto Rico to Countries list
+
 ### [2.18.9] - 2021-10-27
 - Fixed cron job path
 
