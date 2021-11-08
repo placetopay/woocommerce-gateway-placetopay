@@ -15,4 +15,6 @@ interface Country
     const CR = 'CR';
 
     const CL = 'CL';
+
+    const PR = 'PR';
 }
