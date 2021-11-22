@@ -527,11 +527,11 @@ class GatewayMethod extends WC_Payment_Gateway
             $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
-            if (!is_null($transactionInfo->payment)) {
-                $authorizationCode = count($transactionInfo->payment) > 0
+            if (!is_null($transactionInfo->payment())) {
+                $authorizationCode = count($transactionInfo->payment()) > 0
                     ? array_map(function (Transaction $trans) {
                         return $trans->authorization();
-                    }, $transactionInfo->payment)
+                    }, $transactionInfo->payment())
                     : [];
 
                 // Payment Details
@@ -717,7 +717,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     $paymentMethodName = count($transactionInfo->payment()) > 0
                         ? array_map(function (Transaction $trans) {
                             return $trans->paymentMethodName();
-                        }, $transactionInfo->payment)
+                        }, $transactionInfo->payment())
                         : [];
 
                     if (count($paymentMethodName) > 0) {
@@ -1312,7 +1312,7 @@ class GatewayMethod extends WC_Payment_Gateway
             $isValid = false;
         }
 
-        if (!PersonValidator::isValidCountryCode($request['billing_country'])) {
+        /* if (!PersonValidator::isValidCountryCode($request['billing_country'])) {
             wc_add_notice(__(
                 '<strong>Country</strong>, is not valid.',
                 'woocommerce-gateway-placetopay'
@@ -1337,7 +1337,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ), 'error');
 
             $isValid = false;
-        }
+        } */
 
         if (preg_match(PersonValidator::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
             wc_add_notice(__(
@@ -1457,7 +1457,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::EC => [
                 Environment::PROD => 'https://checkout.placetopay.ec',
-                Environment::TEST => 'https://checkout-test.placetopay.ec',
+                Environment::TEST => 'https://test.placetopay.ec/redirection/',
                 Environment::DEV => 'https://dev.placetopay.ec/redirection',
             ],
             Country::CR => [

@@ -1,5 +1,9 @@
 ## Changelog
 
+### [2.19.1] - 2021-11-22
+- Fix ecuador test endpoint
+- Remove country form validation
+
 ### [2.19.0] - 2021-11-08
 - Added Puerto Rico to Countries list
 
