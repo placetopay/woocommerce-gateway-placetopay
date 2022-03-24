@@ -207,9 +207,19 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $url = $this->payment_button_image;
 
-        if (is_null($url) || empty($url)) {
+        if (empty($url)) {
             // format: null
-            $image = 'https://static.placetopay.com/placetopay-logo.svg';
+            switch ($this->settings['country']) {
+                case Country::CL:
+                    $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg';
+                    break;
+                case Country::CO:
+                case Country::EC:
+                case Country::PR:
+                case Country::CR:
+                default:
+                    $image = 'https://static.placetopay.com/placetopay-logo.svg';
+            }
         } elseif ($this->checkValidUrl($url)) {
             // format: https://www.domain.test/image.svg
             $image = $url;
@@ -652,6 +662,9 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($sessionStatusInstance->status() !== $sessionStatusInstance::ST_PENDING) {
             $authorizationCode = $this->getAuthorizationCode($transactionInfo);
+            $authorizationCode = is_array($authorizationCode)
+                ? implode(',', $authorizationCode)
+                : $authorizationCode;
         }
 
         // Payment Details
@@ -659,9 +672,7 @@ class GatewayMethod extends WC_Payment_Gateway
             update_post_meta(
                 $order->get_id(),
                 self::META_AUTHORIZATION_CUS,
-                is_array($authorizationCode)
-                    ? implode(',', $authorizationCode)
-                    : $authorizationCode
+                $authorizationCode
             );
         }
 
@@ -753,6 +764,23 @@ class GatewayMethod extends WC_Payment_Gateway
                 if ($status == $sessionStatusInstance::ST_APPROVED) {
                     $this->msg['message'] = $this->msg_approved;
                     $this->msg['class'] = 'woocommerce-message';
+
+//                    $titleMsg = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
+//                    $br = '<br />';
+//                    $statusMsg = __('Status: ', 'woocommerce-gateway-placetopay') . $status;
+//                    $orderMsg = __('Buying order: ', 'woocommerce-gateway-placetopay') . $order->get_id();
+//                    $codeMsg = __('Authorization code: ', 'woocommerce-gateway-placetopay') . $authorizationCode;
+//                    $cardMsg = __('Card last digits: ', 'woocommerce-gateway-placetopay') . str_replace('*', '', $transactionInfo->payment()[0]->additionalData()['lastDigits']);
+//                    $amountMsg = __('Amount: $ ', 'woocommerce-gateway-placetopay') . $totalAmount;
+//                    $reasonMsg = __('Response code: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->status()->reason();
+//                    $paymentMethodMsg = __('Payment method: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->paymentMethod();
+//                    $installmentsTypeMsg = __('Installment type: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->paymentMethodName();
+//                    $installmentsMsg = __('Installments: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->additionalData()['installments'];
+//                    $installmentsAmountMsg = __('Installments amount: -', 'woocommerce-gateway-placetopay');
+//                    $internalReferenceMsg = __('Internal id: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->internalReference();
+//
+//                    $message = $titleMsg.$br.$br.$statusMsg.$br.$orderMsg.$br.$codeMsg.$br.$cardMsg.$br.$amountMsg.$br.$reasonMsg.$br.$paymentMethodMsg.$br.$installmentsTypeMsg.$br.$installmentsMsg.$br.$installmentsAmountMsg.$br.$internalReferenceMsg;
+//                    $order->add_order_note($message);
 
                     $order->add_order_note(__('Placetopay payment approved', 'woocommerce-gateway-placetopay'));
                     $order->payment_complete();
@@ -1457,7 +1485,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::EC => [
                 Environment::PROD => 'https://checkout.placetopay.ec',
-                Environment::TEST => 'https://test.placetopay.ec/redirection/',
+                Environment::TEST => 'https://checkout-test.placetopay.ec',
                 Environment::DEV => 'https://dev.placetopay.ec/redirection',
             ],
             Country::CR => [
