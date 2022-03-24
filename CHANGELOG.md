@@ -1,6 +1,11 @@
 ## Changelog
 
 ### [2.19.1] - 2021-11-22
+- Change ecuador endpoint
+- Fix bug on payment result
+- Add custom notes (WIP)
+
+### [2.19.1] - 2021-11-22
 - Fix ecuador test endpoint
 - Remove country form validation
 
