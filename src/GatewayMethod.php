@@ -650,6 +650,12 @@ class GatewayMethod extends WC_Payment_Gateway
         $sessionStatusInstance = $transactionInfo->status();
         $status = $sessionStatusInstance->status();
         $authorizationCode = [];
+        $paymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
+
+        if ($isCallback && $paymentStatus === Status::ST_APPROVED) {
+            $this->logger('Returning method is already '. $paymentStatus, __METHOD__);
+            return;
+        }
 
         // Register status PlacetoPay for the order
         update_post_meta($order->get_id(), self::META_STATUS, $status);
@@ -765,26 +771,14 @@ class GatewayMethod extends WC_Payment_Gateway
                     $this->msg['message'] = $this->msg_approved;
                     $this->msg['class'] = 'woocommerce-message';
 
-//                    $titleMsg = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
-//                    $br = '<br />';
-//                    $statusMsg = __('Status: ', 'woocommerce-gateway-placetopay') . $status;
-//                    $orderMsg = __('Buying order: ', 'woocommerce-gateway-placetopay') . $order->get_id();
-//                    $codeMsg = __('Authorization code: ', 'woocommerce-gateway-placetopay') . $authorizationCode;
-//                    $cardMsg = __('Card last digits: ', 'woocommerce-gateway-placetopay') . str_replace('*', '', $transactionInfo->payment()[0]->additionalData()['lastDigits']);
-//                    $amountMsg = __('Amount: $ ', 'woocommerce-gateway-placetopay') . $totalAmount;
-//                    $reasonMsg = __('Response code: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->status()->reason();
-//                    $paymentMethodMsg = __('Payment method: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->paymentMethod();
-//                    $installmentsTypeMsg = __('Installment type: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->paymentMethodName();
-//                    $installmentsMsg = __('Installments: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->additionalData()['installments'];
-//                    $installmentsAmountMsg = __('Installments amount: -', 'woocommerce-gateway-placetopay');
-//                    $internalReferenceMsg = __('Internal id: ', 'woocommerce-gateway-placetopay') . $transactionInfo->payment()[0]->internalReference();
-//
-//                    $message = $titleMsg.$br.$br.$statusMsg.$br.$orderMsg.$br.$codeMsg.$br.$cardMsg.$br.$amountMsg.$br.$reasonMsg.$br.$paymentMethodMsg.$br.$installmentsTypeMsg.$br.$installmentsMsg.$br.$installmentsAmountMsg.$br.$internalReferenceMsg;
-//                    $order->add_order_note($message);
+                    if ($paymentStatus !== Status::ST_APPROVED) {
+                        $payment = $transactionInfo->lastApprovedTransaction();
 
-                    $order->add_order_note(__('Placetopay payment approved', 'woocommerce-gateway-placetopay'));
-                    $order->payment_complete();
-                    $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                        $order->add_order_note($this->getOrderNote($payment, $status, $totalAmount));
+                        $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
+                        $order->payment_complete();
+                        $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    }
                 } else {
                     if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
                         update_post_meta(
@@ -794,7 +788,6 @@ class GatewayMethod extends WC_Payment_Gateway
                         );
                     }
 
-                    // TODO: This is the bug that set order to on-old
                     $statusOrder = ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_PENDING)
                         ? 'on-hold'
                         : 'pending';
@@ -882,6 +875,88 @@ class GatewayMethod extends WC_Payment_Gateway
         wp_redirect($redirectUrl);
 
         exit;
+    }
+
+    /**
+     * @param Transaction $payment
+     * @param string $status
+     * @param $total
+     * @return string
+     */
+    private function getOrderNote(Transaction $payment, string $status, $total)
+    {
+        $paymentTypeCode = $payment->franchise()
+            ? __('Credit', 'woocommerce-gateway-placetopay')
+            : __('Debit', 'woocommerce-gateway-placetopay');
+        $installmentType = $payment->additionalData()['installments'] > 0
+            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
+            : __('No installments', 'woocommerce-gateway-placetopay');
+        $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
+
+        $details = [
+            [
+                'key' => __('Status: ', 'woocommerce-gateway-placetopay'),
+                'value' => $status
+            ],
+            [
+                'key' => __('Receipt: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->receipt(),
+            ],
+            [
+                'key' => __('Authorization Code: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->authorization(),
+            ],
+            [
+                'key' => __('Card last Digits: ', 'woocommerce-gateway-placetopay'),
+                'value' => str_replace('*', '', $payment->additionalData()['lastDigits']),
+            ],
+            [
+                'key' => __('Amount: ', 'woocommerce-gateway-placetopay'),
+                'value' => '$' . number_format($total, '0', ',', '.'),
+            ],
+            [
+                'key' => __('Response code: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->status()->reason(),
+            ],
+            [
+                'key' => __('Payment Type: ', 'woocommerce-gateway-placetopay'),
+                'value' => $paymentTypeCode,
+            ],
+            [
+                'key' => __('Installments Type: ', 'woocommerce-gateway-placetopay'),
+                'value' => $installmentType,
+            ],
+            [
+                'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->additionalData()['installments'],
+            ],
+            [
+                'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
+                'value' => '-',
+            ],
+            [
+                'key' => __('Transaction Date: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->status()->date(),
+            ],
+            [
+                'key' => __('Internal id: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->internalReference(),
+            ],
+        ];
+
+        $body = '';
+
+        foreach ($details as $detail) {
+            $body .= "<strong>{$detail['key']}</strong>{$detail['value']}<br/>";
+        }
+
+        return "
+            <div class='placetopay-order-datails'>
+                <p><h3>{$message}</h3></p>
+                            
+                {$body}
+            </div>
+        ";
     }
 
     /**
@@ -1339,33 +1414,6 @@ class GatewayMethod extends WC_Payment_Gateway
 
             $isValid = false;
         }
-
-        /* if (!PersonValidator::isValidCountryCode($request['billing_country'])) {
-            wc_add_notice(__(
-                '<strong>Country</strong>, is not valid.',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (!is_numeric($request['billing_state']) && preg_match(PersonValidator::PATTERN_STATE, trim($request['billing_state'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>State / Country</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (!is_numeric($request['billing_state']) && preg_match(PersonValidator::PATTERN_CITY, trim($request['billing_city'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Town / City</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        } */
 
         if (preg_match(PersonValidator::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
             wc_add_notice(__(
