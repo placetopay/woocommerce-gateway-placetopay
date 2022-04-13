@@ -1,10 +1,10 @@
 ## Changelog
 
-### [2.19.2] - 2022-04-12
+### [2.19.3] - 2022-04-12
 - Add payment detail note
 - fix note duplication on payment flow
 
-### [2.19.1] - 2021-11-22
+### [2.19.2] - 2022-03-24
 - Change ecuador endpoint
 - Fix bug on payment result
 - Add custom notes (WIP)
