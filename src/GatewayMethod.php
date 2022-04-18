@@ -885,9 +885,6 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     private function getOrderNote(Transaction $payment, string $status, $total)
     {
-        $paymentTypeCode = $payment->franchise()
-            ? __('Credit', 'woocommerce-gateway-placetopay')
-            : __('Debit', 'woocommerce-gateway-placetopay');
         $installmentType = $payment->additionalData()['installments'] > 0
             ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
             : __('No installments', 'woocommerce-gateway-placetopay');
@@ -920,7 +917,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             [
                 'key' => __('Payment Type: ', 'woocommerce-gateway-placetopay'),
-                'value' => $paymentTypeCode,
+                'value' => $payment->paymentMethodName(),
             ],
             [
                 'key' => __('Installments Type: ', 'woocommerce-gateway-placetopay'),
@@ -928,7 +925,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             [
                 'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
-                'value' => $payment->additionalData()['installments'],
+                'value' => $payment->additionalData()['installments'] ?? 0,
             ],
             [
                 'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
@@ -1543,7 +1540,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::CL => [
                 Environment::PROD => 'https://checkout.getnet.cl',
-                Environment::TEST => 'https://checkout.uat.getnet.cl',
+                Environment::TEST => 'https://checkout.test.getnet.cl',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
             Country::PR => [
