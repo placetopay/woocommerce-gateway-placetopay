@@ -52,7 +52,7 @@ return [
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'default' => __('Placetopay', 'woocommerce-gateway-placetopay'),
+        'default' => __('Placetopay Title', 'woocommerce-gateway-placetopay'),
         'description' => __('This controls the title which the user sees during checkout.',
             'woocommerce-gateway-placetopay'),
         'desc_tip' => true
