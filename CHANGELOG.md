@@ -1,5 +1,9 @@
 ## Changelog
 
+### [2.19.4] - 2022-05-18
+- Change payment method name on order note
+- Change Chile endpoint for test
+
 ### [2.19.3] - 2022-04-12
 - Add payment detail note
 - fix note duplication on payment flow
