@@ -1,6 +1,10 @@
 ## Changelog
 
-### [2.19.4] - 2022-05-18
+### [2.19.5] - 2022-05-05
+- Fix error with taxes
+- Add reference to order note
+
+### [2.19.4] - 2022-04-18
 - Change payment method name on order note
 - Change Chile endpoint for test
 

@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Woocommerce Gateway PlacetoPay v2.0.0\n"
-"POT-Creation-Date: 2022-04-18 14:07-0500\n"
-"PO-Revision-Date: 2022-04-18 14:11-0500\n"
+"POT-Creation-Date: 2022-05-02 14:21-0500\n"
+"PO-Revision-Date: 2022-05-02 14:21-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: es_CO\n"
@@ -119,58 +119,62 @@ msgid "<p>Placetopay payment approved</p>"
 msgstr "<p>Pago aprobado por Getnet</p>"
 
 #: src/GatewayMethod.php:895
+msgid "Buying order: "
+msgstr "Orden de compra: "
+
+#: src/GatewayMethod.php:899
 msgid "Status: "
 msgstr "Estado: "
 
-#: src/GatewayMethod.php:899
+#: src/GatewayMethod.php:903
 msgid "Receipt: "
 msgstr "Recibo: "
 
-#: src/GatewayMethod.php:903
+#: src/GatewayMethod.php:907
 msgid "Authorization Code: "
 msgstr "Código de Autorización: "
 
-#: src/GatewayMethod.php:907
+#: src/GatewayMethod.php:911
 msgid "Card last Digits: "
 msgstr "Últimos dígitos de la tarjeta: "
 
-#: src/GatewayMethod.php:911
+#: src/GatewayMethod.php:915
 msgid "Amount: "
 msgstr "Monto: "
 
-#: src/GatewayMethod.php:915
+#: src/GatewayMethod.php:919
 msgid "Response code: "
 msgstr "Código de respuesta: "
 
-#: src/GatewayMethod.php:919
+#: src/GatewayMethod.php:923
 msgid "Payment Type: "
 msgstr "Tipo de pago: "
 
-#: src/GatewayMethod.php:923
+#: src/GatewayMethod.php:927
 msgid "Installments Type: "
 msgstr "Tipo de cuotas: "
 
-#: src/GatewayMethod.php:927
+#: src/GatewayMethod.php:931
 msgid "Installments: "
 msgstr "Cuotas: "
 
-#: src/GatewayMethod.php:931
+#: src/GatewayMethod.php:935
 msgid "Installments Amount: "
 msgstr "Monto de Cuotas: "
 
-#: src/GatewayMethod.php:935
+#: src/GatewayMethod.php:939
 msgid "Transaction Date: "
 msgstr "Fecha de Transacción: "
 
-#: src/GatewayMethod.php:939
+#: src/GatewayMethod.php:943
 msgid "Internal id: "
 msgstr "ID Interno: "
 
-#: src/GatewayMethod.php:1008
+#: src/GatewayMethod.php:1012
 msgid "Error: Order Key does not match invoice."
 msgstr "Error: La llave de la orden no coincide."
 
-#: src/GatewayMethod.php:1031
+#: src/GatewayMethod.php:1035
 #, php-format
 msgid ""
 "At this time your order #%s display a checkout transaction which is pending "
@@ -192,80 +196,80 @@ msgstr ""
 "electrónico a %s\n"
 " y preguntar por el estado de la transacción: %s"
 
-#: src/GatewayMethod.php:1041
+#: src/GatewayMethod.php:1045
 msgid "CUS/Authorization"
 msgstr "CUS/Autorización"
 
-#: src/GatewayMethod.php:1145
+#: src/GatewayMethod.php:1149
 #, php-format
 msgid "Item #%s stock incremented from %s to %s."
 msgstr "Item #%s incremento de %s a %s."
 
-#: src/GatewayMethod.php:1247
+#: src/GatewayMethod.php:1251
 msgid "Default Page"
 msgstr "Página por defecto"
 
-#: src/GatewayMethod.php:1254
+#: src/GatewayMethod.php:1258
 msgid "My Orders"
 msgstr "Mis ordenes"
 
-#: src/GatewayMethod.php:1262
+#: src/GatewayMethod.php:1266
 msgid "Colombia"
 msgstr "Colombia"
 
-#: src/GatewayMethod.php:1263
+#: src/GatewayMethod.php:1267
 msgid "Ecuador"
 msgstr "Ecuador"
 
-#: src/GatewayMethod.php:1264
+#: src/GatewayMethod.php:1268
 msgid "Costa Rica"
 msgstr "Costa Rica"
 
-#: src/GatewayMethod.php:1265
+#: src/GatewayMethod.php:1269
 msgid "Chile"
 msgstr "Chile"
 
-#: src/GatewayMethod.php:1266
+#: src/GatewayMethod.php:1270
 msgid "Puerto Rico"
 msgstr "Puerto Rico"
 
-#: src/GatewayMethod.php:1278
+#: src/GatewayMethod.php:1282
 msgid "Development"
 msgstr "Desarrollo"
 
-#: src/GatewayMethod.php:1279
+#: src/GatewayMethod.php:1283
 msgid "Test"
 msgstr "Pruebas"
 
-#: src/GatewayMethod.php:1280
+#: src/GatewayMethod.php:1284
 msgid "Production"
 msgstr "Producción"
 
-#: src/GatewayMethod.php:1281
+#: src/GatewayMethod.php:1285
 msgid "Custom"
 msgstr "Personalizado"
 
-#: src/GatewayMethod.php:1298
+#: src/GatewayMethod.php:1302
 msgid "Minutes"
 msgstr "Minutos"
 
-#: src/GatewayMethod.php:1301
+#: src/GatewayMethod.php:1305
 msgid "Hour(s)"
 msgstr "Hora(s)"
 
-#: src/GatewayMethod.php:1304
+#: src/GatewayMethod.php:1308
 msgid "Day(s)"
 msgstr "Día(s)"
 
-#: src/GatewayMethod.php:1310
+#: src/GatewayMethod.php:1314
 msgid "Week(s)"
 msgstr "Semana(s)"
 
-#: src/GatewayMethod.php:1317
+#: src/GatewayMethod.php:1321
 msgid "Month(s)"
 msgstr "Mes"
 
-#: src/GatewayMethod.php:1390
+#: src/GatewayMethod.php:1394
 msgid ""
 "<strong>Pending order</strong>, the payment could not be continued because a "
 "pending order has been found."
@@ -273,23 +277,23 @@ msgstr ""
 "<strong>Pedido pendiente</ strong>, el pago no pudo continuar porque se "
 "encontró una orden pendiente."
 
-#: src/GatewayMethod.php:1399
+#: src/GatewayMethod.php:1403
 msgid "<strong>First Name</strong>, does not have a valid format"
 msgstr "El <strong>nombre</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1408
+#: src/GatewayMethod.php:1412
 msgid "<strong>Last Name</strong>, does not have a valid format"
 msgstr "El <strong>apellido</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1417
+#: src/GatewayMethod.php:1421
 msgid "<strong>Phone</strong>, does not have a valid format"
 msgstr "El <strong>Teléfono</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1426
+#: src/GatewayMethod.php:1430
 msgid "<strong>Email</strong>, does not have a valid format"
 msgstr "El <strong>Correo</strong>, no tiene un formato válido"
 
-#: src/GatewayMethod.php:1435
+#: src/GatewayMethod.php:1439
 #, php-format
 msgid ""
 "<strong>Minimum amount</strong>, does not meet the minimum amount to process "
@@ -300,7 +304,7 @@ msgstr ""
 "procesar el pedido, la cantidad mínima debe ser mayor o igual a %s para usar "
 "esta pasarela de pago."
 
-#: src/GatewayMethod.php:1444
+#: src/GatewayMethod.php:1448
 #, php-format
 msgid ""
 "<strong>Maximum amount</strong>, exceeds the maximum amount allowed to "
@@ -311,7 +315,7 @@ msgstr ""
 "procesar el pedido, la cantidad máxima debe ser menor o igual a %s para usar "
 "esta pasarela de pago."
 
-#: src/GatewayMethod.php:1474
+#: src/GatewayMethod.php:1478
 #, php-format
 msgid "Order %s - Products: %s"
 msgstr "Pedido %s - Productos: %s"
