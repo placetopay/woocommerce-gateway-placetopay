@@ -496,8 +496,9 @@ class GatewayMethod extends WC_Payment_Gateway
             $taxData = $tax->get_data();
 
             if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
-                $totalTax = floatval((float) $order->get_shipping_tax() + $taxData['tax_total']);
-                $totalBase = (float) $order->get_shipping_total() + $subTotal;
+                $shippingTax = (float) $order->get_shipping_tax();
+                $totalTax = $shippingTax + $taxData['tax_total'];
+                $totalBase = $shippingTax > 0 ? ((float) $order->get_shipping_total() + $subTotal) : $subTotal;
 
                 $taxForP2P[] = [
                     'kind' => 'valueAddedTax',
@@ -774,7 +775,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     if ($paymentStatus !== Status::ST_APPROVED) {
                         $payment = $transactionInfo->lastApprovedTransaction();
 
-                        $order->add_order_note($this->getOrderNote($payment, $status, $totalAmount));
+                        $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
                         $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
                         $order->payment_complete();
                         $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
@@ -877,13 +878,7 @@ class GatewayMethod extends WC_Payment_Gateway
         exit;
     }
 
-    /**
-     * @param Transaction $payment
-     * @param string $status
-     * @param $total
-     * @return string
-     */
-    private function getOrderNote(Transaction $payment, string $status, $total)
+    private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
         $installmentType = $payment->additionalData()['installments'] > 0
             ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
@@ -892,8 +887,12 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $details = [
             [
+                'key' => __('Buying order: ', 'woocommerce-gateway-placetopay'),
+                'value' => $id,
+            ],
+            [
                 'key' => __('Status: ', 'woocommerce-gateway-placetopay'),
-                'value' => $status
+                'value' => $status,
             ],
             [
                 'key' => __('Receipt: ', 'woocommerce-gateway-placetopay'),
