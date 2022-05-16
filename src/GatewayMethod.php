@@ -8,12 +8,9 @@ if (!defined('ABSPATH')) {
 
 use Dnetix\Redirection\Entities\Status;
 use Dnetix\Redirection\Entities\Transaction;
-use Dnetix\Redirection\Exceptions\PlacetoPayException;
 use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
-use Dnetix\Redirection\Validators\Currency;
-use Dnetix\Redirection\Validators\PersonValidator;
 use Exception;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
@@ -104,12 +101,15 @@ class GatewayMethod extends WC_Payment_Gateway
     private $skip_result;
     private $custom_connection_url;
     private $payment_button_image;
+    private $callback = false;
+    private $version;
 
     /**
      * GatewayMethod constructor.
      */
     function __construct()
     {
+        $this->version = '2.19.5';
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
@@ -164,7 +164,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->msg_cancel = $this->get_option('msg_cancel');
 
         $this->currency = get_woocommerce_currency();
-        $this->currency = Currency::isValidCurrency($this->currency) ? $this->currency : Currency::CUR_COP;
+        $this->currency = $this->currency ?? 'COP';
 
         $this->configureEnvironment();
     }
@@ -345,7 +345,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutFieldProcess()
     {
-        $this->validateFields($_POST);
+        $this->validateFields();
     }
 
     /**
@@ -1055,10 +1055,6 @@ class GatewayMethod extends WC_Payment_Gateway
         global $woocommerce;
 
         if ($this->enabled == 'yes') {
-            if (!Currency::isValidCurrency($this->currency)) {
-                return false;
-            }
-
             if ($woocommerce->version < '1.5.8') {
                 return false;
             }
@@ -1210,6 +1206,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function processPendingOrder($orderId, $requestId)
     {
         $gatewayMethod = new self();
+        $gatewayMethod->initPlacetoPay(true);
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
@@ -1348,19 +1345,34 @@ class GatewayMethod extends WC_Payment_Gateway
         return $taxList;
     }
 
+    private function getHeaders(): array
+    {
+        $domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+
+        return [
+            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} - $domain",
+        ];
+    }
+
     /**
      * Instantiates a PlacetoPay object providing the login and tranKey,
      * also the url that will be used for the service
      */
-    private function initPlacetoPay()
+    private function initPlacetoPay(bool $isCallback = false)
     {
+        $settings = [
+            'login' => $this->login,
+            'tranKey' => $this->tran_key,
+            'baseUrl' => $this->uri_service,
+        ];
+
+        if ($isCallback) {
+            $settings['headers'] = $this->getHeaders();
+        }
+
         try {
-            $this->placetopay = new PlacetoPay([
-                'login' => $this->login,
-                'tranKey' => $this->tran_key,
-                'url' => $this->uri_service,
-            ]);
-        } catch (PlacetoPayException $ex) {
+            $this->placetopay = new PlacetoPay($settings);
+        } catch (Exception $ex) {
             $this->logger($ex->getMessage());
         }
     }
@@ -1376,53 +1388,13 @@ class GatewayMethod extends WC_Payment_Gateway
         return str_replace("\\", "_", $lowercase ? strtolower(get_class($this)) : get_class($this));
     }
 
-    /**
-     * @param $request
-     * @return bool
-     */
-    private function validateFields($request)
+    private function validateFields()
     {
         $isValid = true;
 
         if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
             wc_add_notice(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>First Name</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_SURNAME, trim($request['billing_last_name'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Last Name</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Phone</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Email</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'
             ), 'error');
 
