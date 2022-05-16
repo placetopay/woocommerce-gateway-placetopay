@@ -1,5 +1,9 @@
 ## Changelog
 
+### [2.19.6] - 2022-05-09
+- Update dnetix/redirection package
+- Add headers when processing pending transactions
+
 ### [2.19.5] - 2022-05-05
 - Fix error with taxes
 - Add reference to order note
