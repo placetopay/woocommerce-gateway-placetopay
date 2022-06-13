@@ -1542,8 +1542,7 @@ class GatewayMethod extends WC_Payment_Gateway
             }
         }
 
-        // By default always it will be environment of development testing
-        if (defined('WP_DEBUG') && WP_DEBUG) {
+        if (defined('WP_DEBUG') && WP_DEBUG && $this->enviroment_mode !== Environment::CUSTOM) {
             $this->settings['enviroment_mode'] = Environment::DEV;
             $this->uri_service = $environmentByCountry[Environment::DEV];
         }
