@@ -66,8 +66,14 @@ Method: POST
 ```
 
 ### If support for Makefile exists
-```$xslt
+
+```
 > make install
 ```
+> The container listen in port 6969: `http://127.0.0.1:6969/`
 
-The container listen in port 6969: `http://127.0.0.1:6969/`
+### Admin Backend
+
+```
+http://127.0.0.1:6969/wp-login.php
+```

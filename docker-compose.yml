@@ -1,39 +1,29 @@
 version: '3.2'
 
 services:
-  db:
-    container_name: wp_plugin_db
-    image: mysql:5.7
-    volumes:
-      - db_data:/var/lib/mysql
-    restart: always
+  database:
+    container_name: wp_plugin_database
+    image: mysql:${MYSQL_VERSION:-5.7}
     environment:
-      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_ROOT_PASSWORD: wordpress
       MYSQL_DATABASE: wordpress
-      MYSQL_USER: wordpress
-      MYSQL_PASSWORD: wordpress
+    ports:
+    - ${MYSQL_PORT:-33060}:3306
 
   wordpress:
     container_name: wp_plugin_wordpress
-    depends_on:
-      - db
-    build: .
-    volumes:
-      - ./tmp:/var/www/html/wp-content
-      - type: bind
-        source: .
-        target: /var/www/html/wp-content/plugins/woocommerce-gateway-placetopay
+    image: wordpress:${WP_VERSION:-5.9}-apache
+    links:
+      - database
     ports:
-      - "6969:80"
-    restart: always
+      - ${WEB_PORT:-6969}:80
+    volumes:
+      - .:/var/www/html/wp-content/plugins/woocommerce-gateway-placetopay
+      - ./tmp:/var/www/html/wp-content
     environment:
-      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_USER: wordpress
       WORDPRESS_DB_PASSWORD: wordpress
       WORDPRESS_DEBUG: "on"
-
-volumes:
-  db_data:
-
-  data:
-    driver: "local"
+    depends_on:
+      - database
