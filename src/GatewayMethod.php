@@ -101,7 +101,6 @@ class GatewayMethod extends WC_Payment_Gateway
     private $skip_result;
     private $custom_connection_url;
     private $payment_button_image;
-    private $callback = false;
     private $version;
 
     /**
@@ -949,7 +948,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return "
             <div class='placetopay-order-datails'>
                 <p><h3>{$message}</h3></p>
-                            
+
                 {$body}
             </div>
         ";
@@ -1519,7 +1518,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 Environment::TEST => 'https://checkout-test.placetopay.com',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
-        ][$this->settings['country']];
+        ][explode(':', $this->settings['country'])[0]];
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
