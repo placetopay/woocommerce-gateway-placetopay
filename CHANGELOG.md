@@ -6,6 +6,7 @@
 - Update plugin site information url
 - Update the message information when there are pending payments, do not show the payment authorization number
 - Fix getting payment installments
+- Fix error when canceling the payment process
 
 ### [2.19.6] - 2022-05-09
 - Update dnetix/redirection package
