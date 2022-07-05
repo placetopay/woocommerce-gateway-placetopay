@@ -956,29 +956,25 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param RedirectInformation $transaction
-     * @return array
+     * @return array|string
      */
     private function getAuthorizationCode(RedirectInformation $transaction)
     {
-        if (!$this->allow_partial_payments && !is_null($transaction->payment())) {
-            return !is_null($transaction->payment())
-                ? $transaction->payment()[0]->authorization()
-                : [];
-        } else {
-            $transactions = [];
-
-            if (!is_null($transaction->payment())) {
-                foreach ($transaction->payment() as $transaction) {
-                    $transactions[] = $transaction;
-                }
-            }
-
-            return !empty($transactions)
-                ? array_map(function (Transaction $trans) {
-                    return $trans->authorization();
-                }, $transactions)
-                : [];
+        if (!$this->allow_partial_payments && $transaction->payment() !== []) {
+            return $transaction->payment()[0]->authorization();
         }
+
+        $transactions = [];
+
+        foreach ($transaction->payment() as $transaction) {
+            $transactions[] = $transaction;
+        }
+
+        return !empty($transactions)
+            ? array_map(function (Transaction $trans) {
+                return $trans->authorization();
+            }, $transactions)
+            : [];
     }
 
     /**
