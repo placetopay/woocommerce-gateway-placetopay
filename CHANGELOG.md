@@ -1,5 +1,8 @@
 ## Changelog
 
+[Unreleased]
+- Added Belize to countries list
+
 ### [2.19.6] - 2022-05-09
 - Update dnetix/redirection package
 - Add headers when processing pending transactions
