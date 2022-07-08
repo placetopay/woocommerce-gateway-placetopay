@@ -232,6 +232,9 @@ msgstr "Puerto Rico"
 msgid "Belize"
 msgstr "Belice"
 
+msgid "Honduras"
+msgstr "Honduras"
+
 #: src/GatewayMethod.php:1282
 msgid "Development"
 msgstr "Desarrollo"
