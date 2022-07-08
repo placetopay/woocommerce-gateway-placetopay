@@ -1,5 +1,8 @@
 ## Changelog
 
+[Unreleased]
+- Fix error when canceling the payment process when mixed payments are inactive
+
 ### [2.19.6] - 2022-05-09
 - Update dnetix/redirection package
 - Add headers when processing pending transactions
