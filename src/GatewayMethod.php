@@ -108,7 +108,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     function __construct()
     {
-        $this->version = '2.19.5';
+        $this->version = '2.19.7';
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
