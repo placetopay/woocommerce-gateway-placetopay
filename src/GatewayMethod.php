@@ -216,6 +216,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 case Country::EC:
                 case Country::PR:
                 case Country::CR:
+                case Country::HN:
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
             }
@@ -1259,6 +1260,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
             Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
+            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1515,6 +1517,11 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::PR => [
                 Environment::PROD => 'https://checkout.placetopay.com',
+                Environment::TEST => 'https://checkout-test.placetopay.com',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+            Country::HN => [
+                Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
                 Environment::TEST => 'https://checkout-test.placetopay.com',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
