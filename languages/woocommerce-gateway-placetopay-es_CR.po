@@ -230,6 +230,9 @@ msgstr "Chile"
 msgid "Puerto Rico"
 msgstr "Puerto Rico"
 
+msgid "Belize"
+msgstr "Belice"
+
 #: src/GatewayMethod.php:1282
 msgid "Development"
 msgstr "Desarrollo"

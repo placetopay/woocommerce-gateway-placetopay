@@ -216,6 +216,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 case Country::EC:
                 case Country::PR:
                 case Country::CR:
+                case Country::BZ:
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
             }
@@ -1253,6 +1254,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
             Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
+            Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1501,6 +1503,11 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             Country::PR => [
                 Environment::PROD => 'https://checkout.placetopay.com',
+                Environment::TEST => 'https://checkout-test.placetopay.com',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+            Country::BZ => [
+                Environment::PROD => 'https://abgateway.atlabank.com/',
                 Environment::TEST => 'https://checkout-test.placetopay.com',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
