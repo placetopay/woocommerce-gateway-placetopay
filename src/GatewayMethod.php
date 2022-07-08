@@ -879,7 +879,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
-        $installmentType = $payment->additionalData()['installments'] > 0
+        $installmentType = $payment->additionalData()['installments'] ?? 0 > 0
             ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
             : __('No installments', 'woocommerce-gateway-placetopay');
         $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
