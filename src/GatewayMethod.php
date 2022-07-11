@@ -212,11 +212,6 @@ class GatewayMethod extends WC_Payment_Gateway
                 case Country::CL:
                     $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg';
                     break;
-                case Country::CO:
-                case Country::EC:
-                case Country::PR:
-                case Country::CR:
-                case Country::BZ:
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
             }
@@ -1480,38 +1475,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function configureEnvironment()
     {
-        $environmentByCountry = [
-            Country::CO => [
-                Environment::PROD => 'https://checkout.placetopay.com',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::EC => [
-                Environment::PROD => 'https://checkout.placetopay.ec',
-                Environment::TEST => 'https://checkout-test.placetopay.ec',
-                Environment::DEV => 'https://dev.placetopay.ec/redirection',
-            ],
-            Country::CR => [
-                Environment::PROD => 'https://checkout.placetopay.com',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::CL => [
-                Environment::PROD => 'https://checkout.getnet.cl',
-                Environment::TEST => 'https://checkout.test.getnet.cl',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::PR => [
-                Environment::PROD => 'https://checkout.placetopay.com',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::BZ => [
-                Environment::PROD => 'https://abgateway.atlabank.com/',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-        ][explode(':', $this->settings['country'])[0]];
+        $environment = $this->getCountryEnvironments();
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
@@ -1525,19 +1489,19 @@ class GatewayMethod extends WC_Payment_Gateway
                     : WC()->logger();
 
                 $this->uri_service = $this->enviroment_mode === Environment::DEV
-                    ? $environmentByCountry[Environment::DEV]
-                    : $environmentByCountry[Environment::TEST];
+                    ? $environment[Environment::DEV]
+                    : $environment[Environment::TEST];
             } else {
                 if ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
-                    $this->uri_service = $environmentByCountry[Environment::PROD];
+                    $this->uri_service = $environment[Environment::PROD];
                 }
             }
         }
 
         if (defined('WP_DEBUG') && WP_DEBUG && $this->enviroment_mode !== Environment::CUSTOM) {
             $this->settings['enviroment_mode'] = Environment::DEV;
-            $this->uri_service = $environmentByCountry[Environment::DEV];
+            $this->uri_service = $environment[Environment::DEV];
         }
     }
 
@@ -1616,5 +1580,40 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return 0;
+    }
+
+    private function getCountryEnvironments()
+    {
+        $defaultEnvironments = [
+            Environment::PROD => 'https://checkout.placetopay.com',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
+            Environment::DEV => 'https://dev.placetopay.com/redirection',
+        ];
+
+        switch ($this->settings['country']) {
+            case Country::EC:
+                $environment = [
+                    Environment::PROD => 'https://checkout.placetopay.ec',
+                    Environment::TEST => 'https://checkout-test.placetopay.ec',
+                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                ];
+                break;
+            case Country::CL:
+                $environment = array_merge($defaultEnvironments, [
+                    Environment::PROD => 'https://checkout.getnet.cl',
+                    Environment::TEST => 'https://checkout.test.getnet.cl',
+                ]);
+                break;
+
+            case Country::BZ:
+                $environment = array_merge($defaultEnvironments, [
+                    Environment::PROD => 'https://abgateway.atlabank.com',
+                ]);
+                break;
+            default:
+                $environment = $defaultEnvironments;
+        }
+
+        return $environment;
     }
 }
