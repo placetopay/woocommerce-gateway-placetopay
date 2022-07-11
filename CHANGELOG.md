@@ -1,6 +1,7 @@
 ## Changelog
 
 [Unreleased]
+- Fix error when canceling the payment process when mixed payments are inactive
 - Added Honduras to countries list
 
 ### [2.19.6] - 2022-05-09
