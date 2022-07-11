@@ -23,6 +23,8 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
+    const VERSION = '2.19.6';
+
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
     const META_REQUEST_ID = '_p2p_request_id';
@@ -108,7 +110,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     function __construct()
     {
-        $this->version = '2.19.5';
+        $this->version = self::VERSION;
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
@@ -1472,7 +1474,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function configureEnvironment()
     {
-        $environment = $this->getCountryEnvironments();
+        $environment = $this->getCountryEnvironment();
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
@@ -1579,7 +1581,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return 0;
     }
 
-    private function getCountryEnvironments()
+    private function getCountryEnvironment()
     {
         $defaultEnvironments = [
             Environment::PROD => 'https://checkout.placetopay.com',
@@ -1595,6 +1597,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     Environment::DEV => 'https://dev.placetopay.ec/redirection',
                 ];
                 break;
+
             case Country::CL:
                 $environment = array_merge($defaultEnvironments, [
                     Environment::PROD => 'https://checkout.getnet.cl',
@@ -1607,8 +1610,16 @@ class GatewayMethod extends WC_Payment_Gateway
                     Environment::PROD => 'https://abgateway.atlabank.com',
                 ]);
                 break;
+
+            case Country::HN:
+                $environment = array_merge($defaultEnvironments, [
+                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
+                ]);
+                break;
+
             default:
                 $environment = $defaultEnvironments;
+                break;
         }
 
         return $environment;
