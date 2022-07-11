@@ -12,40 +12,10 @@ Un plugin para agregar un nuevo método de pago a tu tienda por PlacetoPay.
 ## Install in production environment
 Run `composer install --no-dev`
 
-## Start with Docker
-### Requirements
-- docker 17.04.0+
-- docker-compose 1.17.0
-
-### Running with docker directly
-```
-> docker-compose up -d
-> docker exec -u 1000:1000 -it wp_plugin_wordpress composer install -d ./wp-content/plugins/woocommerce-gateway-placetopay
-```
-
-### If support for Makefile exists
-
-```
-> make install
-```
-> The container listen in port 6969: `http://127.0.0.1:6969/`
-
-### Admin Backend
-
-```
-http://127.0.0.1:6969/wp-login.php
-```
-
 ## Idiomas soportados
 - Español Colombia (es_CO)
 - Español (es)
 - Inglés (en)
-
-### Manejo de las traducciones
-
-Se deben agregar las traducciones o hacer los cambios en los archivos .po ubicados en el directorio *languages*,
-luego proceder a convertirlos en formato .mo para reemplazarlos por los existentes (languages/*.mo) según corresponda.
-Si no se realiza la conversión, los cambios no se verán reflejados
 
 #### Paths de archivos útiles
 Log para el plugin se encuentra en la ruta.
@@ -82,3 +52,32 @@ Method: POST
 }
 
 ```
+
+## Start with Docker
+### Requirements
+- docker 17.04.0+
+- docker-compose 1.17.0
+
+### Running with docker directly
+```
+> docker-compose up -d
+> docker exec -u 1000:1000 -it wp_plugin_wordpress composer install -d ./wp-content/plugins/woocommerce-gateway-placetopay
+```
+
+### If support for Makefile exists
+
+```
+> make install
+```
+> The container listen in port 6969: `http://127.0.0.1:6969/`
+### Admin Backend
+
+```
+http://127.0.0.1:6969/wp-login.php
+```
+
+#### Manejo de las traducciones
+
+Se deben agregar las traducciones o hacer los cambios en los archivos .po ubicados en el directorio *languages*,
+luego proceder a convertirlos en formato .mo para reemplazarlos por los existentes (languages/*.mo) según corresponda.
+Si no se realiza la conversión, los cambios no se verán reflejados
