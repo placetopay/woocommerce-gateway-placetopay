@@ -2,15 +2,10 @@
 
 namespace PlacetoPay\PaymentMethod;
 
-
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-
-/**
- * @package \PlacetoPay;
- */
 class WC_Gateway_PlacetoPay
 {
 
@@ -71,7 +66,10 @@ class WC_Gateway_PlacetoPay
 
             register_rest_route($self::PAYMENT_ENDPOINT_NAMESPACE, $self::PAYMENT_ENDPOINT_CALLBACK, [
                 'methods' => 'POST',
-                'callback' => [$self, 'endpointPlacetoPay']
+                'callback' => [$self, 'endpointPlacetoPay'],
+                'permission_callback' => function() {
+                    return true;
+                }
             ]);
         }, 1);
 
@@ -108,7 +106,7 @@ class WC_Gateway_PlacetoPay
                 echo '<div class="error fade">
                     <p>
                         <strong>
-                            [WooCommerce Gateway PlacetoPay] plugin requires WooCommerce to run
+                            [WooCommerce Gateway Placetopay] plugin requires WooCommerce to run
                         </strong>
                     </p>
                 </div>';
@@ -156,11 +154,10 @@ class WC_Gateway_PlacetoPay
      */
     public static function assets($path = null, $type = 'path')
     {
-        $assets = ($type === 'path'
+        $assets = (
+            $type === 'path'
                 ? self::$instance->plugin_path
-                : self::$instance
-                    ? self::$instance->plugin_url
-                    : ''
+                : (self::getInstanceName())
             ) . 'assets';
 
         if ($path === null) {
@@ -168,6 +165,16 @@ class WC_Gateway_PlacetoPay
         }
 
         return $assets . $path;
+    }
+
+    /**
+     * @return string
+     */
+    private static function getInstanceName()
+    {
+        return self::$instance
+            ? self::$instance->plugin_url
+            : '';
     }
 
     /**

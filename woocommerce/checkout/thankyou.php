@@ -65,7 +65,7 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
                 if (!empty($processUrl)) { ?>
 
                     <?php echo sprintf(
-                        __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in placetopay</a>',
+                        __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in Placetopay</a>',
                             'woocommerce-gateway-placetopay'),
                         urldecode($processUrl)
                     ); ?>
@@ -91,7 +91,11 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
                 </li>
 
                 <?php
-                $metaStatus = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true );
+                $metaStatus = get_post_meta(
+                    $order->get_id(),
+                    GatewayMethod::META_STATUS,
+                    true
+                );
 
                 if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
                     $total = get_post_meta($order->get_id(), '_order_total', true);
@@ -125,11 +129,20 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
 
                 <?php endif; ?>
 
-                <li class="order">
-                    <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
-                    <strong><?php echo get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS,
-                            true); ?></strong>
-                </li>
+                <?php if (get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS, true)) : ?>
+
+                    <li class="order">
+                        <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
+                        <strong>
+                            <?php echo get_post_meta(
+                                $order->get_id(),
+                                GatewayMethod::META_AUTHORIZATION_CUS,
+                                true
+                            ); ?>
+                        </strong>
+                    </li>
+
+                <?php endif; ?>
 
             </ul>
 
@@ -140,8 +153,13 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
 
     <?php else : ?>
 
-        <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received"><?php echo apply_filters('woocommerce_thankyou_order_received_text',
-                __('Thank you. Your order has been received.', 'woocommerce-gateway-placetopay'), null); ?></p>
+        <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">
+            <?php echo apply_filters(
+                'woocommerce_thankyou_order_received_text',
+                __('Thank you. Your order has been received.', 'woocommerce-gateway-placetopay'),
+                null
+            ); ?>
+        </p>
 
     <?php endif; ?>
 </div>

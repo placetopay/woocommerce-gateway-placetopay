@@ -1,17 +1,16 @@
-<?php namespace PlacetoPay\PaymentMethod;
+<?php
 
+namespace PlacetoPay\PaymentMethod;
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+use Dnetix\Redirection\Entities\Status;
 use Dnetix\Redirection\Entities\Transaction;
-use Dnetix\Redirection\Exceptions\PlacetoPayException;
 use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
-use Dnetix\Redirection\Validators\Currency;
-use Dnetix\Redirection\Validators\PersonValidator;
 use Exception;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
@@ -20,18 +19,10 @@ use WC_Order;
 use WC_Payment_Gateway;
 
 /**
- * Class GatewayMethod
- * @package PlacetoPay\PaymentMethod
+ * Class GatewayMethod.
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-
-    /**
-     * Constant key for the session requestId
-     * @var string
-     */
-    const SESSION_REQ_ID = 'placetopay_request_id';
-
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
     const META_REQUEST_ID = '_p2p_request_id';
@@ -64,7 +55,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * Instance of placetopay to manage the connection with the webservice
-     * @var \Dnetix\Redirection\PlacetoPay
+     * @var PlacetoPay
      */
     private $placetopay;
 
@@ -107,12 +98,17 @@ class GatewayMethod extends WC_Payment_Gateway
     private $maximum_amount;
     private $allow_to_pay_with_pending_orders;
     private $allow_partial_payments;
+    private $skip_result;
+    private $custom_connection_url;
+    private $payment_button_image;
+    private $version;
 
     /**
      * GatewayMethod constructor.
      */
     function __construct()
     {
+        $this->version = '2.19.7';
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
@@ -125,9 +121,8 @@ class GatewayMethod extends WC_Payment_Gateway
     public function configPaymentMethod()
     {
         $this->id = 'placetopay';
-        $this->method_title = __('PlacetoPay', 'woocommerce-gateway-placetopay');
+        $this->method_title = __('Placetopay', 'woocommerce-gateway-placetopay');
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
-        $this->icon = WC_Gateway_PlacetoPay::assets('/images/placetopay.png', 'url');
         $this->has_fields = false;
 
         // Init settings
@@ -146,10 +141,15 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
         $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
-        $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes" ? true : false;
+        $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes";
+        $this->skip_result = $this->get_option('skip_result') == "yes";
+        $this->custom_connection_url = $this->get_option('custom_connection_url');
+        $this->payment_button_image = $this->get_option('payment_button_image');
+        $this->icon = $this->getImageUrl();
 
         $this->taxes = [
             'taxes_others' => $this->get_option('taxes_others', []),
+            'taxes_ico' => $this->get_option('taxes_ico', []),
             'taxes_ice' => $this->get_option('taxes_ice', []),
         ];
 
@@ -163,9 +163,14 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->msg_cancel = $this->get_option('msg_cancel');
 
         $this->currency = get_woocommerce_currency();
-        $this->currency = Currency::isValidCurrency($this->currency) ? $this->currency : Currency::CUR_COP;
+        $this->currency = $this->currency ?? 'COP';
 
         $this->configureEnvironment();
+    }
+
+    public function getScheduleTaskPath(): string
+    {
+        return WP_PLUGIN_DIR . '/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php';
     }
 
     /**
@@ -195,6 +200,47 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $this->form_fields = include(__DIR__ . '/config/form-fields.php');
         $this->init_settings();
+    }
+
+    private function getImageUrl(): ?string
+    {
+        $url = $this->payment_button_image;
+
+        if (empty($url)) {
+            // format: null
+            switch ($this->settings['country']) {
+                case Country::CL:
+                    $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg';
+                    break;
+                case Country::CO:
+                case Country::EC:
+                case Country::PR:
+                case Country::CR:
+                default:
+                    $image = 'https://static.placetopay.com/placetopay-logo.svg';
+            }
+        } elseif ($this->checkValidUrl($url)) {
+            // format: https://www.domain.test/image.svg
+            $image = $url;
+        } elseif ($this->checkDirectory($url)) {
+            // format: /folder/image.svg
+            $image = home_url('/wp-content/uploads/') . $url;
+        } else {
+            // format: image
+            $image = 'https://static.placetopay.com/' . $url . '.svg';
+        }
+
+        return $image;
+    }
+
+    protected function checkDirectory(string $path): bool
+    {
+        return substr($path, 0, 1) === '/';
+    }
+
+    protected function checkValidUrl(string $url): bool
+    {
+        return filter_var($url, FILTER_VALIDATE_URL);
     }
 
     /**
@@ -233,6 +279,9 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function endpointPlacetoPay(\WP_REST_Request $req)
     {
+        $message = null;
+        $success = false;
+
         $this->logger('starting request api', 'endpointPlacetoPay');
 
         $data = $req->get_params();
@@ -245,24 +294,49 @@ class GatewayMethod extends WC_Payment_Gateway
                     return $notification->makeSignature();
                 }
 
-                return null;
+                return [
+                    'success' => $success,
+                    'message' => $message,
+                ];
             }
 
             $transactionInfo = $this->placetopay->query($notification->requestId());
-            $fields = $transactionInfo->request()->fieldsToKeyValue();
 
-            if (!isset($fields['orderKey'])) {
-                $this->logger('Not orderKey in response for notificationUrl', 'endpointPlacetoPay');
-                return null;
+            switch ($transactionInfo->status()->status()) {
+                case Status::ST_FAILED:
+                case Status::ST_ERROR:
+                    $message = $transactionInfo->status()->message();
+
+                    $this->logger(
+                        "status: {$transactionInfo->status()->status()}, message: {$transactionInfo->status()->message()}",
+                        'endpointPlacetoPay'
+                    );
+
+                    break;
+                default:
+                    $fields = $transactionInfo->request()->fieldsToKeyValue();
+
+                    if (!isset($fields['orderKey'])) {
+                        $message = 'Not orderKey in response for notificationUrl';
+
+                        $this->logger('Not orderKey in response for notificationUrl', 'endpointPlacetoPay');
+                    } else {
+                        $this->returnProcess(['key' => $fields['orderKey']], $transactionInfo, true);
+
+                        $message = $transactionInfo->status()->message();
+                        $success = true;
+
+                        $this->logger('Response successfully', 'endpointPlacetoPay');
+                    }
+
+                    break;
             }
-
-            $this->returnProcess(['key' => $fields['orderKey']], $transactionInfo, true);
-            $this->logger('Response successfully', 'endpointPlacetoPay');
-
-            return ['success' => true];
         }
 
-        return null;
+        return [
+            'success' => $success,
+            'message' => $message,
+        ];
     }
 
     /**
@@ -270,7 +344,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutFieldProcess()
     {
-        $this->validateFields($_POST);
+        $this->validateFields();
     }
 
     /**
@@ -308,11 +382,13 @@ class GatewayMethod extends WC_Payment_Gateway
             : '+2 days';
 
         $req = [
+            'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
             'returnUrl' => $redirectUrl . '&key=' . $ref,
-            'noBuyerFill' => !($this->fill_buyer_information === 'yes'),
+            'noBuyerFill' => $this->fill_buyer_information !== 'yes',
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
+            'skipResult' => $this->skip_result,
             'buyer' => [
                 'name' => $order->get_billing_first_name(),
                 'surname' => $order->get_billing_last_name(),
@@ -332,7 +408,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 'description' => $productInfo,
                 'amount' => [
                     'currency' => $this->currency,
-                    'total' => floatval($order->get_total())
+                    'total' => $order->get_total()
                 ],
                 'allowPartial' => $this->allow_partial_payments
             ],
@@ -345,19 +421,16 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
         ];
 
-        $orderTaxes = $order->get_taxes();
-
-        if (count($orderTaxes) > 0) {
-            $req['payment']['amount']['taxes'] = $this->getOrderTaxes($orderTaxes);
+        if (count($order->get_taxes()) > 0) {
+            $req['payment']['amount']['taxes'] = $this->getOrderTaxes($order);
         }
 
         try {
             $res = $this->placetopay->request($req);
 
             if ($res->isSuccessful()) {
-                // Store the requestId in the session
-                WC()->session->set(self::SESSION_REQ_ID, $res->requestId());
                 update_post_meta($order->get_id(), self::META_REQUEST_ID, $res->requestId());
+                update_post_meta($order->get_id(), self::META_STATUS, $res->status()->status());
 
                 // Redirect the client to the processUrl or display it on the JS extension
                 $processUrl = urlencode($res->processUrl());
@@ -379,7 +452,6 @@ class GatewayMethod extends WC_Payment_Gateway
 
             wc_add_notice(__('Payment error: ', 'woocommerce-gateway-placetopay') . $res->status()->message(), 'error');
             $this->logger('Payment error: ' . $res->status()->message(), 'error');
-
         } catch (Exception $ex) {
             $this->logger($ex->getMessage(), 'error');
             wc_add_notice(__('Payment error: Server error internal.', 'woocommerce-gateway-placetopay'), 'error');
@@ -389,30 +461,64 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * @param \WC_Order_Item_Tax[] $taxes
+     * @param $items
+     * @return float
+     */
+    public function calculateSubtotalTax($items)
+    {
+        $subtotal = 0.00;
+
+        foreach ($items as $item) {
+            $data = $item->get_data();
+
+            if ($data['total_tax'] !== '0') {
+                $subtotal += $data['total'];
+            }
+        }
+
+        return $subtotal;
+    }
+
+    /**
+     * @param WC_Order $order
      * @return array
      */
-    public function getOrderTaxes($taxes)
+    public function getOrderTaxes(WC_Order $order): array
     {
+        $subTotal = $this->calculateSubtotalTax($order->get_items());
         $valueAddedTaxType = array_map('intval', $this->taxes['taxes_others']);
+        $exciseDutyType = array_map('intval', $this->taxes['taxes_ico']);
         $iceType = array_map('intval', $this->taxes['taxes_ice']);
         $taxForP2P = [];
 
-        foreach ($taxes as $tax) {
+        foreach ($order->get_taxes() as $tax) {
             $taxData = $tax->get_data();
 
             if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
+                $shippingTax = (float) $order->get_shipping_tax();
+                $totalTax = $shippingTax + $taxData['tax_total'];
+                $totalBase = $shippingTax > 0 ? ((float) $order->get_shipping_total() + $subTotal) : $subTotal;
+
                 $taxForP2P[] = [
                     'kind' => 'valueAddedTax',
+                    'amount' => $totalTax,
+                    'base' => $totalBase,
+                ];
+            }
+
+            if (in_array($taxData['rate_id'], $exciseDutyType)) {
+                $taxForP2P[] = [
+                    'kind' => 'exciseDuty',
                     'amount' => floatval($taxData['tax_total']),
+                    'base' => $subTotal,
                 ];
             }
 
             if (in_array($taxData['rate_id'], $iceType)) {
                 $taxForP2P[] = [
-//                    'kind' => 'exciseDuty',
                     'kind' => 'ice',
                     'amount' => floatval($taxData['tax_total']),
+                    'base' => $subTotal,
                 ];
             }
         }
@@ -425,32 +531,36 @@ class GatewayMethod extends WC_Payment_Gateway
      *
      * @param $orderId
      */
-    public function receiptPage($orderId)
+    public function receiptPage($orderId): void
     {
         try {
-            $requestId = WC()->session->get(self::SESSION_REQ_ID);
+            $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
-            $authorizationCode = count($transactionInfo->payment) > 0
-                ? array_map(function (Transaction $trans) {
-                    return $trans->authorization();
-                }, $transactionInfo->payment)
-                : [];
+            if (!is_null($transactionInfo->payment())) {
+                $authorizationCode = count($transactionInfo->payment()) > 0
+                    ? array_map(function (Transaction $trans) {
+                        return $trans->authorization();
+                    }, $transactionInfo->payment())
+                    : [];
 
-            // Payment Details
-            if (count($authorizationCode) > 0) {
-                $this->logger('Adding authorization code $auth = ' . $authorizationCode, 'receiptPage');
-                update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(',', $authorizationCode));
+                // Payment Details
+                if (count($authorizationCode) > 0) {
+                    $this->logger('Adding authorization code $auth = ' . $authorizationCode, 'receiptPage');
+                    update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(',', $authorizationCode));
+                }
             }
 
             // Add information to the order to notify that exit to PlacetoPay
             // and invalidates the shopping cart
             $order = new WC_Order($orderId);
-            $order->update_status('on-hold', __('Redirecting to PlacetoPay', 'woocommerce-gateway-placetopay'));
+            $order->update_status('on-hold', __('Redirecting to Placetopay', 'woocommerce-gateway-placetopay'));
 
             $code = 'jQuery("body").block({
-                message: "' . esc_js(__('We are now redirecting you to PlacetoPay to make payment, if you are not redirected please press the bottom.',
-                    'woocommerce-gateway-placetopay')) . '",
+                message: "' . esc_js(__(
+                'We are now redirecting you to Placetopay to make payment, if you are not redirected please press the bottom.',
+                'woocommerce-gateway-placetopay'
+            )) . '",
                 baseZ: 99999,
                 overlayCSS: { background: "#fff", opacity: 0.6 },
                 css: {
@@ -475,7 +585,6 @@ class GatewayMethod extends WC_Payment_Gateway
             } else {
                 WC()->add_inline_js($code);
             }
-
         } catch (Exception $ex) {
             $this->logger($ex->getMessage(), 'error');
         }
@@ -496,29 +605,31 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
-        wp_die(__("PlacetoPay Request Failure", 'woocommerce-gateway-placetopay'));
+        wp_die(__("Placetopay Request Failure", 'woocommerce-gateway-placetopay'));
     }
 
     /**
      * After checkResponse, Process PlacetoPay response and update order information
      *
-     * @param array $req Response datas in array format
+     * @param array $req Response data in array format
      * @return void
      */
-    public function successfulRequest($req)
+    public function successfulRequest(array $req): void
     {
-        // When the user is returned to the page specificated by redirectUrl
+        // When the user is returned to the page specified by redirectUrl
         if (!empty($req['key']) && !empty($req['wc-api'])) {
-            $requestId = WC()->session->get(self::SESSION_REQ_ID);
+            $requestId = get_post_meta($req['order_id'], self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
             $this->returnProcess($req, $transactionInfo);
         }
 
-        // For WooCoomerce 2.0
+        // For WooCommerce 2.0
         $redirectUrl = add_query_arg([
-            'msg' => urlencode(__('There was an error on the request. please contact the website administrator.',
-                'woocommerce-gateway-placetopay')),
+            'msg' => urlencode(__(
+                'There was an error on the request. please contact the website administrator.',
+                'woocommerce-gateway-placetopay'
+            )),
             'type' => $this->msg['class']
         ], wc_get_checkout_url());
 
@@ -538,6 +649,13 @@ class GatewayMethod extends WC_Payment_Gateway
         $order = $this->getOrder($request);
         $sessionStatusInstance = $transactionInfo->status();
         $status = $sessionStatusInstance->status();
+        $authorizationCode = [];
+        $paymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
+
+        if ($isCallback && $paymentStatus === Status::ST_APPROVED) {
+            $this->logger('Returning method is already '. $paymentStatus, __METHOD__);
+            return;
+        }
 
         // Register status PlacetoPay for the order
         update_post_meta($order->get_id(), self::META_STATUS, $status);
@@ -548,30 +666,36 @@ class GatewayMethod extends WC_Payment_Gateway
             $status
         ], __METHOD__);
 
-        $authorizationCode = count($transactionInfo->payment) > 0
-            ? array_map(function (Transaction $trans) {
-                return $trans->authorization();
-            }, $transactionInfo->payment)
-            : [];
-
-        // Payment Details
-        if (count($authorizationCode) > 0) {
-            update_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, implode(",", $authorizationCode));
+        if ($sessionStatusInstance->status() !== $sessionStatusInstance::ST_PENDING) {
+            $authorizationCode = $this->getAuthorizationCode($transactionInfo);
+            $authorizationCode = is_array($authorizationCode)
+                ? implode(',', $authorizationCode)
+                : $authorizationCode;
         }
 
-        $paymentFirstStatus = count($transactionInfo->payment()) > 0
-            ? $transactionInfo->payment()[0]->status()
-            : null;
+        // Payment Details
+        if ($status === Status::ST_APPROVED || $status === Status::ST_APPROVED_PARTIAL) {
+            update_post_meta(
+                $order->get_id(),
+                self::META_AUTHORIZATION_CUS,
+                $authorizationCode
+            );
+        }
+
+        if ($transactionInfo->payment() !== null) {
+            $paymentFirstStatus = count($transactionInfo->payment()) > 0
+                ? $transactionInfo->payment()[0]->status()
+                : null;
+        }
 
         // Get order updated with metas refreshed
-        $order = new WC_Order($order->get_id());
+        $order = wc_get_order($order->get_id());
 
         // We are here so lets check status and do actions
         switch ($status) {
-            case $sessionStatusInstance::ST_APPROVED :
-            case $sessionStatusInstance::ST_APPROVED_PARTIAL :
-            case $sessionStatusInstance::ST_PENDING :
-
+            case $sessionStatusInstance::ST_APPROVED:
+            case $sessionStatusInstance::ST_APPROVED_PARTIAL:
+            case $sessionStatusInstance::ST_PENDING:
                 // Check order not already completed
                 if ($order->get_status() == 'completed') {
                     $this->logger('Aborting, Order #' . $order->get_id() . ' is already complete.');
@@ -592,7 +716,9 @@ class GatewayMethod extends WC_Payment_Gateway
                     $pendingAmount = 0;
 
                     foreach ($transactionInfo->payment() as $transaction) {
-                        $pendingAmount += $transaction->amount()->from()->total();
+                        if ($transaction->status()->status() == $sessionStatusInstance::ST_APPROVED) {
+                            $pendingAmount += $transaction->amount()->from()->total();
+                        }
                     }
 
                     $totalAmount = $totalAmount - $pendingAmount;
@@ -604,61 +730,84 @@ class GatewayMethod extends WC_Payment_Gateway
                     ? $transactionInfo->request()->payer()->email()
                     : null;
 
-                $paymentMethodName = count($transactionInfo->payment) > 0
-                    ? array_map(function (Transaction $trans) {
-                        return $trans->paymentMethodName();
-                    }, $transactionInfo->payment)
-                    : [];
+                if (!is_null($transactionInfo->payment())) {
+                    $paymentMethodName = count($transactionInfo->payment()) > 0
+                        ? array_map(function (Transaction $trans) {
+                            return $trans->paymentMethodName();
+                        }, $transactionInfo->payment())
+                        : [];
+
+                    if (count($paymentMethodName) > 0) {
+                        update_post_meta(
+                            $order->get_id(),
+                            __('Payment type', 'woocommerce-gateway-placetopay'),
+                            implode(",", $paymentMethodName)
+                        );
+                    }
+                }
 
                 // Validate Amount
                 if ($order->get_total() != floatval($totalAmount)) {
-                    $msg = sprintf(__('Validation error: PlacetoPay amounts do not match (gross %s).',
-                        'woocommerce-gateway-placetopay'), $totalAmount);
-                    $order->update_status('on-hold', $msg);
+                    $message = sprintf(
+                        __('Validation error: Placetopay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay'),
+                        $totalAmount
+                    );
 
-                    $this->msg['message'] = $msg;
+                    $order->update_status('on-hold', $message);
+
+                    $this->msg['message'] = $message;
                     $this->msg['class'] = 'woocommerce-error';
                 }
 
                 if (!empty($payerEmail)) {
-                    update_post_meta($order->get_id(), __('Payer PlacetoPay email', 'woocommerce-gateway-placetopay'),
-                        $payerEmail);
-                }
-
-                if (count($paymentMethodName) > 0) {
-                    update_post_meta($order->get_id(), __('Payment type', 'woocommerce-gateway-placetopay'),
-                        implode(",", $paymentMethodName));
+                    update_post_meta(
+                        $order->get_id(),
+                        __('Payer Placetopay email', 'woocommerce-gateway-placetopay'),
+                        $payerEmail
+                    );
                 }
 
                 if ($status == $sessionStatusInstance::ST_APPROVED) {
                     $this->msg['message'] = $this->msg_approved;
                     $this->msg['class'] = 'woocommerce-message';
 
-                    $order->add_order_note(__('PlacetoPay payment approved', 'woocommerce-gateway-placetopay'));
-//                    $this->restoreOrderStock($order->get_id(), false);
-                    $order->payment_complete();
-                    $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    if ($paymentStatus !== Status::ST_APPROVED) {
+                        $payment = $transactionInfo->lastApprovedTransaction();
 
+                        $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
+                        $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
+                        $order->payment_complete();
+                        $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    }
                 } else {
-                    $statusOrder = $paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_PENDING
+                    if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
+                        update_post_meta(
+                            $order->get_id(),
+                            self::META_STATUS,
+                            $sessionStatusInstance::ST_APPROVED_PARTIAL
+                        );
+                    }
+
+                    $statusOrder = ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_PENDING)
                         ? 'on-hold'
                         : 'pending';
 
-                    $order->update_status($statusOrder,
-                        sprintf(__('Payment pending: %s', 'woocommerce-gateway-placetopay'), $status));
+                    $order->update_status(
+                        $statusOrder,
+                        sprintf(__('Payment pending: %s', 'woocommerce-gateway-placetopay'), $status)
+                    );
+
                     $this->msg['message'] = $this->msg_pending;
                     $this->msg['class'] = 'woocommerce-info';
                 }
 
                 break;
-
-            case $sessionStatusInstance::ST_REJECTED :
-            case $sessionStatusInstance::ST_REFUNDED :
-
+            case $sessionStatusInstance::ST_REJECTED:
+            case $sessionStatusInstance::ST_REFUNDED:
                 if ($status === $sessionStatusInstance::ST_REJECTED) {
                     $order->update_status(
                         'cancelled',
-                        sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status)
+                        sprintf(__('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'), $status)
                     );
 
                     $this->msg['message'] = $this->msg_cancel;
@@ -667,30 +816,44 @@ class GatewayMethod extends WC_Payment_Gateway
                         $this->logger($paymentFirstStatus->message(), $status);
                     }
 
-                    $this->restoreOrderStock($order->get_id());
-
+                    if (!self::versionCheck()) {
+                        $this->restoreOrderStock($order->get_id());
+                    }
                 } else {
                     $order->update_status(
                         'refunded',
-                        sprintf(__('Payment rejected via PlacetoPay. Error type: %s.',
-                            'woocommerce-gateway-placetopay'), $status)
+                        sprintf(
+                            __('Payment rejected via Placetopay. Error type: %s.', 'woocommerce-gateway-placetopay'),
+                            $status
+                        )
                     );
+
                     $this->msg['message'] = $this->msg_declined;
                 }
 
                 $this->msg['class'] = 'woocommerce-error';
 
                 break;
+            case $sessionStatusInstance::ST_FAILED:
+                update_post_meta($order->get_id(), self::META_STATUS, $sessionStatusInstance::ST_PENDING);
 
-            case $sessionStatusInstance::ST_ERROR :
-            case $sessionStatusInstance::ST_FAILED :
+                $this->logger('Payment failed for order # ' . $order->get_id(), __METHOD__);
+                $this->msg['class'] = 'woocommerce-error';
+
+                break;
+            case $sessionStatusInstance::ST_ERROR:
             default:
-                $order->update_status('failed',
-                    sprintf(__('Payment rejected via PlacetoPay.', 'woocommerce-gateway-placetopay'), $status));
+                $order->update_status(
+                    'failed',
+                    sprintf(__('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'), $status)
+                );
+
                 $this->msg['message'] = $this->msg_cancel;
                 $this->msg['class'] = 'woocommerce-error';
 
-                $this->restoreOrderStock($order->get_id());
+                if (!self::versionCheck()) {
+                    $this->restoreOrderStock($order->get_id());
+                }
 
                 break;
         }
@@ -702,6 +865,7 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         $redirectUrl = $this->getRedirectUrl($order);
+
         //For wooCoomerce 2.0
         $redirectUrl = add_query_arg([
             'order_key' => $order->get_order_key(),
@@ -709,21 +873,122 @@ class GatewayMethod extends WC_Payment_Gateway
         ], $redirectUrl);
 
         wp_redirect($redirectUrl);
+
         exit;
+    }
+
+    private function getOrderNote($id, Transaction $payment, string $status, $total)
+    {
+        $installmentType = $payment->additionalData()['installments'] ?? 0 > 0
+            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
+            : __('No installments', 'woocommerce-gateway-placetopay');
+        $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
+
+        $details = [
+            [
+                'key' => __('Buying order: ', 'woocommerce-gateway-placetopay'),
+                'value' => $id,
+            ],
+            [
+                'key' => __('Status: ', 'woocommerce-gateway-placetopay'),
+                'value' => $status,
+            ],
+            [
+                'key' => __('Receipt: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->receipt(),
+            ],
+            [
+                'key' => __('Authorization Code: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->authorization(),
+            ],
+            [
+                'key' => __('Card last Digits: ', 'woocommerce-gateway-placetopay'),
+                'value' => str_replace('*', '', $payment->additionalData()['lastDigits']),
+            ],
+            [
+                'key' => __('Amount: ', 'woocommerce-gateway-placetopay'),
+                'value' => '$' . number_format($total, '0', ',', '.'),
+            ],
+            [
+                'key' => __('Response code: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->status()->reason(),
+            ],
+            [
+                'key' => __('Payment Type: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->paymentMethodName(),
+            ],
+            [
+                'key' => __('Installments Type: ', 'woocommerce-gateway-placetopay'),
+                'value' => $installmentType,
+            ],
+            [
+                'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->additionalData()['installments'] ?? 0,
+            ],
+            [
+                'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
+                'value' => '-',
+            ],
+            [
+                'key' => __('Transaction Date: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->status()->date(),
+            ],
+            [
+                'key' => __('Internal id: ', 'woocommerce-gateway-placetopay'),
+                'value' => $payment->internalReference(),
+            ],
+        ];
+
+        $body = '';
+
+        foreach ($details as $detail) {
+            $body .= "<strong>{$detail['key']}</strong>{$detail['value']}<br/>";
+        }
+
+        return "
+            <div class='placetopay-order-datails'>
+                <p><h3>{$message}</h3></p>
+
+                {$body}
+            </div>
+        ";
+    }
+
+    /**
+     * @param RedirectInformation $transaction
+     * @return array|string
+     */
+    private function getAuthorizationCode(RedirectInformation $transaction)
+    {
+        if (!$this->allow_partial_payments && $transaction->payment() !== []) {
+            return $transaction->payment()[0]->authorization();
+        }
+
+        $transactions = [];
+
+        foreach ($transaction->payment() as $transaction) {
+            $transactions[] = $transaction;
+        }
+
+        return !empty($transactions)
+            ? array_map(function (Transaction $trans) {
+                return $trans->authorization();
+            }, $transactions)
+            : [];
     }
 
     /**
      *  Get order instance with a given order key
      *
      * @param mixed $request
-     * @return \WC_Order
+     * @return WC_Order
      */
-    public function getOrder($request)
+    public function getOrder($request): WC_Order
     {
         $orderId = isset($request['order_id']) ? (int)$request['order_id'] : null;
-        $key = isset($request['key']) ? $request['key'] : '';
+        $key = $request['key'] ?? '';
         $orderKey = explode('-', $key);
-        $orderKey = $orderKey[0] ? $orderKey[0] : $orderKey;
+        $orderKey = $orderKey[0] ?: $orderKey;
 
         $order = new WC_Order($orderId);
 
@@ -733,7 +998,7 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Validate key
-        if (!!$key && $order->get_order_key() !== $orderKey) {
+        if ($key && $order->get_order_key() !== $orderKey) {
             $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'), 'getOrder');
             exit;
         }
@@ -756,15 +1021,18 @@ class GatewayMethod extends WC_Payment_Gateway
         $authCode = get_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, true);
 
         $message = sprintf(
-            __('At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
-                            please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
-                            state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: \'%s\'',
-                'woocommerce-gateway-placetopay'),
-            ( string )$order->get_id(),
+            __(
+                'At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
+                please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
+                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: \'%s\'',
+                'woocommerce-gateway-placetopay'
+            ),
+            (string)$order->get_id(),
             $this->merchant_phone,
             $this->merchant_email,
-            ($authCode == '' ? '' : sprintf(__('CUS/Authorization',
-                    'woocommerce-gateway-placetopay') . ' #%s', $authCode))
+            ($authCode == ''
+                ? ''
+                : sprintf(__('CUS/Authorization', 'woocommerce-gateway-placetopay') . ' #%s', $authCode))
         );
 
         echo "<div class='shop_table order_details'>
@@ -782,10 +1050,6 @@ class GatewayMethod extends WC_Payment_Gateway
         global $woocommerce;
 
         if ($this->enabled == 'yes') {
-            if (!Currency::isValidCurrency($this->currency)) {
-                return false;
-            }
-
             if ($woocommerce->version < '1.5.8') {
                 return false;
             }
@@ -806,7 +1070,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param $message
      * @param null $type
      */
-    public function logger($message, $type = null)
+    public function logger($message, $type = null): void
     {
         if ($this->debug != 'yes') {
             return;
@@ -905,7 +1169,10 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function isPendingStatusOrder($orderId)
     {
         $statusP2P = get_post_meta($orderId, self::META_STATUS, true);
-        return \Dnetix\Redirection\Entities\Status::ST_PENDING === $statusP2P;
+
+        return Status::ST_PENDING === $statusP2P
+            || Status::ST_OK === $statusP2P
+            || empty($statusP2P);
     }
 
     /**
@@ -919,14 +1186,12 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param $order
-     * @param int $len
-     * @param string $symbol
      * @return string
      */
-    public static function getOrderNumber($order, $len = 4, $symbol = '0')
+    public static function getOrderNumber($order)
     {
         /** @var \WC_Order $order */
-        return str_pad($order->get_order_number(), $len, $symbol, STR_PAD_LEFT);
+        return $order->get_order_number();
     }
 
     /**
@@ -936,6 +1201,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function processPendingOrder($orderId, $requestId)
     {
         $gatewayMethod = new self();
+        $gatewayMethod->initPlacetoPay();
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
@@ -951,8 +1217,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($this->icon) {
             $icon = sprintf(
-                '<a href="%s" target="_blank"><img src="%s" style="max-height: 24px; max-width: 200px;" alt="%s"/></a>',
-                'https://www.placetopay.com/',
+                '<img src="%s" style="max-height: 24px; max-width: 200px;" alt="%s"/>',
                 WC_HTTPS::force_https_url($this->icon),
                 esc_attr($this->get_title())
             );
@@ -987,6 +1252,9 @@ class GatewayMethod extends WC_Payment_Gateway
         return [
             Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
             Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
+            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
+            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
+            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1001,6 +1269,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Environment::DEV => __('Development', 'woocommerce-gateway-placetopay'),
             Environment::TEST => __('Test', 'woocommerce-gateway-placetopay'),
             Environment::PROD => __('Production', 'woocommerce-gateway-placetopay'),
+            Environment::CUSTOM => __('Custom', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1019,23 +1288,25 @@ class GatewayMethod extends WC_Payment_Gateway
             if ($minutes < 60) {
                 $options[$minutes] = sprintf($format, $minutes, __('Minutes', 'woocommerce-gateway-placetopay'));
                 $minutes += 10;
-
             } elseif ($minutes >= 60 && $minutes < 1440) {
                 $options[$minutes] = sprintf($format, $minutes / 60, __('Hour(s)', 'woocommerce-gateway-placetopay'));
                 $minutes += 60;
-
             } elseif ($minutes >= 1440 && $minutes < 10080) {
                 $options[$minutes] = sprintf($format, $minutes / 1440, __('Day(s)', 'woocommerce-gateway-placetopay'));
                 $minutes += 1440;
-
             } elseif ($minutes >= 10080 && $minutes < 40320) {
-                $options[$minutes] = sprintf($format, $minutes / 10080,
-                    __('Week(s)', 'woocommerce-gateway-placetopay'));
+                $options[$minutes] = sprintf(
+                    $format,
+                    $minutes / 10080,
+                    __('Week(s)', 'woocommerce-gateway-placetopay')
+                );
                 $minutes += 10080;
-
             } else {
-                $options[$minutes] = sprintf($format, $minutes / 40320,
-                    __('Month(s)', 'woocommerce-gateway-placetopay'));
+                $options[$minutes] = sprintf(
+                    $format,
+                    $minutes / 40320,
+                    __('Month(s)', 'woocommerce-gateway-placetopay')
+                );
                 $minutes += 40320;
             }
         }
@@ -1056,7 +1327,8 @@ class GatewayMethod extends WC_Payment_Gateway
             $taxes = \WC_Tax::find_rates(['country' => $countryCode]);
 
             foreach ($taxes as $taxId => $tax) {
-                $taxList[$taxId . '_'] = sprintf($formatTaxItem,
+                $taxList[$taxId . '_'] = sprintf(
+                    $formatTaxItem,
                     $countryName,
                     $countryCode,
                     $tax['label'],
@@ -1068,20 +1340,32 @@ class GatewayMethod extends WC_Payment_Gateway
         return $taxList;
     }
 
+    private function getHeaders(): array
+    {
+        $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+
+        return [
+            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION. ')',
+            'X-Source-Platform' => 'woocommerce',
+        ];
+    }
+
     /**
      * Instantiates a PlacetoPay object providing the login and tranKey,
      * also the url that will be used for the service
      */
     private function initPlacetoPay()
     {
-        try {
-            $this->placetopay = new PlacetoPay([
-                'login' => $this->login,
-                'tranKey' => $this->tran_key,
-                'url' => $this->uri_service,
-            ]);
+        $settings = [
+            'login' => $this->login,
+            'tranKey' => $this->tran_key,
+            'baseUrl' => $this->uri_service,
+            'headers' => $this->getHeaders(),
+        ];
 
-        } catch (PlacetoPayException $ex) {
+        try {
+            $this->placetopay = new PlacetoPay($settings);
+        } catch (Exception $ex) {
             $this->logger($ex->getMessage());
         }
     }
@@ -1097,80 +1381,33 @@ class GatewayMethod extends WC_Payment_Gateway
         return str_replace("\\", "_", $lowercase ? strtolower(get_class($this)) : get_class($this));
     }
 
-    /**
-     * @param $request
-     * @return bool
-     */
-    private function validateFields($request)
+    private function validateFields()
     {
         $isValid = true;
 
         if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
-            wc_add_notice(__('<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
-            wc_add_notice(__('<strong>First Name</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_SURNAME, trim($request['billing_last_name'])) !== 1) {
-            wc_add_notice(__('<strong>Last Name</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (!PersonValidator::isValidCountryCode($request['billing_country'])) {
-            wc_add_notice(__('<strong>Country</strong>, is not valid.',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_STATE, trim($request['billing_state'])) !== 1) {
-            wc_add_notice(__('<strong>State / Country</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_CITY, trim($request['billing_city'])) !== 1) {
-            wc_add_notice(__('<strong>Town / City</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
-            wc_add_notice(__('<strong>Phone</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(PersonValidator::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
-            wc_add_notice(__('<strong>Email</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'), 'error');
+            wc_add_notice(__(
+                '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
 
             $isValid = false;
         }
 
         if ($this->minimum_amount != null && WC()->cart->total < $this->minimum_amount) {
-            wc_add_notice(sprintf(__('<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.',
-                'woocommerce-gateway-placetopay'), number_format($this->minimum_amount, 2, '.', ',')), 'error');
+            wc_add_notice(sprintf(__(
+                '<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.',
+                'woocommerce-gateway-placetopay'
+            ), number_format($this->minimum_amount, 2, '.', ',')), 'error');
 
             $isValid = false;
         }
 
         if ($this->maximum_amount != null && WC()->cart->total > $this->maximum_amount) {
-            wc_add_notice(sprintf(__('<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.',
-                'woocommerce-gateway-placetopay'), number_format($this->maximum_amount, 2, '.', ',')), 'error');
+            wc_add_notice(sprintf(__(
+                '<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.',
+                'woocommerce-gateway-placetopay'
+            ), number_format($this->maximum_amount, 2, '.', ',')), 'error');
 
             $isValid = false;
         }
@@ -1186,10 +1423,10 @@ class GatewayMethod extends WC_Payment_Gateway
     private function wooCommerceVersionCompare($version, $operator = '>=')
     {
         return defined('WOOCOMMERCE_VERSION') && version_compare(
-                WOOCOMMERCE_VERSION,
-                $version,
-                $operator
-            );
+            WOOCOMMERCE_VERSION,
+            $version,
+            $operator
+        );
     }
 
     /**
@@ -1208,45 +1445,98 @@ class GatewayMethod extends WC_Payment_Gateway
             $products[] = $item->get_name();
         }
 
-        return sprintf($orderInfo, $orderId, implode(',', $products));
+        return $this->normalizeDescription(
+            sprintf($orderInfo, $orderId, implode(',', $products))
+        );
+    }
+
+    /**
+     * @param $text
+     * @return mixed
+     */
+    private function normalizeDescription($text)
+    {
+        $array = explode(' - ', $text);
+        $title = explode(': ', $array[1]);
+        $products = explode(',', $title[1]);
+        $final = null;
+
+        foreach ($products as $key => $value) {
+            if (strlen($final) < 150) {
+                if (count($products) - 1 == $key || $key >= 9) {
+                    $final .= "{$value}";
+
+                    break;
+                } else {
+                    $final .= "{$value},";
+                }
+            } else {
+                $final .= "{$value},etc...";
+
+                break;
+            }
+        }
+
+        return filter_var(
+            "{$array[0]} - {$title[0]}: {$final}",
+            FILTER_SANITIZE_STRING,
+            FILTER_FLAG_STRIP_LOW
+        );
     }
 
     private function configureEnvironment()
     {
         $environmentByCountry = [
             Country::CO => [
-                Environment::PROD => 'https://secure.placetopay.com/redirection',
-                Environment::TEST => 'https://test.placetopay.com/redirection',
+                Environment::PROD => 'https://checkout.placetopay.com',
+                Environment::TEST => 'https://checkout-test.placetopay.com',
                 Environment::DEV => 'https://dev.placetopay.com/redirection',
             ],
             Country::EC => [
-                Environment::PROD => 'https://secure.placetopay.ec/redirection',
-                Environment::TEST => 'https://test.placetopay.ec/redirection',
+                Environment::PROD => 'https://checkout.placetopay.ec',
+                Environment::TEST => 'https://checkout-test.placetopay.ec',
                 Environment::DEV => 'https://dev.placetopay.ec/redirection',
             ],
-        ][$this->settings['country']];
+            Country::CR => [
+                Environment::PROD => 'https://checkout.placetopay.com',
+                Environment::TEST => 'https://checkout-test.placetopay.com',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+            Country::CL => [
+                Environment::PROD => 'https://checkout.getnet.cl',
+                Environment::TEST => 'https://checkout.test.getnet.cl',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+            Country::PR => [
+                Environment::PROD => 'https://checkout.placetopay.com',
+                Environment::TEST => 'https://checkout-test.placetopay.com',
+                Environment::DEV => 'https://dev.placetopay.com/redirection',
+            ],
+        ][explode(':', $this->settings['country'])[0]];
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
-        if ($this->testmode == 'yes') {
-            $this->debug = 'yes';
-            $this->log = $this->wooCommerceVersionCompare('2.1')
-                ? new \WC_Logger()
-                : WC()->logger();
-
-            $this->uri_service = $this->enviroment_mode === Environment::DEV
-                ? $environmentByCountry[Environment::DEV]
-                : $environmentByCountry[Environment::TEST];
-
+        if ($this->enviroment_mode == Environment::CUSTOM) {
+            $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
         } else {
-            if ($this->enviroment_mode === Environment::PROD) {
-                $this->debug = 'no';
-                $this->uri_service = $environmentByCountry[Environment::PROD];
+            if ($this->testmode == 'yes') {
+                $this->debug = 'yes';
+                $this->log = $this->wooCommerceVersionCompare('2.1')
+                    ? new \WC_Logger()
+                    : WC()->logger();
+
+                $this->uri_service = $this->enviroment_mode === Environment::DEV
+                    ? $environmentByCountry[Environment::DEV]
+                    : $environmentByCountry[Environment::TEST];
+            } else {
+                if ($this->enviroment_mode === Environment::PROD) {
+                    $this->debug = 'no';
+                    $this->uri_service = $environmentByCountry[Environment::PROD];
+                }
             }
         }
 
-        // By default always it will be environment of development testing
-        if (defined('WP_DEBUG') && WP_DEBUG) {
+        if (defined('WP_DEBUG') && WP_DEBUG && $this->enviroment_mode !== Environment::CUSTOM) {
             $this->settings['enviroment_mode'] = Environment::DEV;
             $this->uri_service = $environmentByCountry[Environment::DEV];
         }
@@ -1292,5 +1582,23 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return null;
+    }
+
+    /**
+     * @param string $version
+     *
+     * @return bool
+     */
+    public static function versionCheck(string $version = '3.0'): bool
+    {
+        if (class_exists('WooCommerce')) {
+            global $woocommerce;
+
+            if (version_compare($woocommerce->version, $version, ">=")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

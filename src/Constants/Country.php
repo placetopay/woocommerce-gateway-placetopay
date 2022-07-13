@@ -11,4 +11,10 @@ interface Country
     const CO = 'CO';
 
     const EC = 'EC';
+
+    const CR = 'CR';
+
+    const CL = 'CL';
+
+    const PR = 'PR';
 }

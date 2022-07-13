@@ -1,7 +1,7 @@
 # Gateway PlacetoPay for Woocommerce
 Un plugin para agregar un nuevo método de pago a tu tienda por PlacetoPay.
 
-## Version 2.14.1
+## Version 2.19.1
 
 ## Requerimientos
 - WordPress >= 4.4.1
@@ -66,8 +66,28 @@ Method: POST
 ```
 
 ### If support for Makefile exists
-```$xslt
+
+```
 > make install
 ```
+> The container listen in port 6969: `http://127.0.0.1:6969/`
 
-The container listen in port 6969: `http://127.0.0.1:6969/`
+### Admin Backend
+
+```
+http://127.0.0.1:6969/wp-login.php
+```
+
+### Compress Plugin As Zip File
+
+In terminal run
+
+```bash
+make compile
+```
+
+Or adding version number in filename to use
+
+```bash
+make compile PLUGIN_VERSION=_X.Y.Z
+```

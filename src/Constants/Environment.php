@@ -13,4 +13,6 @@ interface Environment
     const DEV = 'dev';
 
     const TEST = 'test';
+
+    const CUSTOM = 'custom';
 }
