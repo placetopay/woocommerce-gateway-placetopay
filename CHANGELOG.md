@@ -7,7 +7,7 @@
 - Update plugin site information url
 - Update the message information when there are pending payments, do not show the payment authorization number
 
-### [2.19.7] - 2022-07-08
+### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
 - Fix getting payment installments
 - Fix error when canceling the payment process
