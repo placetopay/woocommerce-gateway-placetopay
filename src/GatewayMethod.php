@@ -879,8 +879,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
-        $installmentType = $payment->additionalData()['installments'] > 0
-            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
+        $installmentType = $this->getInstallments($payment) > 0
+            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $this->getInstallments($payment))
             : __('No installments', 'woocommerce-gateway-placetopay');
         $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
 
@@ -923,7 +923,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             [
                 'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
-                'value' => $payment->additionalData()['installments'] ?? 0,
+                'value' => $this->getInstallments($payment),
             ],
             [
                 'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
@@ -1603,5 +1603,18 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return false;
+    }
+
+    private function getInstallments(Transaction $payment)
+    {
+        if (isset($payment->additionalData()['credit']['installments'])) {
+            return $payment->additionalData()['credit']['installments'];
+        }
+
+        if (isset($payment->additionalData()['credit']['installment'])) {
+            return $payment->additionalData()['credit']['installment'];
+        }
+
+        return 0;
     }
 }
