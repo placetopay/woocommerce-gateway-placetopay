@@ -1441,53 +1441,50 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     private function getDescriptionOrder($orderId)
     {
-        $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
         $order = wc_get_order($orderId);
         /** @var \WC_Order_item[] $items */
-        $items = $order->get_items();
         $products = [];
 
-        foreach ($items as $item) {
+        foreach ($order->get_items() as $item) {
             $products[] = $item->get_name();
         }
 
-        return $this->normalizeDescription(
-            sprintf($orderInfo, $orderId, implode(',', $products))
-        );
+        return $this->normalizeDescription($orderId, $products);
     }
 
     /**
      * @param $text
      * @return mixed
      */
-    private function normalizeDescription($text)
+    private function normalizeDescription($orderId, $products)
     {
-        $array = explode(' - ', $text);
-        $title = explode(': ', $array[1]);
-        $products = explode(',', $title[1]);
-        $final = null;
+        $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
+        $final = sprintf($orderInfo, $orderId, implode(',', $products));
+
+        if (strlen($final) <= 250) {
+            return $final;
+        }
+
+        $finalProducts = null;
+        $etc = "etc...";
 
         foreach ($products as $key => $value) {
-            if (strlen($final) < 150) {
-                if (count($products) - 1 == $key || $key >= 9) {
-                    $final .= "{$value}";
+            if (strlen($finalProducts . $value) <= 250 - strlen(sprintf($orderInfo, $orderId, null)) - strlen($etc)) {
+                if (count($products) - 1 == $key) {
+                    $finalProducts .= "{$value}";
 
                     break;
                 } else {
-                    $final .= "{$value},";
+                    $finalProducts .= "{$value},";
                 }
             } else {
-                $final .= "{$value},etc...";
+                $finalProducts .= $etc;
 
                 break;
             }
         }
 
-        return filter_var(
-            "{$array[0]} - {$title[0]}: {$final}",
-            FILTER_SANITIZE_STRING,
-            FILTER_FLAG_STRIP_LOW
-        );
+        return sprintf($orderInfo, $orderId, $finalProducts);
     }
 
     private function configureEnvironment()
