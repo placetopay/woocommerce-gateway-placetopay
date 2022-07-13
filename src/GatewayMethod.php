@@ -370,7 +370,6 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         $ref = $order->get_order_key() . '-' . time();
-        $productInfo = $this->getDescriptionOrder($orderId);
         $redirectUrl = $this->getRedirectUrl($order);
 
         //For wooCoomerce 2.0
@@ -405,7 +404,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             'payment' => [
                 'reference' => self::getOrderNumber($order),
-                'description' => $productInfo,
+                'description' => $this->getDescriptionOrder($orderId),
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => $order->get_total()
@@ -1430,11 +1429,7 @@ class GatewayMethod extends WC_Payment_Gateway
         );
     }
 
-    /**
-     * @param $orderId
-     * @return string
-     */
-    private function getDescriptionOrder($orderId)
+    private function getDescriptionOrder(int $orderId): string
     {
         $order = wc_get_order($orderId);
         /** @var \WC_Order_item[] $items */
@@ -1447,17 +1442,16 @@ class GatewayMethod extends WC_Payment_Gateway
         return $this->normalizeDescription($orderId, $products);
     }
 
-    /**
-     * @param $text
-     * @return mixed
-     */
-    private function normalizeDescription($orderId, $products)
+    private function normalizeDescription(int $orderId, array $products): string
     {
         $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
-        $final = sprintf($orderInfo, $orderId, implode(',', $products));
+        $pattern = '/[^a-zñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/i';
+        $products = preg_replace($pattern, '', $products);
 
-        if (strlen($final) <= 250) {
-            return $final;
+        $description = sprintf($orderInfo, $orderId, implode(',', $products));
+
+        if (strlen($description) <= 250) {
+            return $description;
         }
 
         $finalProducts = null;
