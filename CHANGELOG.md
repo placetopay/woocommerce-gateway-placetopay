@@ -2,7 +2,7 @@
 
 [Unreleased]
 
-### [2.19.7] - 2022-07-08
+### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
 - Fix error when canceling the payment process when mixed payments are inactive
 - Fix error in sonda process: undefined REQUEST_METHOD

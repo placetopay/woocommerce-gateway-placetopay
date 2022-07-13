@@ -27,32 +27,34 @@ install: up
 compile:
 	$(eval MODULE_NAME_VR=$(MODULE_NAME)$(PLUGIN_VERSION))
 	@touch ~/Downloads/woocommerce-gateway-placetopay-test \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay* \
-        && sudo cp $(CURRENT_FOLDER) ~/Downloads/woocommerce-gateway-placetopay -R \
-        && sudo find ~/Downloads/woocommerce-gateway-placetopay/ -type d -name ".git*" -exec rm -Rf {} + \
-        && sudo find ~/Downloads/woocommerce-gateway-placetopay/ -type d -name "squizlabs" -exec rm -Rf {} + \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.git* \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.idea \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/tmp \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/Dockerfile \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/Makefile \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.env* \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/docker* \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/composer.* \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.php_cs.cache \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/*.md \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/bin \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/dnetix/redirection/tests \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/dnetix/redirection/examples \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/guzzlehttp/guzzle/docs \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/guzzlehttp/guzzle/tests \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/guzzlehttp/streams/tests \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/symfony/var-dumper \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/symfony/polyfill-* \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/larapack/dd \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay* \
+        && cp -pr $(CURRENT_FOLDER) ~/Downloads/woocommerce-gateway-placetopay \
+        && cd ~/Downloads/woocommerce-gateway-placetopay \
+        && composer install --no-dev \
+        && find ~/Downloads/woocommerce-gateway-placetopay/ -type d -name ".git*" -exec rm -Rf {} + \
+        && find ~/Downloads/woocommerce-gateway-placetopay/ -type d -name "squizlabs" -exec rm -Rf {} + \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.git* \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.idea \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/tmp \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/Dockerfile \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/Makefile \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.env* \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/docker* \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/composer.* \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.php_cs.cache \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/*.md \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/bin \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/dnetix/redirection/tests \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/dnetix/redirection/examples \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/guzzlehttp/guzzle/docs \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/guzzlehttp/guzzle/tests \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/guzzlehttp/streams/tests \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/symfony/var-dumper \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/symfony/polyfill-* \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/vendor/larapack/dd \
         && cd ~/Downloads \
-        && sudo zip -r -q -o $(MODULE_NAME_VR).zip woocommerce-gateway-placetopay \
-        && sudo chown $(UID):$(UID) $(MODULE_NAME_VR).zip \
-        && sudo chmod 644 $(MODULE_NAME_VR).zip \
-        && sudo rm -Rf ~/Downloads/woocommerce-gateway-placetopay
+        && zip -r -q -o $(MODULE_NAME_VR).zip woocommerce-gateway-placetopay \
+        && chown $(UID):$(UID) $(MODULE_NAME_VR).zip \
+        && chmod 644 $(MODULE_NAME_VR).zip \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay
 	@echo "Compile file complete: ~/Downloads/$(MODULE_NAME_VR).zip"
