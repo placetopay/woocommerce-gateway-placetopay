@@ -1022,21 +1022,16 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
-        $authCode = get_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, true);
-
         $message = sprintf(
             __(
                 'At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
                 please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
-                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: \'%s\'',
+                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction',
                 'woocommerce-gateway-placetopay'
             ),
             (string)$order->get_id(),
             $this->merchant_phone,
-            $this->merchant_email,
-            ($authCode == ''
-                ? ''
-                : sprintf(__('CUS/Authorization', 'woocommerce-gateway-placetopay') . ' #%s', $authCode))
+            $this->merchant_email
         );
 
         echo "<div class='shop_table order_details'>
