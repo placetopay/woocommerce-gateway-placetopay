@@ -878,8 +878,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
-        $installmentType = $this->getInstallments($payment) > 0
-            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $this->getInstallments($payment))
+        $installmentType = $this->getInstallments($payment->additionalData()) > 0
+            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $this->getInstallments($payment->additionalData()))
             : __('No installments', 'woocommerce-gateway-placetopay');
         $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
 
@@ -922,7 +922,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             [
                 'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
-                'value' => $this->getInstallments($payment),
+                'value' => $this->getInstallments($payment->additionalData()),
             ],
             [
                 'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
@@ -1594,14 +1594,18 @@ class GatewayMethod extends WC_Payment_Gateway
         return false;
     }
 
-    private function getInstallments(Transaction $payment)
+    private function getInstallments(array $additionalData)
     {
-        if (isset($payment->additionalData()['credit']['installments'])) {
-            return $payment->additionalData()['credit']['installments'];
-        }
+        $installments = ['installments', 'installment'];
 
-        if (isset($payment->additionalData()['credit']['installment'])) {
-            return $payment->additionalData()['credit']['installment'];
+        if (isset($additionalData['credit'])) {
+            $key = array_keys(array_filter($additionalData['credit'], function($item) use ($installments) {
+                return in_array($item, $installments);
+            }, ARRAY_FILTER_USE_KEY));
+
+            if(isset($key[0])) {
+                return $additionalData['credit'][$key[0]];
+            }
         }
 
         return 0;
