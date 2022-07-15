@@ -19,7 +19,7 @@
 		}
 	},
 	"require": {
-		"php": "^5.5 || ^7.0",
+		"php": "^7.4",
 		"dnetix/redirection": "^2.0"
 	},
 	"require-dev": {

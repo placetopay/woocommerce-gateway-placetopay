@@ -234,6 +234,9 @@ msgstr "Chile"
 msgid "Puerto Rico"
 msgstr "Puerto Rico"
 
+msgid "Honduras"
+msgstr "Honduras"
+
 msgid "Belize"
 msgstr "Belice"
 
