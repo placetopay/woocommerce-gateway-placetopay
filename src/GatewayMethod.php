@@ -368,7 +368,6 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         $ref = $order->get_order_key() . '-' . time();
-        $productInfo = $this->getDescriptionOrder($orderId);
         $redirectUrl = $this->getRedirectUrl($order);
 
         //For wooCoomerce 2.0
@@ -403,7 +402,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             'payment' => [
                 'reference' => self::getOrderNumber($order),
-                'description' => $productInfo,
+                'description' => $this->getDescriptionOrder($orderId),
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => $order->get_total()
@@ -877,8 +876,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
-        $installmentType = $payment->additionalData()['installments'] ?? 0 > 0
-            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
+        $installmentType = $this->getInstallments($payment->additionalData()) > 0
+            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $this->getInstallments($payment->additionalData()))
             : __('No installments', 'woocommerce-gateway-placetopay');
         $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
 
@@ -921,7 +920,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             [
                 'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
-                'value' => $payment->additionalData()['installments'] ?? 0,
+                'value' => $this->getInstallments($payment->additionalData()),
             ],
             [
                 'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
@@ -1016,21 +1015,16 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
-        $authCode = get_post_meta($order->get_id(), self::META_AUTHORIZATION_CUS, true);
-
         $message = sprintf(
             __(
                 'At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
                 please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
-                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction: \'%s\'',
+                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction',
                 'woocommerce-gateway-placetopay'
             ),
             (string)$order->get_id(),
             $this->merchant_phone,
-            $this->merchant_email,
-            ($authCode == ''
-                ? ''
-                : sprintf(__('CUS/Authorization', 'woocommerce-gateway-placetopay') . ' #%s', $authCode))
+            $this->merchant_email
         );
 
         echo "<div class='shop_table order_details'>
@@ -1429,59 +1423,32 @@ class GatewayMethod extends WC_Payment_Gateway
         );
     }
 
-    /**
-     * @param $orderId
-     * @return string
-     */
-    private function getDescriptionOrder($orderId)
+    private function getDescriptionOrder(int $orderId): string
     {
-        $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
         $order = wc_get_order($orderId);
         /** @var \WC_Order_item[] $items */
-        $items = $order->get_items();
         $products = [];
 
-        foreach ($items as $item) {
+        foreach ($order->get_items() as $item) {
             $products[] = $item->get_name();
         }
 
-        return $this->normalizeDescription(
-            sprintf($orderInfo, $orderId, implode(',', $products))
-        );
+        return $this->normalizeDescription($orderId, $products);
     }
 
-    /**
-     * @param $text
-     * @return mixed
-     */
-    private function normalizeDescription($text)
+    private function normalizeDescription(int $orderId, array $products): string
     {
-        $array = explode(' - ', $text);
-        $title = explode(': ', $array[1]);
-        $products = explode(',', $title[1]);
-        $final = null;
+        $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
+        $pattern = '/[^a-zñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/i';
+        $products = preg_replace($pattern, '', $products);
 
-        foreach ($products as $key => $value) {
-            if (strlen($final) < 150) {
-                if (count($products) - 1 == $key || $key >= 9) {
-                    $final .= "{$value}";
+        $description = sprintf($orderInfo, $orderId, implode(',', $products));
 
-                    break;
-                } else {
-                    $final .= "{$value},";
-                }
-            } else {
-                $final .= "{$value},etc...";
-
-                break;
-            }
+        if (strlen($description) > 250) {
+            $description = substr($description, 0, 243) . ' etc...';
         }
 
-        return filter_var(
-            "{$array[0]} - {$title[0]}: {$final}",
-            FILTER_SANITIZE_STRING,
-            FILTER_FLAG_STRIP_LOW
-        );
+        return $description;
     }
 
     private function configureEnvironment()
@@ -1611,5 +1578,22 @@ class GatewayMethod extends WC_Payment_Gateway
             Environment::TEST => 'https://checkout-test.placetopay.com',
             Environment::DEV => 'https://dev.placetopay.com/redirection',
         ], $environments);
+    }
+
+    private function getInstallments(array $additionalData): int
+    {
+        $installments = ['installments', 'installment'];
+
+        if (isset($additionalData['credit'])) {
+            $key = array_keys(array_filter($additionalData['credit'], function($item) use ($installments) {
+                return in_array($item, $installments);
+            }, ARRAY_FILTER_USE_KEY));
+
+            if(isset($key[0])) {
+                return $additionalData['credit'][$key[0]];
+            }
+        }
+
+        return 0;
     }
 }
