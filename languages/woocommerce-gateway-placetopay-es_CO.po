@@ -197,10 +197,6 @@ msgstr ""
 "electrónico a %s\n"
 " y preguntar por el estado de la transacción"
 
-#: src/GatewayMethod.php:1045
-msgid "CUS/Authorization"
-msgstr "CUS/Autorización"
-
 #: src/GatewayMethod.php:1149
 #, php-format
 msgid "Item #%s stock incremented from %s to %s."
