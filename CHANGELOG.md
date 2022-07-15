@@ -9,7 +9,6 @@
 - Fix error when canceling the payment process when mixed payments are inactive
 - Fix error in sonda process: undefined REQUEST_METHOD
 - Fix error when acquirer don't use installments
-- Added Belize to countries list
 
 ### [2.19.6] - 2022-05-09
 - Update dnetix/redirection package
