@@ -12,7 +12,7 @@
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2017 Evertec PlacetoPay S.A.S.
- * @version 2.19.7
+ * @version 2.19.8
  */
 
 if (!defined('ABSPATH')) {

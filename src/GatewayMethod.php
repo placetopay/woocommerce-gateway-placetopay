@@ -1444,30 +1444,11 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $description = sprintf($orderInfo, $orderId, implode(',', $products));
 
-        if (strlen($description) <= 250) {
-            return $description;
+        if (strlen($description) > 250) {
+            $description = substr($description, 0, 243) . ' etc...';
         }
 
-        $finalProducts = null;
-        $etc = "etc...";
-
-        foreach ($products as $key => $value) {
-            if (strlen($finalProducts . $value) <= 250 - strlen(sprintf($orderInfo, $orderId, null)) - strlen($etc)) {
-                if (count($products) - 1 == $key) {
-                    $finalProducts .= "{$value}";
-
-                    break;
-                } else {
-                    $finalProducts .= "{$value},";
-                }
-            } else {
-                $finalProducts .= $etc;
-
-                break;
-            }
-        }
-
-        return sprintf($orderInfo, $orderId, $finalProducts);
+        return $description;
     }
 
     private function configureEnvironment()
