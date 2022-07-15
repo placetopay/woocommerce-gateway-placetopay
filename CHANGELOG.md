@@ -1,5 +1,11 @@
 ## Changelog
 
+[Unreleased]
+- Add validation and control the length and special characters in the description of the order sent to the gateway
+- Update plugin site information url
+- Update the message information when there are pending payments, do not show the payment authorization number
+- Fix getting payment installments
+
 ### [2.19.6] - 2022-05-09
 - Update dnetix/redirection package
 - Add headers when processing pending transactions
