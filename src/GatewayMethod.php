@@ -23,7 +23,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.19.6';
+    const VERSION = '2.19.8';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -1485,7 +1485,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function configureEnvironment()
     {
-        $environment = $this->getCountryEnvironment();
+        $environments = $this->getCountryEnvironments();
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
@@ -1499,19 +1499,19 @@ class GatewayMethod extends WC_Payment_Gateway
                     : WC()->logger();
 
                 $this->uri_service = $this->enviroment_mode === Environment::DEV
-                    ? $environment[Environment::DEV]
-                    : $environment[Environment::TEST];
+                    ? $environments[Environment::DEV]
+                    : $environments[Environment::TEST];
             } else {
                 if ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
-                    $this->uri_service = $environment[Environment::PROD];
+                    $this->uri_service = $environments[Environment::PROD];
                 }
             }
         }
 
         if (defined('WP_DEBUG') && WP_DEBUG && $this->enviroment_mode !== Environment::CUSTOM) {
             $this->settings['enviroment_mode'] = Environment::DEV;
-            $this->uri_service = $environment[Environment::DEV];
+            $this->uri_service = $environments[Environment::DEV];
         }
     }
 
@@ -1575,38 +1575,36 @@ class GatewayMethod extends WC_Payment_Gateway
         return false;
     }
 
-    private function getCountryEnvironment()
+    private function getCountryEnvironments(): array
     {
-        $defaultEnvironments = [
-            Environment::PROD => 'https://checkout.placetopay.com',
-            Environment::TEST => 'https://checkout-test.placetopay.com',
-            Environment::DEV => 'https://dev.placetopay.com/redirection',
-        ];
-
         switch ($this->settings['country']) {
             case Country::EC:
-                $environment = [
+                $environments = [
                     Environment::PROD => 'https://checkout.placetopay.ec',
                     Environment::TEST => 'https://checkout-test.placetopay.ec',
                     Environment::DEV => 'https://dev.placetopay.ec/redirection',
                 ];
                 break;
             case Country::CL:
-                $environment = array_merge($defaultEnvironments, [
+                $environments = [
                     Environment::PROD => 'https://checkout.getnet.cl',
                     Environment::TEST => 'https://checkout.test.getnet.cl',
-                ]);
+                ];
                 break;
 
             case Country::HN:
-                $environment = array_merge($defaultEnvironments, [
+                $environments = [
                     Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
-                ]);
+                ];
                 break;
             default:
-                $environment = $defaultEnvironments;
+                $environments = [];
         }
 
-        return $environment;
+        return array_merge([
+            Environment::PROD => 'https://checkout.placetopay.com',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
+            Environment::DEV => 'https://dev.placetopay.com/redirection',
+        ], $environments);
     }
 }
