@@ -40,7 +40,6 @@ Run `composer install --no-dev`
 - Español (es)
 - Inglés (en)
 
-
 #### Paths de archivos útiles
 Log para el plugin se encuentra en la ruta.
 _Solo cuando estas en entorno de desarrollo o pruebas_
@@ -114,3 +113,9 @@ Or adding version number in filename to use
 ```bash
 make compile PLUGIN_VERSION=_X.Y.Z
 ```
+
+#### Manejo de las traducciones
+
+Se deben agregar las traducciones o hacer los cambios en los archivos .po ubicados en el directorio *languages*,
+luego proceder a convertirlos en formato .mo para reemplazarlos por los existentes (languages/*.mo) según corresponda.
+Si no se realiza la conversión, los cambios no se verán reflejados
