@@ -1,10 +1,18 @@
 ## Changelog
 
 [Unreleased]
+- Added Honduras to countries list
+- Added Belize to countries list
 - Add validation and control the length and special characters in the description of the order sent to the gateway
 - Update plugin site information url
 - Update the message information when there are pending payments, do not show the payment authorization number
 - Fix getting payment installments
+
+### [2.19.7] - 2022-07-12
+- Update headers when processing pending transactions
+- Fix error when canceling the payment process when mixed payments are inactive
+- Fix error in sonda process: undefined REQUEST_METHOD
+- Fix error when acquirer don't use installments
 
 ### [2.19.6] - 2022-05-09
 - Update dnetix/redirection package
@@ -71,7 +79,7 @@
 
 ### [2.16.1] - 2020-09-02
 - Fixed placetopay production url
-- Added Costa Rica to countries list 
+- Added Costa Rica to countries list
 
 ### [2.16.0] - 2020-09-02
 - Added skip result to admin panel
@@ -88,7 +96,7 @@
 ### [2.14.5] - 2019-07-10
 - Added support to partial payments
 - Fix transactions detail for partial payments
-- Fix order reference number 
+- Fix order reference number
 
 ### [2.14.0] - 2019-06-06
 - Add support for partial payments
@@ -97,7 +105,7 @@
 ### [2.13.1] - 2018-05-22
 - Upgraded redirection dependency for support multiples currencies in validation
 - Added support for cancelled orders
-- Added support for countries Colombia, Ecuador(CO, EC) 
+- Added support for countries Colombia, Ecuador(CO, EC)
 
 ### [2.11.6] - 2017-12-01
 - Added status order to the page of return and a link to PlacetoPay for view order detail
