@@ -23,6 +23,8 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
+    const VERSION = '2.19.8';
+
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
     const META_REQUEST_ID = '_p2p_request_id';
@@ -108,7 +110,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     function __construct()
     {
-        $this->version = '2.19.5';
+        $this->version = self::VERSION;
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
@@ -212,10 +214,6 @@ class GatewayMethod extends WC_Payment_Gateway
                 case Country::CL:
                     $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg';
                     break;
-                case Country::CO:
-                case Country::EC:
-                case Country::PR:
-                case Country::CR:
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
             }
@@ -879,7 +877,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
-        $installmentType = $payment->additionalData()['installments'] > 0
+        $installmentType = $payment->additionalData()['installments'] ?? 0 > 0
             ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $payment->additionalData()['installments'])
             : __('No installments', 'woocommerce-gateway-placetopay');
         $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
@@ -956,29 +954,25 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param RedirectInformation $transaction
-     * @return array
+     * @return array|string
      */
     private function getAuthorizationCode(RedirectInformation $transaction)
     {
-        if (!$this->allow_partial_payments && !is_null($transaction->payment())) {
-            return !is_null($transaction->payment())
-                ? $transaction->payment()[0]->authorization()
-                : [];
-        } else {
-            $transactions = [];
-
-            if (!is_null($transaction->payment())) {
-                foreach ($transaction->payment() as $transaction) {
-                    $transactions[] = $transaction;
-                }
-            }
-
-            return !empty($transactions)
-                ? array_map(function (Transaction $trans) {
-                    return $trans->authorization();
-                }, $transactions)
-                : [];
+        if (!$this->allow_partial_payments && $transaction->payment() !== []) {
+            return $transaction->payment()[0]->authorization();
         }
+
+        $transactions = [];
+
+        foreach ($transaction->payment() as $transaction) {
+            $transactions[] = $transaction;
+        }
+
+        return !empty($transactions)
+            ? array_map(function (Transaction $trans) {
+                return $trans->authorization();
+            }, $transactions)
+            : [];
     }
 
     /**
@@ -1205,7 +1199,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function processPendingOrder($orderId, $requestId)
     {
         $gatewayMethod = new self();
-        $gatewayMethod->initPlacetoPay(true);
+        $gatewayMethod->initPlacetoPay();
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
@@ -1259,6 +1253,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
             Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
+            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1346,10 +1341,11 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getHeaders(): array
     {
-        $domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
 
         return [
-            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} - $domain",
+            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION. ')',
+            'X-Source-Platform' => 'woocommerce',
         ];
     }
 
@@ -1357,17 +1353,14 @@ class GatewayMethod extends WC_Payment_Gateway
      * Instantiates a PlacetoPay object providing the login and tranKey,
      * also the url that will be used for the service
      */
-    private function initPlacetoPay(bool $isCallback = false)
+    private function initPlacetoPay()
     {
         $settings = [
             'login' => $this->login,
             'tranKey' => $this->tran_key,
             'baseUrl' => $this->uri_service,
+            'headers' => $this->getHeaders(),
         ];
-
-        if ($isCallback) {
-            $settings['headers'] = $this->getHeaders();
-        }
 
         try {
             $this->placetopay = new PlacetoPay($settings);
@@ -1492,33 +1485,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function configureEnvironment()
     {
-        $environmentByCountry = [
-            Country::CO => [
-                Environment::PROD => 'https://checkout.placetopay.com',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::EC => [
-                Environment::PROD => 'https://checkout.placetopay.ec',
-                Environment::TEST => 'https://checkout-test.placetopay.ec',
-                Environment::DEV => 'https://dev.placetopay.ec/redirection',
-            ],
-            Country::CR => [
-                Environment::PROD => 'https://checkout.placetopay.com',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::CL => [
-                Environment::PROD => 'https://checkout.getnet.cl',
-                Environment::TEST => 'https://checkout.test.getnet.cl',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-            Country::PR => [
-                Environment::PROD => 'https://checkout.placetopay.com',
-                Environment::TEST => 'https://checkout-test.placetopay.com',
-                Environment::DEV => 'https://dev.placetopay.com/redirection',
-            ],
-        ][explode(':', $this->settings['country'])[0]];
+        $environments = $this->getCountryEnvironments();
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
 
@@ -1532,19 +1499,19 @@ class GatewayMethod extends WC_Payment_Gateway
                     : WC()->logger();
 
                 $this->uri_service = $this->enviroment_mode === Environment::DEV
-                    ? $environmentByCountry[Environment::DEV]
-                    : $environmentByCountry[Environment::TEST];
+                    ? $environments[Environment::DEV]
+                    : $environments[Environment::TEST];
             } else {
                 if ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
-                    $this->uri_service = $environmentByCountry[Environment::PROD];
+                    $this->uri_service = $environments[Environment::PROD];
                 }
             }
         }
 
         if (defined('WP_DEBUG') && WP_DEBUG && $this->enviroment_mode !== Environment::CUSTOM) {
             $this->settings['enviroment_mode'] = Environment::DEV;
-            $this->uri_service = $environmentByCountry[Environment::DEV];
+            $this->uri_service = $environments[Environment::DEV];
         }
     }
 
@@ -1606,5 +1573,38 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return false;
+    }
+
+    private function getCountryEnvironments(): array
+    {
+        switch ($this->settings['country']) {
+            case Country::EC:
+                $environments = [
+                    Environment::PROD => 'https://checkout.placetopay.ec',
+                    Environment::TEST => 'https://checkout-test.placetopay.ec',
+                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                ];
+                break;
+            case Country::CL:
+                $environments = [
+                    Environment::PROD => 'https://checkout.getnet.cl',
+                    Environment::TEST => 'https://checkout.test.getnet.cl',
+                ];
+                break;
+
+            case Country::HN:
+                $environments = [
+                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
+                ];
+                break;
+            default:
+                $environments = [];
+        }
+
+        return array_merge([
+            Environment::PROD => 'https://checkout.placetopay.com',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
+            Environment::DEV => 'https://dev.placetopay.com/redirection',
+        ], $environments);
     }
 }

@@ -2,6 +2,8 @@
 
 use PlacetoPay\PaymentMethod\GatewayMethod;
 
+$_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+
 require_once(dirname(__FILE__) . '/../../../../wp-blog-header.php');
 
 $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
