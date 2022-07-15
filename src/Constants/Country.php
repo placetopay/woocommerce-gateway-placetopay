@@ -19,4 +19,6 @@ interface Country
     const PR = 'PR';
 
     const HN = 'HN';
+
+    const BZ = 'BZ';
 }

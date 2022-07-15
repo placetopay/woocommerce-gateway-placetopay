@@ -2,6 +2,7 @@
 
 [Unreleased]
 - Added Honduras to countries list
+- Added Belize to countries list
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions

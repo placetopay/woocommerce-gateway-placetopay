@@ -1254,6 +1254,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
             Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
+            Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1501,11 +1502,10 @@ class GatewayMethod extends WC_Payment_Gateway
                 $this->uri_service = $this->enviroment_mode === Environment::DEV
                     ? $environments[Environment::DEV]
                     : $environments[Environment::TEST];
-            } else {
-                if ($this->enviroment_mode === Environment::PROD) {
+            } elseif ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
                     $this->uri_service = $environments[Environment::PROD];
-                }
+
             }
         }
 
@@ -1595,6 +1595,11 @@ class GatewayMethod extends WC_Payment_Gateway
             case Country::HN:
                 $environments = [
                     Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
+                ];
+                break;
+            case Country::BZ:
+                $environments = [
+                    Environment::PROD => 'https://abgateway.atlabank.com',
                 ];
                 break;
             default:
