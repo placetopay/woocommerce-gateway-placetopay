@@ -66,7 +66,10 @@ function wc_gateway_placetopay()
     }
 
     require_once(__DIR__ . '/vendor/autoload.php');
-    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance('2.19.7', __FILE__);
+    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance(
+        \PlacetoPay\PaymentMethod\GatewayMethod::VERSION,
+        __FILE__
+    );
 }
 
 add_action('plugins_loaded', 'wc_gateway_placetopay', 0);
