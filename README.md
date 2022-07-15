@@ -77,3 +77,17 @@ Method: POST
 ```
 http://127.0.0.1:6969/wp-login.php
 ```
+
+### Compress Plugin As Zip File
+
+In terminal run
+
+```bash
+make compile
+```
+
+Or adding version number in filename to use
+
+```bash
+make compile PLUGIN_VERSION=_X.Y.Z
+```

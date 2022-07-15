@@ -108,7 +108,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     function __construct()
     {
-        $this->version = '2.19.5';
+        $this->version = '2.19.7';
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
@@ -955,29 +955,25 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param RedirectInformation $transaction
-     * @return array
+     * @return array|string
      */
     private function getAuthorizationCode(RedirectInformation $transaction)
     {
-        if (!$this->allow_partial_payments && !is_null($transaction->payment())) {
-            return !is_null($transaction->payment())
-                ? $transaction->payment()[0]->authorization()
-                : [];
-        } else {
-            $transactions = [];
-
-            if (!is_null($transaction->payment())) {
-                foreach ($transaction->payment() as $transaction) {
-                    $transactions[] = $transaction;
-                }
-            }
-
-            return !empty($transactions)
-                ? array_map(function (Transaction $trans) {
-                    return $trans->authorization();
-                }, $transactions)
-                : [];
+        if (!$this->allow_partial_payments && $transaction->payment() !== []) {
+            return $transaction->payment()[0]->authorization();
         }
+
+        $transactions = [];
+
+        foreach ($transaction->payment() as $transaction) {
+            $transactions[] = $transaction;
+        }
+
+        return !empty($transactions)
+            ? array_map(function (Transaction $trans) {
+                return $trans->authorization();
+            }, $transactions)
+            : [];
     }
 
     /**
@@ -1199,7 +1195,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function processPendingOrder($orderId, $requestId)
     {
         $gatewayMethod = new self();
-        $gatewayMethod->initPlacetoPay(true);
+        $gatewayMethod->initPlacetoPay();
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
@@ -1340,10 +1336,11 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getHeaders(): array
     {
-        $domain = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'];
+        $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
 
         return [
-            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} - $domain",
+            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION. ')',
+            'X-Source-Platform' => 'woocommerce',
         ];
     }
 
@@ -1351,17 +1348,14 @@ class GatewayMethod extends WC_Payment_Gateway
      * Instantiates a PlacetoPay object providing the login and tranKey,
      * also the url that will be used for the service
      */
-    private function initPlacetoPay(bool $isCallback = false)
+    private function initPlacetoPay()
     {
         $settings = [
             'login' => $this->login,
             'tranKey' => $this->tran_key,
             'baseUrl' => $this->uri_service,
+            'headers' => $this->getHeaders(),
         ];
-
-        if ($isCallback) {
-            $settings['headers'] = $this->getHeaders();
-        }
 
         try {
             $this->placetopay = new PlacetoPay($settings);
