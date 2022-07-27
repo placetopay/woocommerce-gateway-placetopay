@@ -185,7 +185,7 @@ msgid ""
 "current\n"
 "                state of your operation you may contact our customer service "
 "line at %s or send your concerns to the email %s and ask for the status of "
-"the transaction: '%s'"
+"the transaction"
 msgstr ""
 "En este momento su orden # %s presenta un proceso de pago cuya transacción "
 "se encuentra PENDIENTE de recibir confirmación por parte de su entidad "
@@ -195,11 +195,7 @@ msgstr ""
 " Si desea mayor información sobre el estado actual de su operación puede "
 "comunicarse a nuestras líneas de atención al cliente %s o enviar un correo "
 "electrónico a %s\n"
-" y preguntar por el estado de la transacción: %s"
-
-#: src/GatewayMethod.php:1045
-msgid "CUS/Authorization"
-msgstr "CUS/Autorización"
+" y preguntar por el estado de la transacción"
 
 #: src/GatewayMethod.php:1149
 #, php-format
