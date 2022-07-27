@@ -639,10 +639,10 @@ class GatewayMethod extends WC_Payment_Gateway
         $sessionStatusInstance = $transactionInfo->status();
         $status = $sessionStatusInstance->status();
         $authorizationCode = [];
-        $paymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
+        $currentPaymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
 
-        if ($isCallback && $paymentStatus === Status::ST_APPROVED) {
-            $this->logger('Returning method is already '. $paymentStatus, __METHOD__);
+        if ($isCallback && $currentPaymentStatus === Status::ST_APPROVED) {
+            $this->logger('Returning method is already '. $currentPaymentStatus, __METHOD__);
             return;
         }
 
@@ -671,11 +671,9 @@ class GatewayMethod extends WC_Payment_Gateway
             );
         }
 
-        if ($transactionInfo->payment() !== null) {
-            $paymentFirstStatus = count($transactionInfo->payment()) > 0
-                ? $transactionInfo->payment()[0]->status()
-                : null;
-        }
+        $paymentFirstStatus = count($transactionInfo->payment()) > 0
+            ? $transactionInfo->payment()[0]->status()
+            : null;
 
         // Get order updated with metas refreshed
         $order = wc_get_order($order->get_id());
@@ -753,9 +751,8 @@ class GatewayMethod extends WC_Payment_Gateway
                     );
                 }
 
-                if ($status == $sessionStatusInstance::ST_APPROVED && $paymentStatus !== Status::ST_APPROVED) {
+                if ($status == $sessionStatusInstance::ST_APPROVED && $currentPaymentStatus !== Status::ST_APPROVED) {
                     $payment = $transactionInfo->lastApprovedTransaction();
-                    $this->logger(json_encode($payment));
 
                     $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
                     $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
