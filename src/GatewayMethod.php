@@ -765,6 +765,13 @@ class GatewayMethod extends WC_Payment_Gateway
                             self::META_STATUS,
                             $sessionStatusInstance::ST_APPROVED_PARTIAL
                         );
+
+                        $order->update_status(
+                            'pending',
+                            __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
+                        );
+
+                        break;
                     }
 
                     $order->add_order_note(__('Payment pending', 'woocommerce-gateway-placetopay'));
