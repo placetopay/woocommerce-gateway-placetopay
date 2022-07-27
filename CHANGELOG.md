@@ -6,6 +6,8 @@
 - Added Honduras to countries list
 - Update plugin site information url
 - Update the message information when there are pending payments, do not show the payment authorization number
+- Fix getting payment installments
+- Remove support for custom translations of payment status. Use default translations
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions

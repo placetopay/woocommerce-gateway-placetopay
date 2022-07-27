@@ -90,20 +90,15 @@ msgstr ""
 msgid "Payer Placetopay email"
 msgstr "Correo electrónico del comprador en Getnet"
 
-#: src/GatewayMethod.php:797
-#, php-format
-msgid "Payment pending: %s"
-msgstr "Pago pendiente: %s"
-
 #: src/GatewayMethod.php:810 src/GatewayMethod.php:848
 #: src/config/form-fields.php:212
-msgid "Payment rejected via Placetopay."
-msgstr "Pago rechazado por Getnet."
+msgid "Payment rejected."
+msgstr "Pago rechazado."
 
 #: src/GatewayMethod.php:826
 #, php-format
-msgid "Payment rejected via Placetopay. Error type: %s."
-msgstr "Pago rechazado por Getnet. Error: %s."
+msgid "Payment rejected. Error type: %s."
+msgstr "Pago rechazado. Error: %s."
 
 #: src/GatewayMethod.php:889
 #, php-format
@@ -113,10 +108,6 @@ msgstr "%s Cuotas"
 #: src/GatewayMethod.php:890
 msgid "No installments"
 msgstr "Sin Cuotas"
-
-#: src/GatewayMethod.php:891
-msgid "<p>Placetopay payment approved</p>"
-msgstr "<p>Pago aprobado por Getnet</p>"
 
 #: src/GatewayMethod.php:895
 msgid "Buying order: "
@@ -582,8 +573,8 @@ msgid "Message for approved transaction"
 msgstr "Mensaje para el pago aprobado por Getnet"
 
 #: src/config/form-fields.php:191
-msgid "Placetopay Payment Approved"
-msgstr "Pago aprobado por Getnet"
+msgid "Payment approved"
+msgstr "Pago aprobado"
 
 #: src/config/form-fields.php:196 src/config/form-fields.php:199
 msgid "Message for pending transaction"
@@ -596,10 +587,6 @@ msgstr "Pago pendiente"
 #: src/config/form-fields.php:203 src/config/form-fields.php:206
 msgid "Message for cancel transaction"
 msgstr "Mensaje para un transacción cancelada"
-
-#: src/config/form-fields.php:205
-msgid "Transaction Canceled."
-msgstr "Transacción cancelada."
 
 #: src/config/form-fields.php:210 src/config/form-fields.php:213
 msgid "Message for rejected transaction"
