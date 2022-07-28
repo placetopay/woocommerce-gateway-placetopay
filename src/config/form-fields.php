@@ -81,7 +81,7 @@ return [
         'title' => __('Country', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
         'class' => 'wc-enhanced-select',
-        'default' => get_option('woocommerce_default_country'),
+        'default' => $this->getCountryList()[$this->getWooCommerceCountry()],
         'options' => $this->getCountryList(),
     ],
     'enviroment_mode' => [
@@ -211,6 +211,13 @@ return [
         'type' => 'text',
         'default' => __('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'),
         'description' => __('Message for rejected transaction', 'woocommerce-gateway-placetopay'),
+        'desc_tip' => true
+    ],
+    'app_name' => [
+        'title' => __('Application name', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+        'default' => $this->getDefaultAppName(),
+        'description' => __('Default application name', 'woocommerce-gateway-placetopay'),
         'desc_tip' => true
     ]
 ];

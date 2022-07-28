@@ -104,6 +104,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $custom_connection_url;
     private $payment_button_image;
     private $version;
+    private $app_name;
 
     /**
      * GatewayMethod constructor.
@@ -163,6 +164,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->msg_pending = $this->get_option('msg_pending');
         $this->msg_declined = $this->get_option('msg_declined');
         $this->msg_cancel = $this->get_option('msg_cancel');
+        $this->app_name = $this->get_option('app_name');
 
         $this->currency = get_woocommerce_currency();
         $this->currency = $this->currency ?? 'COP';
@@ -1332,6 +1334,16 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return $taxList;
+    }
+
+    protected function getDefaultAppName(): string
+    {
+        return 'PlacetoPay';
+    }
+
+    protected function getWooCommerceCountry(): string
+    {
+        return explode(':', get_option('woocommerce_default_country'))[0];
     }
 
     private function getHeaders(): array
