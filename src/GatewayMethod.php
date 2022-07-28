@@ -89,10 +89,6 @@ class GatewayMethod extends WC_Payment_Gateway
     private $testmode;
     private $merchant_phone;
     private $merchant_email;
-    private $msg_approved;
-    private $msg_pending;
-    private $msg_declined;
-    private $msg_cancel;
     private $debug;
     private $uri_service;
     private $taxes;
@@ -159,10 +155,6 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->maximum_amount = $this->get_option('maximum_amount');
         $this->merchant_phone = $this->get_option('merchant_phone');
         $this->merchant_email = $this->get_option('merchant_email');
-        $this->msg_approved = $this->get_option('msg_approved');
-        $this->msg_pending = $this->get_option('msg_pending');
-        $this->msg_declined = $this->get_option('msg_declined');
-        $this->msg_cancel = $this->get_option('msg_cancel');
 
         $this->currency = get_woocommerce_currency();
         $this->currency = $this->currency ?? 'COP';
@@ -627,7 +619,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 'There was an error on the request. please contact the website administrator.',
                 'woocommerce-gateway-placetopay'
             )),
-            'type' => $this->msg['class']
+            'type' => 'woocommerce-info'
         ], wc_get_checkout_url());
 
         wp_redirect($redirectUrl);
@@ -647,10 +639,10 @@ class GatewayMethod extends WC_Payment_Gateway
         $sessionStatusInstance = $transactionInfo->status();
         $status = $sessionStatusInstance->status();
         $authorizationCode = [];
-        $paymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
+        $currentPaymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
 
-        if ($isCallback && $paymentStatus === Status::ST_APPROVED) {
-            $this->logger('Returning method is already '. $paymentStatus, __METHOD__);
+        if ($isCallback && $currentPaymentStatus === Status::ST_APPROVED) {
+            $this->logger('Returning method is already '. $currentPaymentStatus, __METHOD__);
             return;
         }
 
@@ -679,11 +671,9 @@ class GatewayMethod extends WC_Payment_Gateway
             );
         }
 
-        if ($transactionInfo->payment() !== null) {
-            $paymentFirstStatus = count($transactionInfo->payment()) > 0
-                ? $transactionInfo->payment()[0]->status()
-                : null;
-        }
+        $paymentFirstStatus = count($transactionInfo->payment()) > 0
+            ? $transactionInfo->payment()[0]->status()
+            : null;
 
         // Get order updated with metas refreshed
         $order = wc_get_order($order->get_id());
@@ -751,9 +741,6 @@ class GatewayMethod extends WC_Payment_Gateway
                     );
 
                     $order->update_status('on-hold', $message);
-
-                    $this->msg['message'] = $message;
-                    $this->msg['class'] = 'woocommerce-error';
                 }
 
                 if (!empty($payerEmail)) {
@@ -764,18 +751,13 @@ class GatewayMethod extends WC_Payment_Gateway
                     );
                 }
 
-                if ($status == $sessionStatusInstance::ST_APPROVED) {
-                    $this->msg['message'] = $this->msg_approved;
-                    $this->msg['class'] = 'woocommerce-message';
+                if ($status == $sessionStatusInstance::ST_APPROVED && $currentPaymentStatus !== Status::ST_APPROVED) {
+                    $payment = $transactionInfo->lastApprovedTransaction();
 
-                    if ($paymentStatus !== Status::ST_APPROVED) {
-                        $payment = $transactionInfo->lastApprovedTransaction();
-
-                        $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
-                        $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
-                        $order->payment_complete();
-                        $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
-                    }
+                    $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
+                    $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
+                    $order->payment_complete();
+                    $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
                 } else {
                     if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
                         update_post_meta(
@@ -783,19 +765,17 @@ class GatewayMethod extends WC_Payment_Gateway
                             self::META_STATUS,
                             $sessionStatusInstance::ST_APPROVED_PARTIAL
                         );
+
+                        $order->update_status(
+                            'pending',
+                            __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
+                        );
+
+                        break;
                     }
 
-                    $statusOrder = ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_PENDING)
-                        ? 'on-hold'
-                        : 'pending';
+                    $order->add_order_note(__('Payment pending', 'woocommerce-gateway-placetopay'));
 
-                    $order->update_status(
-                        $statusOrder,
-                        sprintf(__('Payment pending: %s', 'woocommerce-gateway-placetopay'), $status)
-                    );
-
-                    $this->msg['message'] = $this->msg_pending;
-                    $this->msg['class'] = 'woocommerce-info';
                 }
 
                 break;
@@ -804,10 +784,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 if ($status === $sessionStatusInstance::ST_REJECTED) {
                     $order->update_status(
                         'cancelled',
-                        sprintf(__('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'), $status)
+                        sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
                     );
-
-                    $this->msg['message'] = $this->msg_cancel;
 
                     if ($paymentFirstStatus) {
                         $this->logger($paymentFirstStatus->message(), $status);
@@ -820,33 +798,25 @@ class GatewayMethod extends WC_Payment_Gateway
                     $order->update_status(
                         'refunded',
                         sprintf(
-                            __('Payment rejected via Placetopay. Error type: %s.', 'woocommerce-gateway-placetopay'),
+                            __('Payment rejected. Error type: %s.', 'woocommerce-gateway-placetopay'),
                             $status
                         )
                     );
-
-                    $this->msg['message'] = $this->msg_declined;
                 }
-
-                $this->msg['class'] = 'woocommerce-error';
 
                 break;
             case $sessionStatusInstance::ST_FAILED:
                 update_post_meta($order->get_id(), self::META_STATUS, $sessionStatusInstance::ST_PENDING);
 
                 $this->logger('Payment failed for order # ' . $order->get_id(), __METHOD__);
-                $this->msg['class'] = 'woocommerce-error';
 
                 break;
             case $sessionStatusInstance::ST_ERROR:
             default:
                 $order->update_status(
                     'failed',
-                    sprintf(__('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'), $status)
+                    sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
                 );
-
-                $this->msg['message'] = $this->msg_cancel;
-                $this->msg['class'] = 'woocommerce-error';
 
                 if (!self::versionCheck()) {
                     $this->restoreOrderStock($order->get_id());
@@ -879,7 +849,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $installmentType = $this->getInstallments($payment->additionalData()) > 0
             ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $this->getInstallments($payment->additionalData()))
             : __('No installments', 'woocommerce-gateway-placetopay');
-        $message = __('<p>Placetopay payment approved</p>', 'woocommerce-gateway-placetopay');
+        $message = '<p>' . __('Payment approved', 'woocommerce-gateway-placetopay') . '</p>';
 
         $details = [
             [
