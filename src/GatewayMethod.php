@@ -68,11 +68,6 @@ class GatewayMethod extends WC_Payment_Gateway
     private $tran_key;
 
     /**
-     * @var array
-     */
-    private $msg = [];
-
-    /**
      * @var \WC_Logger
      */
     private $log;
@@ -1425,7 +1420,9 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $environments = $this->getCountryEnvironments();
 
-        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
+        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || defined('WP_DEBUG') && WP_DEBUG
+            ? 'yes'
+            : 'no';
 
         if ($this->enviroment_mode == Environment::CUSTOM) {
             $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
