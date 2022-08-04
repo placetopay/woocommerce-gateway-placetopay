@@ -1436,11 +1436,9 @@ class GatewayMethod extends WC_Payment_Gateway
                 $this->uri_service = $this->enviroment_mode === Environment::DEV
                     ? $environments[Environment::DEV]
                     : $environments[Environment::TEST];
-            } else {
-                if ($this->enviroment_mode === Environment::PROD) {
+            } elseif ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
                     $this->uri_service = $environments[Environment::PROD];
-                }
             }
         }
 
@@ -1542,8 +1540,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
             case Country::CL:
                 $environments = [
-                    Environment::PROD => 'https://checkout.getnet.cl',
-                    Environment::TEST => 'https://checkout.test.getnet.cl',
+                    Environment::PROD => str_rot13('uggcf://purpxbhg.trgarg.py'),
+                    Environment::TEST => str_rot13('uggcf://purpxbhg.grfg.trgarg.py'),
                 ];
                 break;
 

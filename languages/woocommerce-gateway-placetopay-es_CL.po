@@ -447,7 +447,7 @@ msgid ""
 "By example: \"https://alternative.placetopay.com/redirection\". This value "
 "only is required when you select custom environment"
 msgstr ""
-"Por ejemplo: \"https://alternative.getnet.com/redirection\". Es obligatiorio "
+"Por ejemplo: \"https://alternative.commerce.cl/redirection\". Es obligatiorio "
 "cuando seleccionas en modo personalizado"
 
 #: src/config/form-fields.php:102

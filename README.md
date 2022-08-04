@@ -1,6 +1,6 @@
 # Woocommerce Gateway to PlacetoPay
 
-[PlacetoPay][1] Plugin Payment for [Prestashop][2]
+[PlacetoPay](https://www.placetopay.com) Plugin Payment for [WooCommerce](https://woocommerce.com/)
 
 ## Prerequisites
 
@@ -101,6 +101,29 @@ make install
 ```bash
 http://127.0.0.1:6969/wp-login.php
 ```
+> The container listen in port 6969: `http://127.0.0.1:6969/`
+
+### Admin Backend
+
+```
+http://127.0.0.1:6969/wp-login.php
+```
+
+### Compress Plugin As Zip File
+
+In terminal run
+
+```bash
+make compile
+```
+
+Or adding version number in filename to use
+
+```bash
+make compile PLUGIN_VERSION=_X.Y.Z
+```
+
+#### Manejo de las traducciones
 
 ### Compress Plugin As Zip File
 
