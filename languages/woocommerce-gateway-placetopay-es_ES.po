@@ -227,6 +227,9 @@ msgstr "Honduras"
 msgid "Belize"
 msgstr "Belice"
 
+msgid "Panama"
+msgstr "Panamá"
+
 #: src/GatewayMethod.php:1282
 msgid "Development"
 msgstr "Desarrollo"

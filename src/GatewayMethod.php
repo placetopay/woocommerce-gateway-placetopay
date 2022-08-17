@@ -1212,13 +1212,14 @@ class GatewayMethod extends WC_Payment_Gateway
     public function getCountryList()
     {
         return [
-            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
-            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
-            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
-            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
-            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
-            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
             Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
+            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
+            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
+            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
+            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
+            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
+            Country::PA => __('Panama', 'woocommerce-gateway-placetopay'),
+            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1515,11 +1516,9 @@ class GatewayMethod extends WC_Payment_Gateway
     private function getCountryEnvironments(): array
     {
         switch ($this->settings['country']) {
-            case Country::EC:
+            case Country::BZ:
                 $environments = [
-                    Environment::PROD => 'https://checkout.placetopay.ec',
-                    Environment::TEST => 'https://checkout-test.placetopay.ec',
-                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                    Environment::PROD => 'https://abgateway.atlabank.com',
                 ];
                 break;
             case Country::CL:
@@ -1528,15 +1527,16 @@ class GatewayMethod extends WC_Payment_Gateway
                     Environment::TEST => 'https://checkout.test.getnet.cl',
                 ];
                 break;
-
+            case Country::EC:
+                $environments = [
+                    Environment::PROD => 'https://checkout.placetopay.ec',
+                    Environment::TEST => 'https://checkout-test.placetopay.ec',
+                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                ];
+                break;
             case Country::HN:
                 $environments = [
                     Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
-                ];
-                break;
-            case Country::BZ:
-                $environments = [
-                    Environment::PROD => 'https://abgateway.atlabank.com',
                 ];
                 break;
             default:
