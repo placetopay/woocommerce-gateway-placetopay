@@ -893,10 +893,6 @@ class GatewayMethod extends WC_Payment_Gateway
                 'value' => $this->getInstallments($payment->additionalData()),
             ],
             [
-                'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
-                'value' => '-',
-            ],
-            [
                 'key' => __('Transaction Date: ', 'woocommerce-gateway-placetopay'),
                 'value' => $payment->status()->date(),
             ],
