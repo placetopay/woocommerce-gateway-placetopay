@@ -8,6 +8,8 @@
 - Update the message information when there are pending payments, do not show the payment authorization number
 - Fix getting payment installments
 - Remove support for custom translations of payment status. Use default translations
+- Added Panama to countries list
+- Remove the Installment amount from the payment detail
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
