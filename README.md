@@ -60,7 +60,7 @@ La ruta para encontrar el archivo cron es:
 5. Usala para ejecutar nuevamente la petición y así conseguir simular el proceso
 
 ```rest
-Request: http://mi-sitio.com//wp-json/placetopay-payment/v2/callback/
+Request: http://mi-sitio.com/wp-json/placetopay-payment/v2/callback/
 Method: POST
 {
   "status": {
