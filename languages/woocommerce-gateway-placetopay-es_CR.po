@@ -34,8 +34,8 @@ msgid "Approved"
 msgstr "Aprobada"
 
 #: src/GatewayMethod.php:262 woocommerce/myaccount/orders.php:92
-msgid "Rejected"
-msgstr "Rechazada"
+msgid "Refunded"
+msgstr "Reversada"
 
 #: src/GatewayMethod.php:263
 msgid "Cancelled"
@@ -566,29 +566,16 @@ msgstr "Correo electrónico"
 msgid "Provide contact email"
 msgstr "Correo electrónico del comprador en Placetopay"
 
-#: src/config/form-fields.php:189 src/config/form-fields.php:192
-msgid "Message for approved transaction"
-msgstr "Mensaje para el pago aprobado por Placetopay"
-
 #: src/config/form-fields.php:191
 msgid "Payment approved"
 msgstr "Pago aprobado"
-
-#: src/config/form-fields.php:196 src/config/form-fields.php:199
-msgid "Message for pending transaction"
-msgstr "Mensaje para transacción pendiente en Placetopay"
 
 #: src/config/form-fields.php:198
 msgid "Payment pending"
 msgstr "Pago pendiente"
 
-#: src/config/form-fields.php:203 src/config/form-fields.php:206
-msgid "Message for cancel transaction"
-msgstr "Mensaje para un transacción cancelada"
-
-#: src/config/form-fields.php:210 src/config/form-fields.php:213
-msgid "Message for rejected transaction"
-msgstr "Mensaje para una transacción rechazada"
+msgid "Payment refunded"
+msgstr "Pago reversado"
 
 #: woocommerce/checkout/thankyou.php:35
 msgid ""
