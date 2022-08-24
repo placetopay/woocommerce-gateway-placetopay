@@ -8,6 +8,7 @@
 - Update the message information when there are pending payments, do not show the payment authorization number
 - Fix getting payment installments
 - Remove support for custom translations of payment status. Use default translations
+- Resolve reverse payments when the transaction is pending
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
