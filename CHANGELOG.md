@@ -9,7 +9,7 @@
 - Fix getting payment installments
 - Remove support for custom translations of payment status. Use default translations
 - Added Panama to countries list
-- Remove the Installment amount from the payment detail
+- Remove the Installment amount from the order detail
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
