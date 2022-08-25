@@ -17,10 +17,6 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Poedit-SearchPathExcluded-0: tmp\n"
 
-#: src/GatewayMethod.php:125
-msgid "Placetopay"
-msgstr "Placetopay"
-
 #: src/GatewayMethod.php:126
 msgid "Sells online safely and agile"
 msgstr "Vende en línea de forma segura y ágil"
@@ -54,20 +50,18 @@ msgid "Payment error: Server error internal."
 msgstr "Error en el pago: Error interno del servidor."
 
 #: src/GatewayMethod.php:557
-msgid "Redirecting to Placetopay"
-msgstr "Redireccionando a Placetopay"
+msgid "Redirecting to %s"
+msgstr "Redireccionando a %s"
 
 #: src/GatewayMethod.php:561
-msgid ""
-"We are now redirecting you to Placetopay to make payment, if you are not "
+msgid "We are now redirecting you to %s to make payment, if you are not "
 "redirected please press the bottom."
-msgstr ""
-"Ahora estamos redirigiéndolo a Placetopay para hacer el pago, si no es "
+msgstr "Ahora estamos redirigiéndolo a %s para hacer el pago, si no es "
 "redirigido por favor presione la parte inferior."
 
 #: src/GatewayMethod.php:608
-msgid "Placetopay Request Failure"
-msgstr "Fallo la petición a Placetopay"
+msgid "%s Request Failure"
+msgstr "Fallo la petición a %s"
 
 #: src/GatewayMethod.php:630
 msgid ""
@@ -82,14 +76,12 @@ msgstr "Método de pago usado"
 
 #: src/GatewayMethod.php:752
 #, php-format
-msgid "Validation error: Placetopay amounts do not match (gross %s)."
-msgstr ""
-"Error de validación: La cantidad pagada en Placetopay no coincide (Cantidad "
-"%s)."
+msgid "Validation error: %s amounts do not match (gross %s)."
+msgstr "Error de validación: La cantidad pagada en %s no coincide (Cantidad %s)."
 
 #: src/GatewayMethod.php:765
-msgid "Payer Placetopay email"
-msgstr "Correo electrónico del comprador en Placetopay"
+msgid "Payer %s email"
+msgstr "Correo electrónico del comprador en %s"
 
 #: src/GatewayMethod.php:810 src/GatewayMethod.php:848
 #: src/config/form-fields.php:212
@@ -323,22 +315,20 @@ msgid "Enable/Disable"
 msgstr "Activo/Inactivo"
 
 #: src/config/form-fields.php:19
-msgid "Enable Placetopay payment method."
-msgstr "Activar método de pago Placetopay."
+msgid "Enable %s payment method."
+msgstr "Activar método de pago %s."
 
 #: src/config/form-fields.php:21
-msgid "Show in the Payment List as a payment option"
-msgstr "Mostrar Placetopay en la lista de métodos de pago"
+msgid "Show %s in the Payment List as a payment option"
+msgstr "Mostrar %s en la lista de métodos de pago"
 
 #: src/config/form-fields.php:24
 msgid "Predicting the buyer's information?"
 msgstr "¿Prediligenciar la información del comprador?"
 
 #: src/config/form-fields.php:26
-msgid "Enable to preload the buyer's information on the Placetopay platform."
-msgstr ""
-"Habilitar para precargar la información del comprador en la plataforma "
-"Placetopay."
+msgid "Enable to preload the buyer's information on the %s platform."
+msgstr "Habilitar para precargar la información del comprador en la plataforma %s."
 
 #: src/config/form-fields.php:31
 msgid "Allow to pay with pending orders"
@@ -375,16 +365,12 @@ msgid "Skip result?"
 msgstr "¿Omitir Pantalla de Resultado?"
 
 #: src/config/form-fields.php:49
-msgid "Allow to skip the placetopay result screen."
-msgstr "Permite omitir la pantalla de resultado de Placetopay."
+msgid "Allow to skip the %s result screen."
+msgstr "Permite omitir la pantalla de resultado de %s."
 
 #: src/config/form-fields.php:53
 msgid "Title:"
 msgstr "Título:"
-
-#: src/config/form-fields.php:55
-msgid "Placetopay Title"
-msgstr "Placetopay"
 
 #: src/config/form-fields.php:56
 msgid "This controls the title which the user sees during checkout."
@@ -395,8 +381,8 @@ msgid "Description:"
 msgstr "Descripción:"
 
 #: src/config/form-fields.php:63
-msgid "Pay securely through Placetopay."
-msgstr "Pague seguro a través de Placetopay."
+msgid "Pay securely through %s."
+msgstr "Pague seguro a través de %s."
 
 #: src/config/form-fields.php:64
 msgid "This controls the description which the user sees during checkout."
@@ -407,16 +393,16 @@ msgid "Login"
 msgstr "Login"
 
 #: src/config/form-fields.php:71
-msgid "Given to login by Placetopay"
-msgstr "Identificación del vendedor proporcionada por Placetopay"
+msgid "Given to login by %s"
+msgstr "Identificación del vendedor proporcionada por %s"
 
 #: src/config/form-fields.php:75
 msgid "Transactional Key"
 msgstr "Clave transaccional"
 
 #: src/config/form-fields.php:77
-msgid "Given to transactional key by Placetopay"
-msgstr "Clave transaccional del vendedor proporcionada por Placetopay"
+msgid "Given to transactional key by %s"
+msgstr "Clave transaccional del vendedor proporcionada por %s"
 
 #: src/config/form-fields.php:81
 msgid "Country"
@@ -428,11 +414,11 @@ msgstr "Ambiente"
 
 #: src/config/form-fields.php:93
 msgid ""
-"Enable the environment Placetopay for testing or production transactions."
+"Enable the environment %s for testing or production transactions."
 "<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is activated</"
 "b>"
 msgstr ""
-"Habilite el entorno Placetopay para realizar pruebas o transacciones de "
+"Habilite el entorno %s para realizar pruebas o transacciones de "
 "producción. <br /> Nota: <b> Por defecto es \"Prueba de desarrollo\", si "
 "WP_DEBUG está activado </ b>"
 
@@ -441,11 +427,9 @@ msgid "Custom connection URL"
 msgstr "URL de conexión personalizada"
 
 #: src/config/form-fields.php:99
-msgid ""
-"By example: \"https://alternative.placetopay.com/redirection\". This value "
+msgid "By example: \"https://gateway.com/redirection\". This value "
 "only is required when you select custom environment"
-msgstr ""
-"Por ejemplo: \"https://alternative.placetopay.com/redirection\". Es "
+msgstr "Por ejemplo: \"https://gateway.com/redirection\". Es "
 "obligatiorio cuando seleccionas en modo personalizado"
 
 #: src/config/form-fields.php:102
@@ -462,11 +446,11 @@ msgstr "Url de notificación. (WP >= 4.6)"
 
 #: src/config/form-fields.php:113
 msgid ""
-"Url of notification where Placetopay will send a notification of a "
+"Url of notification where %s will send a notification of a "
 "transaction for Woocommerce.<br />If your Wordpress not support REST-API, "
 "please visit: https://wordpress.org/plugins/rest-api/"
 msgstr ""
-"Url de notificación donde Placetopay enviará una notificación como respuesta "
+"Url de notificación donde %s enviará una notificación como respuesta "
 "a una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
 "API, por favor visita: https://wordpress.org/plugins/rest-api/"
 
@@ -485,12 +469,12 @@ msgstr "Imagen Botón de Pago"
 
 #: src/config/form-fields.php:126
 msgid ""
-"It can be a URL, an image name (provide the image to the placetopay team as "
+"It can be a URL, an image name (provide the image to the %s team as "
 "svg format for this to work) or a local path (save the image to the wp-"
 "content/uploads folder"
 msgstr ""
 "Puede ser una URL, un nombre de imagen (proporcione la imagen al equipo de "
-"placetopay en formato svg para que esto funcione) o una ruta local (guarde "
+"%s en formato svg para que esto funcione) o una ruta local (guarde "
 "la imagen en la carpeta wp-content/uploads)"
 
 #: src/config/form-fields.php:129
@@ -514,40 +498,32 @@ msgid "Expiration time session"
 msgstr "Tiempo de expiración de la sesión"
 
 #: src/config/form-fields.php:146
-msgid "Expiration of the session for payment in Placetopay"
-msgstr "Expiración de la sesión para el pago en Placetopay"
+msgid "Expiration of the session for payment in %s"
+msgstr "Expiración de la sesión para el pago en %s"
 
 #: src/config/form-fields.php:150
 msgid "Select taxes to include"
 msgstr "Seleccione impuestos para incluir"
 
 #: src/config/form-fields.php:154
-msgid ""
-"Select the taxes that are included as VAT or other types of taxes for "
-"Placetopay"
-msgstr ""
-"Seleccione los impuestos que se incluyen como el IVA u otros tipos de "
-"impuestos para Placetopay"
+msgid "Select the taxes that are included as VAT or other types of taxes for %s"
+msgstr "Seleccione los impuestos que se incluyen como el IVA u otros tipos de impuestos para %s"
 
 #: src/config/form-fields.php:158
 msgid "Select ICO taxes to include"
 msgstr "Seleccione impuestos ICO para incluir"
 
 #: src/config/form-fields.php:162
-msgid "Select the taxes that are included as an ICO tax rate for Placetopay"
-msgstr ""
-"Selecciona los impuestos que se incluyen como tipo de impuesto ICO para "
-"Placetopay"
+msgid "Select the taxes that are included as an ICO tax rate for %s"
+msgstr "Selecciona los impuestos que se incluyen como tipo de impuesto ICO para %s"
 
 #: src/config/form-fields.php:166
 msgid "Select ICE taxes to include"
 msgstr "Seleccione impuestos ICE para incluir"
 
 #: src/config/form-fields.php:170
-msgid "Select the taxes that are included as an ICE tax rate for Placetopay"
-msgstr ""
-"Selecciona los impuestos que se incluyen como tipo de impuesto ICE para "
-"Placetopay"
+msgid "Select the taxes that are included as an ICE tax rate for %s"
+msgstr "Selecciona los impuestos que se incluyen como tipo de impuesto ICE para %s"
 
 #: src/config/form-fields.php:174
 msgid "Phone number"
@@ -563,32 +539,16 @@ msgid "Email"
 msgstr "Correo electrónico"
 
 #: src/config/form-fields.php:183
-msgid "Provide contact email"
-msgstr "Correo electrónico del comprador en Placetopay"
-
-#: src/config/form-fields.php:189 src/config/form-fields.php:192
-msgid "Message for approved transaction"
-msgstr "Mensaje para el pago aprobado por Placetopay"
+msgid "Provide contact email on %s"
+msgstr "Correo electrónico del comprador en %s"
 
 #: src/config/form-fields.php:191
 msgid "Payment approved"
 msgstr "Pago aprobado"
 
-#: src/config/form-fields.php:196 src/config/form-fields.php:199
-msgid "Message for pending transaction"
-msgstr "Mensaje para transacción pendiente en Placetopay"
-
 #: src/config/form-fields.php:198
 msgid "Payment pending"
 msgstr "Pago pendiente"
-
-#: src/config/form-fields.php:203 src/config/form-fields.php:206
-msgid "Message for cancel transaction"
-msgstr "Mensaje para un transacción cancelada"
-
-#: src/config/form-fields.php:210 src/config/form-fields.php:213
-msgid "Message for rejected transaction"
-msgstr "Mensaje para una transacción rechazada"
 
 #: woocommerce/checkout/thankyou.php:35
 msgid ""
@@ -617,12 +577,10 @@ msgstr "Gracias. Su orden ha sido recibida."
 
 #: woocommerce/checkout/thankyou.php:68
 #, php-format
-msgid ""
-"<br>For more information about the status of your order: <a href=\"%s\" "
-"target=\"_blank\">view order detail in Placetopay</a>"
-msgstr ""
-"<br> Para obtener más información sobre el estado de su pedido: <a href=\"%s"
-"\" target=\"_blank\">ver detalles de la orden en Placetopay</a>"
+msgid "<br>For more information about the status of your order: <a href=\"%s\" "
+"target=\"_blank\">view order detail in %s</a>"
+msgstr "<br> Para obtener más información sobre el estado de su pedido: <a href=\"%s"
+"\" target=\"_blank\">ver detalles de la orden en %s</a>"
 
 #: woocommerce/checkout/thankyou.php:79
 msgid "Order status:"

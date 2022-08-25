@@ -16,15 +16,15 @@ return [
     'enabled' => [
         'title' => __('Enable/Disable', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
-        'label' => __('Enable Placetopay payment method.', 'woocommerce-gateway-placetopay'),
+        'label' => sprintf(__('Enable %s payment method.', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'default' => 'no',
-        'description' => __('Show in the Payment List as a payment option', 'woocommerce-gateway-placetopay')
+        'description' => sprintf(__('Show %s in the Payment List as a payment option', 'woocommerce-gateway-placetopay'), $this->getAppName())
     ],
     'fill_buyer_information' => [
         'title' => __('Predicting the buyer\'s information?', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
-        'label' => __('Enable to preload the buyer\'s information on the Placetopay platform.',
-            'woocommerce-gateway-placetopay'),
+        'label' => sprintf(__('Enable to preload the buyer\'s information on the %s platform.',
+            'woocommerce-gateway-placetopay'), $this->getAppName()),
         'default' => 'yes',
     ],
     'allow_to_pay_with_pending_orders' => [
@@ -46,21 +46,21 @@ return [
     'skip_result' => [
         'title' => __('Skip result?', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
-        'label' => __('Allow to skip the placetopay result screen.', 'woocommerce-gateway-placetopay'),
+        'label' => sprintf(__('Allow to skip the %s result screen.', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'default' => 'no',
     ],
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'default' => __('Placetopay Title', 'woocommerce-gateway-placetopay'),
+        'default' => $this->getDefaultAppName(),
         'description' => __('This controls the title which the user sees during checkout.',
             'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
+        'desc_tip' => true,
     ],
     'description' => [
         'title' => __('Description:', 'woocommerce-gateway-placetopay'),
         'type' => 'textarea',
-        'default' => __('Pay securely through Placetopay.', 'woocommerce-gateway-placetopay'),
+        'default' => sprintf(__('Pay securely through %s.', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'description' => __('This controls the description which the user sees during checkout.',
             'woocommerce-gateway-placetopay'),
         'desc_tip' => true
@@ -68,20 +68,20 @@ return [
     'login' => [
         'title' => __('Login', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'description' => __('Given to login by Placetopay', 'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Given to login by %s', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'desc_tip' => true
     ],
     'tran_key' => [
         'title' => __('Transactional Key', 'woocommerce-gateway-placetopay'),
         'type' => 'password',
-        'description' => __('Given to transactional key by Placetopay', 'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Given to transactional key by %s', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'desc_tip' => true
     ],
     'country' => [
         'title' => __('Country', 'woocommerce-gateway-placetopay'),
         'type' => 'select',
         'class' => 'wc-enhanced-select',
-        'default' => $this->getCountryList()[$this->getWooCommerceCountry()],
+        'default' => $this->getWooCommerceCountry(),
         'options' => $this->getCountryList(),
     ],
     'enviroment_mode' => [
@@ -90,13 +90,13 @@ return [
         'class' => 'wc-enhanced-select',
         'default' => 'dev',
         'options' => $this->getEnvironments(),
-        'description' => __('Enable the environment Placetopay for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
-            'woocommerce-gateway-placetopay')
+        'description' => sprintf(__('Enable the environment &s for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
+            'woocommerce-gateway-placetopay'), $this->getAppName())
     ],
     'custom_connection_url' => [
         'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'description' => __('By example: "https://alternative.placetopay.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
+        'description' => __('By example: \"https://gateway.com/redirection\". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
     ],
     'redirect_page_id' => [
         'title' => __('Return Page', 'woocommerce-gateway-placetopay'),
@@ -110,8 +110,8 @@ return [
         'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
         'class' => 'readonly',
-        'description' => __('Url of notification where Placetopay will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
-            'woocommerce-gateway-placetopay')
+        'description' => sprintf(__('Url of notification where %s will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
+            'woocommerce-gateway-placetopay'), $this->getAppName())
     ],
     'schedule_task_path' => [
         'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
@@ -123,7 +123,8 @@ return [
     'payment_button_image' => [
         'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'description' => __('It can be a URL, an image name (provide the image to the placetopay team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder', 'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder',
+            'woocommerce-gateway-placetopay'), $this->getAppName()),
     ],
     'minimum_amount' => [
         'title' => __('Minimum Amount', 'woocommerce-gateway-placetopay'),
@@ -143,7 +144,7 @@ return [
         'class' => 'wc-enhanced-select',
         'default' => 2880,
         'options' => $this->getListOptionExpirationMinutes(),
-        'description' => __('Expiration of the session for payment in Placetopay', 'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'desc_tip' => true
     ],
     'taxes_others' => [
@@ -151,24 +152,24 @@ return [
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as VAT or other types of taxes for Placetopay',
-            'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Select the taxes that are included as VAT or other types of taxes for %s',
+            'woocommerce-gateway-placetopay'), $this->getAppName()),
     ],
     'taxes_ico' => [
         'title' => __('Select ICO taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as an ICO tax rate for Placetopay',
-            'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Select the taxes that are included as an ICO tax rate for %s',
+            'woocommerce-gateway-placetopay'), $this->getAppName()),
     ],
     'taxes_ice' => [
         'title' => __('Select ICE taxes to include', 'woocommerce-gateway-placetopay'),
         'type' => 'multiselect',
         'class' => 'wc-enhanced-select',
         'options' => $this->getListTaxes(),
-        'description' => __('Select the taxes that are included as an ICE tax rate for Placetopay',
-            'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Select the taxes that are included as an ICE tax rate for %s',
+            'woocommerce-gateway-placetopay'), $this->getAppName()),
     ],
     'merchant_phone' => [
         'title' => __('Phone number', 'woocommerce-gateway-placetopay'),
@@ -180,16 +181,9 @@ return [
     ],
     'merchant_email' => [
         'title' => __('Email', 'woocommerce-gateway-placetopay'),
-        'description' => __('Provide contact email', 'woocommerce-gateway-placetopay'),
+        'description' => sprintf(__('Provide contact email on %s', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'type' => 'text',
         'default' => '',
         'desc_tip' => true,
     ],
-    'app_name' => [
-        'title' => __('Application name', 'woocommerce-gateway-placetopay'),
-        'type' => 'text',
-        'default' => $this->getDefaultAppName(),
-        'description' => __('Default application name', 'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
-    ]
 ];

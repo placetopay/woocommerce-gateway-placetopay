@@ -120,7 +120,8 @@ class GatewayMethod extends WC_Payment_Gateway
     public function configPaymentMethod()
     {
         $this->id = 'placetopay';
-        $this->method_title = __('Placetopay', 'woocommerce-gateway-placetopay');
+        $this->app_name = $this->get_option('app_name');
+        $this->method_title = $this->app_name;
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
         $this->has_fields = false;
 
@@ -156,7 +157,6 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->maximum_amount = $this->get_option('maximum_amount');
         $this->merchant_phone = $this->get_option('merchant_phone');
         $this->merchant_email = $this->get_option('merchant_email');
-        $this->app_name = $this->get_option('app_name');
 
         $this->currency = get_woocommerce_currency();
         $this->currency = $this->currency ?? 'COP';
@@ -545,13 +545,13 @@ class GatewayMethod extends WC_Payment_Gateway
             // Add information to the order to notify that exit to PlacetoPay
             // and invalidates the shopping cart
             $order = new WC_Order($orderId);
-            $order->update_status('on-hold', __('Redirecting to Placetopay', 'woocommerce-gateway-placetopay'));
+            $order->update_status('on-hold', sprintf(__('Redirecting to %s', 'woocommerce-gateway-placetopay'), $this->getAppName()));
 
             $code = 'jQuery("body").block({
-                message: "' . esc_js(__(
-                'We are now redirecting you to Placetopay to make payment, if you are not redirected please press the bottom.',
+                message: "' . esc_js(sprintf(__(
+                'We are now redirecting you to %s to make payment, if you are not redirected please press the bottom.',
                 'woocommerce-gateway-placetopay'
-            )) . '",
+            ), $this->getAppName())) . '",
                 baseZ: 99999,
                 overlayCSS: { background: "#fff", opacity: 0.6 },
                 css: {
@@ -596,7 +596,7 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
-        wp_die(__("Placetopay Request Failure", 'woocommerce-gateway-placetopay'));
+        wp_die(sprintf(__("%s Request Failure", 'woocommerce-gateway-placetopay'), $this->getAppName()));
     }
 
     /**
@@ -738,7 +738,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 // Validate Amount
                 if ($order->get_total() != floatval($totalAmount)) {
                     $message = sprintf(
-                        __('Validation error: Placetopay amounts do not match (gross %s).', 'woocommerce-gateway-placetopay'),
+                        __('Validation error: %s amounts do not match (gross %s).', 'woocommerce-gateway-placetopay'),
+                        $this->getAppName(),
                         $totalAmount
                     );
 
@@ -748,7 +749,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 if (!empty($payerEmail)) {
                     update_post_meta(
                         $order->get_id(),
-                        __('Payer Placetopay email', 'woocommerce-gateway-placetopay'),
+                        sprintf(__('Payer %s email', 'woocommerce-gateway-placetopay'), $this->getAppName()),
                         $payerEmail
                     );
                 }
@@ -1308,7 +1309,12 @@ class GatewayMethod extends WC_Payment_Gateway
 
     protected function getDefaultAppName(): string
     {
-        return 'PlacetoPay';
+        return $this->getWooCommerceCountry() === Country::CL ? 'Getnet' : 'PlacetoPay';
+    }
+
+    public function getAppName(): string
+    {
+        return !empty($this->app_name) ? $this->app_name : $this->getDefaultAppName() ;
     }
 
     protected function getWooCommerceCountry(): string
