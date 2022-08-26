@@ -90,13 +90,13 @@ return [
         'class' => 'wc-enhanced-select',
         'default' => 'dev',
         'options' => $this->getEnvironments(),
-        'description' => sprintf(__('Enable the environment &s for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
+        'description' => sprintf(__('Enable the environment %s for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
             'woocommerce-gateway-placetopay'), $this->getAppName())
     ],
     'custom_connection_url' => [
         'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
-        'description' => __('By example: \"https://gateway.com/redirection\". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
+        'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
     ],
     'redirect_page_id' => [
         'title' => __('Return Page', 'woocommerce-gateway-placetopay'),

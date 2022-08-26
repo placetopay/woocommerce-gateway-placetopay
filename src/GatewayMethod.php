@@ -206,7 +206,7 @@ class GatewayMethod extends WC_Payment_Gateway
             // format: null
             switch ($this->settings['country']) {
                 case Country::CL:
-                    $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg';
+                    $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_' . unmaskString('Trgarg') .  '.svg';
                     break;
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
@@ -1309,7 +1309,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     protected function getDefaultAppName(): string
     {
-        return $this->getWooCommerceCountry() === Country::CL ? 'Getnet' : 'PlacetoPay';
+        return $this->getWooCommerceCountry() === Country::CL ? unmaskString('Trgarg') : 'PlacetoPay';
     }
 
     public function getAppName(): string
@@ -1542,8 +1542,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 break;
             case Country::CL:
                 $environments = [
-                    Environment::PROD => 'https://checkout.getnet.cl',
-                    Environment::TEST => 'https://checkout.test.getnet.cl',
+                    Environment::PROD => 'https://checkout.' . unmaskString('trgarg') . '.cl',
+                    Environment::TEST => 'https://checkout.test.' . unmaskString('trgarg') . '.cl',
                 ];
                 break;
 

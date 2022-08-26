@@ -65,6 +65,7 @@ function wc_gateway_placetopay()
         return $template;
     }
 
+    require_once(__DIR__ . '/src/helpers.php');
     require_once(__DIR__ . '/vendor/autoload.php');
     return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance(
         \PlacetoPay\PaymentMethod\GatewayMethod::VERSION,

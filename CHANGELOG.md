@@ -8,6 +8,7 @@
 - Update the message information when there are pending payments, do not show the payment authorization number
 - Fix getting payment installments
 - Remove support for custom translations of payment status. Use default translations
+- Support customizable app name
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
@@ -56,7 +57,7 @@
 - Updated dnetix/redirection package
 
 ### [2.18.5] - 2021-08-19
-- Updated Getnet endpoints
+- Updated Chile endpoints
 
 ### [2.18.1] - 2021-05-06
 - Added sonda path on admin panel
