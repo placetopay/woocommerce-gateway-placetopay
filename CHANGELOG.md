@@ -1,8 +1,10 @@
 ## Changelog
 
 [Unreleased]
-- Added Honduras to countries list
-- Added Belize to countries list
+
+### [2.20.0] - 2022-08-04
+- Add Honduras to countries list
+- Add Belize to countries list
 - Add validation and control the length and special characters in the description of the order sent to the gateway
 - Update plugin site information url
 - Update the message information when there are pending payments, do not show the payment authorization number

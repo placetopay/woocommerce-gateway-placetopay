@@ -23,7 +23,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.19.8';
+    const VERSION = '2.20.0';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -66,11 +66,6 @@ class GatewayMethod extends WC_Payment_Gateway
      * @var string
      */
     private $tran_key;
-
-    /**
-     * @var array
-     */
-    private $msg = [];
 
     /**
      * @var \WC_Logger
@@ -1215,8 +1210,8 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
             Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
-            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
             Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
+            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1423,7 +1418,9 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $environments = $this->getCountryEnvironments();
 
-        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
+        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || defined('WP_DEBUG') && WP_DEBUG
+            ? 'yes'
+            : 'no';
 
         if ($this->enviroment_mode == Environment::CUSTOM) {
             $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
@@ -1440,7 +1437,6 @@ class GatewayMethod extends WC_Payment_Gateway
             } elseif ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
                     $this->uri_service = $environments[Environment::PROD];
-
             }
         }
 
@@ -1510,44 +1506,6 @@ class GatewayMethod extends WC_Payment_Gateway
         return false;
     }
 
-    private function getCountryEnvironments(): array
-    {
-        switch ($this->settings['country']) {
-            case Country::EC:
-                $environments = [
-                    Environment::PROD => 'https://checkout.placetopay.ec',
-                    Environment::TEST => 'https://checkout-test.placetopay.ec',
-                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
-                ];
-                break;
-            case Country::CL:
-                $environments = [
-                    Environment::PROD => 'https://checkout.getnet.cl',
-                    Environment::TEST => 'https://checkout.test.getnet.cl',
-                ];
-                break;
-
-            case Country::HN:
-                $environments = [
-                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
-                ];
-                break;
-            case Country::BZ:
-                $environments = [
-                    Environment::PROD => 'https://abgateway.atlabank.com',
-                ];
-                break;
-            default:
-                $environments = [];
-        }
-
-        return array_merge([
-            Environment::PROD => 'https://checkout.placetopay.com',
-            Environment::TEST => 'https://checkout-test.placetopay.com',
-            Environment::DEV => 'https://dev.placetopay.com/redirection',
-        ], $environments);
-    }
-
     private function getInstallments(array $additionalData): int
     {
         $installments = ['installments', 'installment'];
@@ -1563,6 +1521,46 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return 0;
+    }
+
+    private function getCountryEnvironments(): array
+    {
+        $environments = [];
+
+        switch ($this->settings['country']) {
+            case Country::EC:
+                $environments = [
+                    Environment::PROD => 'https://checkout.placetopay.ec',
+                    Environment::TEST => 'https://checkout-test.placetopay.ec',
+                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                ];
+                break;
+
+            case Country::CL:
+                $environments = [
+                    Environment::PROD => str_rot13('uggcf://purpxbhg.trgarg.py'),
+                    Environment::TEST => str_rot13('uggcf://purpxbhg.grfg.trgarg.py'),
+                ];
+                break;
+
+            case Country::BZ:
+                $environments = [
+                    Environment::PROD => 'https://abgateway.atlabank.com',
+                ];
+                break;
+
+            case Country::HN:
+                $environments = [
+                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
+                ];
+                break;
+        }
+
+        return array_merge([
+            Environment::PROD => 'https://checkout.placetopay.com',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
+            Environment::DEV => 'https://dev.placetopay.com/redirection',
+        ], $environments);
     }
 
     private function isRefunded(Transaction $payment): bool

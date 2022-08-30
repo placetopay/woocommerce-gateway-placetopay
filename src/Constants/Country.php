@@ -2,10 +2,6 @@
 
 namespace PlacetoPay\PaymentMethod\Constants;
 
-/**
- * Interface Country
- * @package PlacetoPay\GatewayMethod\Constants
- */
 interface Country
 {
     const CO = 'CO';
@@ -18,7 +14,7 @@ interface Country
 
     const PR = 'PR';
 
-    const HN = 'HN';
-
     const BZ = 'BZ';
+
+    const HN = 'HN';
 }
