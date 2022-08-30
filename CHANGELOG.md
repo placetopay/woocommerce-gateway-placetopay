@@ -1,6 +1,8 @@
 ## Changelog
 
 [Unreleased]
+
+### [2.20.0] - 2022-08-04
 - Add Honduras to countries list
 - Add Belize to countries list
 - Add validation and control the length and special characters in the description of the order sent to the gateway
