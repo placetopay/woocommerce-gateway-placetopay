@@ -1,28 +1,24 @@
 {
-    "name": "placetopay/gateway-method",
-    "description": "Plugin for integrate PlacetoPay gateway with your shop woocommerce",
-    "type": "plugin",
-    "license": "MIT",
-    "authors": [
-        {
-            "name": "PlacetoPay",
-            "email": "dev@placetopay.com"
-        },
-        {
-            "name": "Cristian Salazar",
-            "email": "cristian.salazar@placetopay.com"
-        }
-    ],
-    "autoload": {
-        "psr-4": {
-            "PlacetoPay\\PaymentMethod\\": "src/"
-        }
-    },
-    "require": {
-        "php": "^5.5 || ^7.0",
-        "dnetix/redirection": "^2.0"
-    },
-    "require-dev": {
-        "larapack/dd": "1.*"
+  "name": "placetopay/gateway-method",
+  "description": "Plugin for integrate PlacetoPay gateway with your shop woocommerce",
+  "type": "plugin",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "PlacetoPay",
+      "email": "desarrollo@placetopay.com"
     }
+  ],
+  "autoload": {
+    "psr-4": {
+      "PlacetoPay\\PaymentMethod\\": "src/"
+    }
+  },
+  "require": {
+    "php": "^7.4",
+    "dnetix/redirection": "^2.0"
+  },
+  "require-dev": {
+    "larapack/dd": "1.*"
+  }
 }

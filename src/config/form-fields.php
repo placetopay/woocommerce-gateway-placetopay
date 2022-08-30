@@ -185,32 +185,4 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
-    'msg_approved' => [
-        'title' => __('Message for approved transaction', 'woocommerce-gateway-placetopay'),
-        'type' => 'text',
-        'default' => __('Placetopay Payment Approved', 'woocommerce-gateway-placetopay'),
-        'description' => __('Message for approved transaction', 'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
-    ],
-    'msg_pending' => [
-        'title' => __('Message for pending transaction', 'woocommerce-gateway-placetopay'),
-        'type' => 'text',
-        'default' => __('Payment pending', 'woocommerce-gateway-placetopay'),
-        'description' => __('Message for pending transaction', 'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
-    ],
-    'msg_cancel' => [
-        'title' => __('Message for cancel transaction', 'woocommerce-gateway-placetopay'),
-        'type' => 'text',
-        'default' => __('Transaction Canceled.', 'woocommerce-gateway-placetopay'),
-        'description' => __('Message for cancel transaction', 'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
-    ],
-    'msg_declined' => [
-        'title' => __('Message for rejected transaction', 'woocommerce-gateway-placetopay'),
-        'type' => 'text',
-        'default' => __('Payment rejected via Placetopay.', 'woocommerce-gateway-placetopay'),
-        'description' => __('Message for rejected transaction', 'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
-    ]
 ];

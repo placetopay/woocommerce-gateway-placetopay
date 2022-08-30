@@ -91,20 +91,15 @@ msgstr ""
 msgid "Payer Placetopay email"
 msgstr "Correo electrónico del comprador en Placetopay"
 
-#: src/GatewayMethod.php:797
-#, php-format
-msgid "Payment pending: %s"
-msgstr "Pago pendiente: %s"
-
 #: src/GatewayMethod.php:810 src/GatewayMethod.php:848
 #: src/config/form-fields.php:212
-msgid "Payment rejected via Placetopay."
-msgstr "Pago rechazado por Placetopay."
+msgid "Payment rejected."
+msgstr "Pago rechazado."
 
 #: src/GatewayMethod.php:826
 #, php-format
-msgid "Payment rejected via Placetopay. Error type: %s."
-msgstr "Pago rechazado por Placetopay. Error: %s."
+msgid "Payment rejected. Error type: %s."
+msgstr "Pago rechazado. Error: %s."
 
 #: src/GatewayMethod.php:889
 #, php-format
@@ -114,10 +109,6 @@ msgstr "%s Cuotas"
 #: src/GatewayMethod.php:890
 msgid "No installments"
 msgstr "Sin Cuotas"
-
-#: src/GatewayMethod.php:891
-msgid "<p>Placetopay payment approved</p>"
-msgstr "<p>Pago aprobado por PlacetoPay</p>"
 
 #: src/GatewayMethod.php:895
 msgid "Buying order: "
@@ -185,7 +176,7 @@ msgid ""
 "current\n"
 "                state of your operation you may contact our customer service "
 "line at %s or send your concerns to the email %s and ask for the status of "
-"the transaction: '%s'"
+"the transaction"
 msgstr ""
 "En este momento su orden # %s presenta un proceso de pago cuya transacción "
 "se encuentra PENDIENTE de recibir confirmación por parte de su entidad "
@@ -195,11 +186,7 @@ msgstr ""
 " Si desea mayor información sobre el estado actual de su operación puede "
 "comunicarse a nuestras líneas de atención al cliente %s o enviar un correo "
 "electrónico a %s\n"
-" y preguntar por el estado de la transacción: %s"
-
-#: src/GatewayMethod.php:1045
-msgid "CUS/Authorization"
-msgstr "CUS/Autorización"
+" y preguntar por el estado de la transacción"
 
 #: src/GatewayMethod.php:1149
 #, php-format
@@ -233,6 +220,12 @@ msgstr "Chile"
 #: src/GatewayMethod.php:1270
 msgid "Puerto Rico"
 msgstr "Puerto Rico"
+
+msgid "Belize"
+msgstr "Belice"
+
+msgid "Honduras"
+msgstr "Honduras"
 
 #: src/GatewayMethod.php:1282
 msgid "Development"
@@ -578,8 +571,8 @@ msgid "Message for approved transaction"
 msgstr "Mensaje para el pago aprobado por Placetopay"
 
 #: src/config/form-fields.php:191
-msgid "Placetopay Payment Approved"
-msgstr "Pago aprobado por Placetopay"
+msgid "Payment approved"
+msgstr "Pago aprobado"
 
 #: src/config/form-fields.php:196 src/config/form-fields.php:199
 msgid "Message for pending transaction"
@@ -592,10 +585,6 @@ msgstr "Pago pendiente"
 #: src/config/form-fields.php:203 src/config/form-fields.php:206
 msgid "Message for cancel transaction"
 msgstr "Mensaje para un transacción cancelada"
-
-#: src/config/form-fields.php:205
-msgid "Transaction Canceled."
-msgstr "Transacción cancelada."
 
 #: src/config/form-fields.php:210 src/config/form-fields.php:213
 msgid "Message for rejected transaction"

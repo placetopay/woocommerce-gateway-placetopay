@@ -2,6 +2,15 @@
 
 [Unreleased]
 
+### [2.20.0] - 2022-08-04
+- Add Honduras to countries list
+- Add Belize to countries list
+- Add validation and control the length and special characters in the description of the order sent to the gateway
+- Update plugin site information url
+- Update the message information when there are pending payments, do not show the payment authorization number
+- Fix getting payment installments
+- Remove support for custom translations of payment status. Use default translations
+
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
 - Fix error when canceling the payment process when mixed payments are inactive

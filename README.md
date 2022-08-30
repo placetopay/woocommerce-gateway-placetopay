@@ -1,44 +1,73 @@
-# Gateway PlacetoPay for Woocommerce
-Un plugin para agregar un nuevo método de pago a tu tienda por PlacetoPay.
+# Woocommerce Gateway to PlacetoPay
 
-## Version 2.19.1
+[PlacetoPay](https://www.placetopay.com) Plugin Payment for [WooCommerce](https://woocommerce.com/)
 
-## Requerimientos
-- WordPress >= 4.4.1
-- WooCommerce >= 2.6.0
-- php >= 5.6
-- php Soap extensión
+## Prerequisites
 
-## Install in production environment
-Run `composer install --no-dev`
+- `wordpress` >= 4.4.1 _recommended: >= 6.0.1_
+- `woocommerce` >= 2.6.0 _recommended: >= 6.7.0_
+- `php` >= 5.6 _recommended: >= 7.4_
+- `ext-soap`
 
-## Idiomas soportados
+## Compatibility Version
+
+| Wordpress | WooCommerce     | PHP         | Plugin   | Comments      |
+|-----------|-----------------|-------------|----------|---------------|
+| 4.4.x     | ~2.6.0          | >=5.2 <=7.0 | <=2.18.x | `@unmanteined` |
+| 4.5.x     | >=2.6.4         | >=5.2 <=7.0 | <=2.18.x | `@unmanteined` |
+| 4.6.x     | >=2.6.4         | >=5.2 <=7.0 | <=2.18.x | `@unmanteined` |
+| 4.7.x     | 3.6.x           | >=5.2 <=7.1 | <=2.18.x | `@unmanteined` |
+| 4.8.x     | ~3.6.x          | >=5.2 <=7.1 | <=2.18.x | `@unmanteined` |
+| 4.9.x     | 3.8.x           | >=5.6 <=7.2 | <=2.18.x | `@unmanteined` |
+| 5.0.x     | >=3.9.x <=4.0.x | >=7.0       | >=2.18.x | `@unmanteined` |
+| 5.1.x     | 4.3.x           | >=7.0       | >=2.18.x | `@unmanteined` |
+| 5.2.x     | ~4.3.x          | >=7.0       | >=2.18.x | `@unmanteined` |
+| 5.3.x     | >=4.5.x <=4.9.x | >=7.0       | >=2.18.x | `@deprecated`  |
+| 5.4.x     | 5.0.x           | >=7.0       | >=2.18.x | `@deprecated`  |
+| 5.5.x     | ~5.0.x          | >=7.0       | >=2.18.x | `@deprecated`  |
+| 5.6.x     | >=5.3.x <=6.1.x | >=7.0       | >=2.18.x | `@deprecated`  |
+| 5.7.x     | >=6.2.x <=6.5.x | >=7.0       | >=2.18.x | `@deprecated`  |
+| 5.8.x     | 6.6.x           | >=7.2       | >=2.18.x | `@deprecated`  |
+| 5.9.x     | ~6.6.x          | >=7.4       | >=2.19.x | `@manteined`   |
+| 6.0.x     | ~6.6.x          | >=7.4       | >=2.19.x | `@manteined`   |
+
+## Installation in Production
+
+### Without CLI
+
+Get module .zip from [https://dev.placetopay.com/web/plugins/](https://dev.placetopay.com/web/plugins/) and [see process in WordPress](https://wordpress.org/support/article/managing-plugins/#manual-plugin-installation-1)
+
+### With CLI and composer
+
+```bash
+composer install --no-dev
+```
+
+## Supported Languages
+
 - Español Colombia (es_CO)
 - Español (es)
 - Inglés (en)
 
+## Installation in Development
 
-#### Paths de archivos útiles
-Log para el plugin se encuentra en la ruta.
-_Solo cuando estas en entorno de desarrollo o pruebas_
-> wp-content/uploads/wc-logs/PlacetoPay-xxx.log
+Log files path: `wp-content/uploads/wc-logs/PlacetoPay-xxx.log`
 
-La ruta para encontrar el archivo cron es:
-> wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php
+> _Only in debug mode enable_
 
+Cron task path: `wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php`
 
-#### Ejemplo de peticion para el notification url:
+### Notification Example
 
-``Nota: Solo es posible si estas en ambiente de pruebas o desarrollo``
-
-1. Primero haces una compra de ejemplo
-2. En la plataforma de placetopay te copias el número de la sesión y el de la orden
-3. Pegas en el **requestId** y **reference** respectivamente
-4. Ejecutas la petición y te responderá con un código es el signature (la firma)
-5. Usala para ejecutar nuevamente la petición y así conseguir simular el proceso
+1. Do a purchase
+2. Catch session id number and order id number from current purchase
+3. Replace **requestId** and **reference**
+4. Do request, the response is a signature
+5. Replace **signature**
+4. Do request, again!
 
 ```rest
-Request: http://mi-sitio.com//wp-json/placetopay-payment/v2/callback/
+Request: http://my-store.local/wp-json/placetopay-payment/v2/callback/
 Method: POST
 {
   "status": {
@@ -54,21 +83,23 @@ Method: POST
 
 ```
 
-## Start with Docker
-### Requirements
-- docker 17.04.0+
-- docker-compose 1.17.0
+## With Docker
 
-### Running with docker directly
-```
-> docker-compose up -d
-> docker exec -u 1000:1000 -it wp_plugin_wordpress composer install -d ./wp-content/plugins/woocommerce-gateway-placetopay
+```bash
+docker-compose up -d
+docker exec -u 1000:1000 -it wp_plugin_wordpress composer install -d ./wp-content/plugins/woocommerce-gateway-placetopay
 ```
 
 ### If support for Makefile exists
 
+```bash
+make install
 ```
-> make install
+> The container listen in port 6969: `http://127.0.0.1:6969/`
+### Admin Backend
+
+```bash
+http://127.0.0.1:6969/wp-login.php
 ```
 > The container listen in port 6969: `http://127.0.0.1:6969/`
 
@@ -91,3 +122,25 @@ Or adding version number in filename to use
 ```bash
 make compile PLUGIN_VERSION=_X.Y.Z
 ```
+
+#### Manejo de las traducciones
+
+### Compress Plugin As Zip File
+
+In terminal run
+
+```bash
+make compile
+```
+
+Or adding version number in filename to use
+
+```bash
+make compile PLUGIN_VERSION=-X.Y.Z
+```
+
+## Translations
+
+You should add/chage translations in .po files from *languages* directory
+after, you need covert this in .mo files to replace current files (languages(*.mo)
+> If don't convertion, cannot see any changes
