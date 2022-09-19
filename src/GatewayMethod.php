@@ -14,6 +14,8 @@ use Dnetix\Redirection\PlacetoPay;
 use Exception;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
+use PlacetoPay\PaymentMethod\Constants\Rules;
+use Sabberworm\CSS\Rule\Rule;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -334,7 +336,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutFieldProcess()
     {
-        $this->validateFields();
+        $this->validateFields($_POST);
     }
 
     /**
@@ -1342,13 +1344,50 @@ class GatewayMethod extends WC_Payment_Gateway
         return str_replace("\\", "_", $lowercase ? strtolower(get_class($this)) : get_class($this));
     }
 
-    private function validateFields()
+    private function validateFields($request)
     {
         $isValid = true;
 
         if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
             wc_add_notice(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+
+        if (preg_match(Rules::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>First Name</strong>, does not have a valid format',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+        if (preg_match(Rules::PATTERN_NAME, trim($request['billing_last_name'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>Last Name</strong>, does not have a valid format',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+        if (preg_match(Rules::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>Phone</strong>, does not have a valid format',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+        if (preg_match(Rules::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>Email</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'
             ), 'error');
 
