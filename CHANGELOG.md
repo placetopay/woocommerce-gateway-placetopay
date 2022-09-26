@@ -1,6 +1,7 @@
 ## Changelog
 
 [Unreleased]
+- Add support for consuming WebCheckout with lightbox
 
 ### [2.20.0] - 2022-08-04
 - Add Honduras to countries list

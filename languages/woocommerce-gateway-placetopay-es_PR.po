@@ -723,6 +723,12 @@ msgstr "Producto"
 msgid "Note:"
 msgstr "Nota:"
 
+msgid "Use WebCheckout lightbox"
+msgstr "Usar WebCheckout lightbox"
+
+msgid "Enable use WebCheckout with lightbox."
+msgstr "Habilitar el uso de WebCheckout con lightbox"
+
 #~ msgid "Credit"
 #~ msgstr "Credito"
 

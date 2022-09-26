@@ -49,6 +49,12 @@ return [
         'label' => __('Allow to skip the placetopay result screen.', 'woocommerce-gateway-placetopay'),
         'default' => 'no',
     ],
+    'use_lightbox' => [
+        'title' => __('Use Web Checkout lightbox', 'woocommerce-gateway-placetopay'),
+        'type' => 'checkbox',
+        'label' => __('Enable use web checkout with lightbox.', 'woocommerce-gateway-placetopay'),
+        'default' => 'no',
+    ],
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',

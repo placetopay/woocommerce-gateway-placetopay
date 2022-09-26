@@ -95,6 +95,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $custom_connection_url;
     private $payment_button_image;
     private $version;
+    private $use_lightbox;
 
     /**
      * GatewayMethod constructor.
@@ -134,8 +135,9 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
         $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
-        $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes";
-        $this->skip_result = $this->get_option('skip_result') == "yes";
+        $this->allow_partial_payments = $this->get_option('allow_partial_payments') === "yes";
+        $this->use_lightbox = $this->get_option('use_lightbox') === 'yes';
+        $this->skip_result = $this->get_option('skip_result') === "yes";
         $this->custom_connection_url = $this->get_option('custom_connection_url');
         $this->payment_button_image = $this->get_option('payment_button_image');
         $this->icon = $this->getImageUrl();
@@ -354,13 +356,6 @@ class GatewayMethod extends WC_Payment_Gateway
             ];
         }
 
-        $ref = $order->get_order_key() . '-' . time();
-        $redirectUrl = $this->getRedirectUrl($order);
-
-        //For wooCoomerce 2.0
-        $redirectUrl = add_query_arg('wc-api', $this->getClassName(), $redirectUrl);
-        $redirectUrl = add_query_arg('order_id', $orderId, $redirectUrl);
-
         $timeExpiration = $this->expiration_time_minutes
             ? $this->expiration_time_minutes . ' minutes'
             : '+2 days';
@@ -368,7 +363,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $req = [
             'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
-            'returnUrl' => $redirectUrl . '&key=' . $ref,
+            'returnUrl' => $this->getPaymentRedirectUrl($order),
             'noBuyerFill' => $this->fill_buyer_information !== 'yes',
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
@@ -540,35 +535,8 @@ class GatewayMethod extends WC_Payment_Gateway
             $order = new WC_Order($orderId);
             $order->update_status('on-hold', __('Redirecting to Placetopay', 'woocommerce-gateway-placetopay'));
 
-            $code = 'jQuery("body").block({
-                message: "' . esc_js(__(
-                'We are now redirecting you to Placetopay to make payment, if you are not redirected please press the bottom.',
-                'woocommerce-gateway-placetopay'
-            )) . '",
-                baseZ: 99999,
-                overlayCSS: { background: "#fff", opacity: 0.6 },
-                css: {
-                    padding:        "20px",
-                    zindex:         "9999999",
-                    textAlign:      "center",
-                    color:          "#555",
-                    border:         "3px solid #aaa",
-                    backgroundColor:"#fff",
-                    cursor:         "wait",
-                    lineHeight:		"24px",
-                }
-            });
+            $this->resolveWebCheckout($order);
 
-            setTimeout( function() {
-                window.location.href = "' . $_REQUEST['redirect-url'] . '";
-            }, 1000 );
-            ';
-
-            if ($this->wooCommerceVersionCompare('2.1')) {
-                wc_enqueue_js($code);
-            } else {
-                WC()->add_inline_js($code);
-            }
         } catch (Exception $ex) {
             $this->logger($ex->getMessage(), 'error');
         }
@@ -1563,5 +1531,84 @@ class GatewayMethod extends WC_Payment_Gateway
             Environment::TEST => 'https://checkout-test.placetopay.com',
             Environment::DEV => 'https://dev.placetopay.com/redirection',
         ], $environments);
+    }
+
+    private function resolveWebCheckout(WC_Order $order)
+    {
+        static $codeCalled = false;
+
+        if (!$codeCalled) {
+            $code = $this->getWebCheckoutScript($order);
+
+            if ($this->wooCommerceVersionCompare('2.1')) {
+                wc_enqueue_js($code);
+            } else {
+                WC()->add_inline_js($code);
+            }
+
+            $codeCalled = true;
+        }
+    }
+
+    private function getWebCheckoutScript(WC_Order $order): string
+    {
+        if ($this->use_lightbox) {
+            add_action('wp_enqueue_scripts', function() {
+                wp_enqueue_script( 'lightbox-script', $this->getLightboxScriptSource(), [], null);
+            });
+
+            return '
+                P.init("' . $_REQUEST['redirect-url'] . '", { opacity: 0.4 });
+
+                P.on(\'response\', function() {
+                    window.location = "' . $this->getPaymentRedirectUrl($order) . '"
+                });';
+        }
+
+
+        return 'jQuery("body").block({
+                message: "' . esc_js(__(
+                'We are now redirecting you to Placetopay to make payment, if you are not redirected please press the bottom.',
+                'woocommerce-gateway-placetopay'
+            )) . '",
+                baseZ: 99999,
+                overlayCSS: { background: "#fff", opacity: 0.6 },
+                css: {
+                    padding:        "20px",
+                    zindex:         "9999999",
+                    textAlign:      "center",
+                    color:          "#555",
+                    border:         "3px solid #aaa",
+                    backgroundColor:"#fff",
+                    cursor:         "wait",
+                    lineHeight:		"24px",
+                }
+            });
+
+            setTimeout( function() {
+                window.location.href = "' . $_REQUEST['redirect-url'] . '";
+            }, 1000 );';
+    }
+
+    private function getLightboxScriptSource(): string
+    {
+        switch ($this->settings['country']) {
+            case Country::EC:
+                return 'https://checkout.placetopay.ec/lightbox.min.js';
+            default:
+                return 'https://checkout.placetopay.com/lightbox.min.js';
+        }
+    }
+
+    private function getPaymentRedirectUrl(WC_Order $order): string
+    {
+        $redirectUrl = $this->getRedirectUrl($order);
+
+        $redirectUrl = add_query_arg([
+            'wc-api'=> $this->getClassName(),
+            'order_id'=> $order->get_id(),
+        ], $redirectUrl);
+
+        return $redirectUrl . '&key=' . $order->get_order_key() . '-' . time();
     }
 }
