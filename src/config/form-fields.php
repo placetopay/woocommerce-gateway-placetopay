@@ -50,9 +50,9 @@ return [
         'default' => 'no',
     ],
     'use_lightbox' => [
-        'title' => __('Use Web Checkout lightbox', 'woocommerce-gateway-placetopay'),
+        'title' => __('Use WebCheckout lightbox', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
-        'label' => __('Enable use web checkout with lightbox.', 'woocommerce-gateway-placetopay'),
+        'label' => __('Enable use WebCheckout with lightbox.', 'woocommerce-gateway-placetopay'),
         'default' => 'no',
     ],
     'title' => [
