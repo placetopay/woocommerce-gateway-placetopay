@@ -115,7 +115,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $this->id = 'placetopay';
         $this->app_name = $this->get_option('app_name');
-        $this->method_title = $this->app_name;
+        $this->method_title = $this->getAppName();
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
         $this->has_fields = false;
 
@@ -1546,8 +1546,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
             case Country::CL:
                 $environments = [
-                    Environment::PROD => 'https://checkout.' . unmaskString('trgarg') . '.cl',
-                    Environment::TEST => 'https://checkout.test.' . unmaskString('trgarg') . '.cl',
+                    Environment::PROD => str_rot13('uggcf://purpxbhg.trgarg.py'),
+                    Environment::TEST => str_rot13('uggcf://purpxbhg.grfg.trgarg.py'),
                 ];
                 break;
 
