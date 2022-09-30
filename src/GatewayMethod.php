@@ -14,6 +14,7 @@ use Dnetix\Redirection\PlacetoPay;
 use Exception;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
+use PlacetoPay\PaymentMethod\Constants\Rules;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -328,7 +329,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutFieldProcess()
     {
-        $this->validateFields();
+        $this->validateFields($_POST);
     }
 
     /**
@@ -885,10 +886,6 @@ class GatewayMethod extends WC_Payment_Gateway
                 'value' => $this->getInstallments($payment->additionalData()),
             ],
             [
-                'key' => __('Installments Amount: ', 'woocommerce-gateway-placetopay'),
-                'value' => '-',
-            ],
-            [
                 'key' => __('Transaction Date: ', 'woocommerce-gateway-placetopay'),
                 'value' => $payment->status()->date(),
             ],
@@ -1204,13 +1201,14 @@ class GatewayMethod extends WC_Payment_Gateway
     public function getCountryList()
     {
         return [
-            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
-            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
-            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
-            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
-            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
             Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
+            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
+            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
+            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
+            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
             Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
+            Country::PA => __('Panama', 'woocommerce-gateway-placetopay'),
+            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1337,13 +1335,50 @@ class GatewayMethod extends WC_Payment_Gateway
         return str_replace("\\", "_", $lowercase ? strtolower(get_class($this)) : get_class($this));
     }
 
-    private function validateFields()
+    private function validateFields($request)
     {
         $isValid = true;
 
         if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
             wc_add_notice(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+
+        if (preg_match(Rules::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>First Name</strong>, does not have a valid format',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+        if (preg_match(Rules::PATTERN_NAME, trim($request['billing_last_name'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>Last Name</strong>, does not have a valid format',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+        if (preg_match(Rules::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>Phone</strong>, does not have a valid format',
+                'woocommerce-gateway-placetopay'
+            ), 'error');
+
+            $isValid = false;
+        }
+
+        if (preg_match(Rules::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
+            wc_add_notice(__(
+                '<strong>Email</strong>, does not have a valid format',
                 'woocommerce-gateway-placetopay'
             ), 'error');
 
@@ -1401,7 +1436,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private function normalizeDescription(int $orderId, array $products): string
     {
         $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
-        $pattern = '/[^a-zñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/i';
+        $pattern = '/[^a-zñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/u';
         $products = preg_replace($pattern, '', $products);
 
         $description = sprintf($orderInfo, $orderId, implode(',', $products));
@@ -1517,14 +1552,10 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getCountryEnvironments(): array
     {
-        $environments = [];
-
         switch ($this->settings['country']) {
-            case Country::EC:
+            case Country::BZ:
                 $environments = [
-                    Environment::PROD => 'https://checkout.placetopay.ec',
-                    Environment::TEST => 'https://checkout-test.placetopay.ec',
-                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                    Environment::PROD => 'https://abgateway.atlabank.com',
                 ];
                 break;
 
@@ -1535,9 +1566,11 @@ class GatewayMethod extends WC_Payment_Gateway
                 ];
                 break;
 
-            case Country::BZ:
+            case Country::EC:
                 $environments = [
-                    Environment::PROD => 'https://abgateway.atlabank.com',
+                    Environment::PROD => 'https://checkout.placetopay.ec',
+                    Environment::TEST => 'https://checkout-test.placetopay.ec',
+                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
                 ];
                 break;
 
@@ -1546,6 +1579,9 @@ class GatewayMethod extends WC_Payment_Gateway
                     Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
                 ];
                 break;
+
+            default:
+                $environments = [];
         }
 
         return array_merge([

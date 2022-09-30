@@ -150,10 +150,6 @@ msgstr "Tipo de cuotas: "
 msgid "Installments: "
 msgstr "Cuotas: "
 
-#: src/GatewayMethod.php:935
-msgid "Installments Amount: "
-msgstr "Monto de Cuotas: "
-
 #: src/GatewayMethod.php:939
 msgid "Transaction Date: "
 msgstr "Fecha de Transacción: "
@@ -226,6 +222,9 @@ msgstr "Belice"
 
 msgid "Honduras"
 msgstr "Honduras"
+
+msgid "Panama"
+msgstr "Panamá"
 
 #: src/GatewayMethod.php:1282
 msgid "Development"
