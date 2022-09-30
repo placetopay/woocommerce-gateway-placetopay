@@ -243,7 +243,7 @@ class GatewayMethod extends WC_Payment_Gateway
             //Awaiting payment – stock is reduced, but you need to confirm payment
             'completed' => __('Approved', 'woocommerce-gateway-placetopay'),
             //Order fulfilled and complete – requires no further action
-            'refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
+            'refunded' => __('Refunded', 'woocommerce-gateway-placetopay'),
             'cancelled' => __('Cancelled', 'woocommerce-gateway-placetopay'),
             'failed' => __('Failed', 'woocommerce-gateway-placetopay'),
             //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
@@ -749,22 +749,31 @@ class GatewayMethod extends WC_Payment_Gateway
                 if ($status == $sessionStatusInstance::ST_APPROVED && $currentPaymentStatus !== Status::ST_APPROVED) {
                     $payment = $transactionInfo->lastApprovedTransaction();
 
-                    $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
-                    $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
-                    $order->payment_complete();
-                    $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    if ($this->isRefunded($payment)) {
+                        $this->resolveRefundedPayment($order);
+
+                    } else {
+                        $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
+                        $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
+                        $order->payment_complete();
+                        $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    }
                 } else {
                     if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
-                        update_post_meta(
-                            $order->get_id(),
-                            self::META_STATUS,
-                            $sessionStatusInstance::ST_APPROVED_PARTIAL
-                        );
+                        if ($this->isRefunded($transactionInfo->lastApprovedTransaction())) {
+                            $this->resolveRefundedPayment($order);
+                        } else {
+                            update_post_meta(
+                                $order->get_id(),
+                                self::META_STATUS,
+                                $sessionStatusInstance::ST_APPROVED_PARTIAL
+                            );
 
-                        $order->update_status(
-                            'pending',
-                            __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
-                        );
+                            $order->update_status(
+                                'pending',
+                                __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
+                            );
+                        }
 
                         break;
                     }
@@ -775,28 +784,17 @@ class GatewayMethod extends WC_Payment_Gateway
 
                 break;
             case $sessionStatusInstance::ST_REJECTED:
-            case $sessionStatusInstance::ST_REFUNDED:
-                if ($status === $sessionStatusInstance::ST_REJECTED) {
-                    $order->update_status(
-                        'cancelled',
-                        sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
-                    );
+                $order->update_status(
+                    'cancelled',
+                    sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
+                );
 
-                    if ($paymentFirstStatus) {
-                        $this->logger($paymentFirstStatus->message(), $status);
-                    }
+                if ($paymentFirstStatus) {
+                    $this->logger($paymentFirstStatus->message(), $status);
+                }
 
-                    if (!self::versionCheck()) {
-                        $this->restoreOrderStock($order->get_id());
-                    }
-                } else {
-                    $order->update_status(
-                        'refunded',
-                        sprintf(
-                            __('Payment rejected. Error type: %s.', 'woocommerce-gateway-placetopay'),
-                            $status
-                        )
-                    );
+                if (!self::versionCheck()) {
+                    $this->restoreOrderStock($order->get_id());
                 }
 
                 break;
@@ -1563,5 +1561,16 @@ class GatewayMethod extends WC_Payment_Gateway
             Environment::TEST => 'https://checkout-test.placetopay.com',
             Environment::DEV => 'https://dev.placetopay.com/redirection',
         ], $environments);
+    }
+
+    private function isRefunded(Transaction $payment): bool
+    {
+        return $payment->refunded();
+    }
+
+    private function resolveRefundedPayment($order): void
+    {
+        $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-placetopay'));
+        $this->logger('Payment refunded for order # ' . $order->get_id(), __METHOD__);
     }
 }

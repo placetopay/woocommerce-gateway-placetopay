@@ -1,6 +1,7 @@
 ## Changelog
 
 [Unreleased]
+- Resolve reverse payments when the transaction is pending
 
 ### [2.20.0] - 2022-08-04
 - Add Honduras to countries list
