@@ -1,6 +1,7 @@
 ## Changelog
 
 [Unreleased]
+- Update debug mode, allow use in PROD enviroments
 - Resolve reverse payments when the transaction is pending
 
 ### [2.20.0] - 2022-08-04
