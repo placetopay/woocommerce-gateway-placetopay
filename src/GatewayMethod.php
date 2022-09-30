@@ -15,7 +15,6 @@ use Exception;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
-use Sabberworm\CSS\Rule\Rule;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -25,7 +24,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.19.8';
+    const VERSION = '2.20.0';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -68,11 +67,6 @@ class GatewayMethod extends WC_Payment_Gateway
      * @var string
      */
     private $tran_key;
-
-    /**
-     * @var array
-     */
-    private $msg = [];
 
     /**
      * @var \WC_Logger
@@ -250,7 +244,7 @@ class GatewayMethod extends WC_Payment_Gateway
             //Awaiting payment – stock is reduced, but you need to confirm payment
             'completed' => __('Approved', 'woocommerce-gateway-placetopay'),
             //Order fulfilled and complete – requires no further action
-            'refunded' => __('Rejected', 'woocommerce-gateway-placetopay'),
+            'refunded' => __('Refunded', 'woocommerce-gateway-placetopay'),
             'cancelled' => __('Cancelled', 'woocommerce-gateway-placetopay'),
             'failed' => __('Failed', 'woocommerce-gateway-placetopay'),
             //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
@@ -756,22 +750,31 @@ class GatewayMethod extends WC_Payment_Gateway
                 if ($status == $sessionStatusInstance::ST_APPROVED && $currentPaymentStatus !== Status::ST_APPROVED) {
                     $payment = $transactionInfo->lastApprovedTransaction();
 
-                    $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
-                    $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
-                    $order->payment_complete();
-                    $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    if ($this->isRefunded($payment)) {
+                        $this->resolveRefundedPayment($order);
+
+                    } else {
+                        $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
+                        $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
+                        $order->payment_complete();
+                        $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                    }
                 } else {
                     if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
-                        update_post_meta(
-                            $order->get_id(),
-                            self::META_STATUS,
-                            $sessionStatusInstance::ST_APPROVED_PARTIAL
-                        );
+                        if ($this->isRefunded($transactionInfo->lastApprovedTransaction())) {
+                            $this->resolveRefundedPayment($order);
+                        } else {
+                            update_post_meta(
+                                $order->get_id(),
+                                self::META_STATUS,
+                                $sessionStatusInstance::ST_APPROVED_PARTIAL
+                            );
 
-                        $order->update_status(
-                            'pending',
-                            __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
-                        );
+                            $order->update_status(
+                                'pending',
+                                __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
+                            );
+                        }
 
                         break;
                     }
@@ -782,28 +785,17 @@ class GatewayMethod extends WC_Payment_Gateway
 
                 break;
             case $sessionStatusInstance::ST_REJECTED:
-            case $sessionStatusInstance::ST_REFUNDED:
-                if ($status === $sessionStatusInstance::ST_REJECTED) {
-                    $order->update_status(
-                        'cancelled',
-                        sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
-                    );
+                $order->update_status(
+                    'cancelled',
+                    sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
+                );
 
-                    if ($paymentFirstStatus) {
-                        $this->logger($paymentFirstStatus->message(), $status);
-                    }
+                if ($paymentFirstStatus) {
+                    $this->logger($paymentFirstStatus->message(), $status);
+                }
 
-                    if (!self::versionCheck()) {
-                        $this->restoreOrderStock($order->get_id());
-                    }
-                } else {
-                    $order->update_status(
-                        'refunded',
-                        sprintf(
-                            __('Payment rejected. Error type: %s.', 'woocommerce-gateway-placetopay'),
-                            $status
-                        )
-                    );
+                if (!self::versionCheck()) {
+                    $this->restoreOrderStock($order->get_id());
                 }
 
                 break;
@@ -1461,7 +1453,9 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $environments = $this->getCountryEnvironments();
 
-        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV]) ? 'yes' : 'no';
+        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || defined('WP_DEBUG') && WP_DEBUG
+            ? 'yes'
+            : 'no';
 
         if ($this->enviroment_mode == Environment::CUSTOM) {
             $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
@@ -1478,7 +1472,6 @@ class GatewayMethod extends WC_Payment_Gateway
             } elseif ($this->enviroment_mode === Environment::PROD) {
                     $this->debug = 'no';
                     $this->uri_service = $environments[Environment::PROD];
-
             }
         }
 
@@ -1548,43 +1541,6 @@ class GatewayMethod extends WC_Payment_Gateway
         return false;
     }
 
-    private function getCountryEnvironments(): array
-    {
-        switch ($this->settings['country']) {
-            case Country::BZ:
-                $environments = [
-                    Environment::PROD => 'https://abgateway.atlabank.com',
-                ];
-                break;
-            case Country::CL:
-                $environments = [
-                    Environment::PROD => 'https://checkout.getnet.cl',
-                    Environment::TEST => 'https://checkout.test.getnet.cl',
-                ];
-                break;
-            case Country::EC:
-                $environments = [
-                    Environment::PROD => 'https://checkout.placetopay.ec',
-                    Environment::TEST => 'https://checkout-test.placetopay.ec',
-                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
-                ];
-                break;
-            case Country::HN:
-                $environments = [
-                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
-                ];
-                break;
-            default:
-                $environments = [];
-        }
-
-        return array_merge([
-            Environment::PROD => 'https://checkout.placetopay.com',
-            Environment::TEST => 'https://checkout-test.placetopay.com',
-            Environment::DEV => 'https://dev.placetopay.com/redirection',
-        ], $environments);
-    }
-
     private function getInstallments(array $additionalData): int
     {
         $installments = ['installments', 'installment'];
@@ -1600,5 +1556,57 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return 0;
+    }
+
+    private function getCountryEnvironments(): array
+    {
+        switch ($this->settings['country']) {
+            case Country::BZ:
+                $environments = [
+                    Environment::PROD => 'https://abgateway.atlabank.com',
+                ];
+                break;
+
+            case Country::CL:
+                $environments = [
+                    Environment::PROD => str_rot13('uggcf://purpxbhg.trgarg.py'),
+                    Environment::TEST => str_rot13('uggcf://purpxbhg.grfg.trgarg.py'),
+                ];
+                break;
+
+            case Country::EC:
+                $environments = [
+                    Environment::PROD => 'https://checkout.placetopay.ec',
+                    Environment::TEST => 'https://checkout-test.placetopay.ec',
+                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
+                ];
+                break;
+
+            case Country::HN:
+                $environments = [
+                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
+                ];
+                break;
+
+            default:
+                $environments = [];
+        }
+
+        return array_merge([
+            Environment::PROD => 'https://checkout.placetopay.com',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
+            Environment::DEV => 'https://dev.placetopay.com/redirection',
+        ], $environments);
+    }
+
+    private function isRefunded(Transaction $payment): bool
+    {
+        return $payment->refunded();
+    }
+
+    private function resolveRefundedPayment($order): void
+    {
+        $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-placetopay'));
+        $this->logger('Payment refunded for order # ' . $order->get_id(), __METHOD__);
     }
 }

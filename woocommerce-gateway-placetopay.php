@@ -6,13 +6,13 @@
  * Author: Placetopay
  * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
  * Developer: PlacetoPay
- * Version: 2.19.7
+ * Version: 2.20.0
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
- * @copyright (c) 2013-2017 Evertec PlacetoPay S.A.S.
- * @version 2.19.8
+ * @copyright (c) 2013-2022 Evertec PlacetoPay S.A.S.
+ * @version 2.20.0
  */
 
 if (!defined('ABSPATH')) {
