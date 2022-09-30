@@ -201,7 +201,7 @@ class GatewayMethod extends WC_Payment_Gateway
             // format: null
             switch ($this->settings['country']) {
                 case Country::CL:
-                    $image = 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_' . unmaskString('Trgarg') .  '.svg';
+                    $image = unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit');
                     break;
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
@@ -1579,8 +1579,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
             case Country::CL:
                 $environments = [
-                    Environment::PROD => str_rot13('uggcf://purpxbhg.trgarg.py'),
-                    Environment::TEST => str_rot13('uggcf://purpxbhg.grfg.trgarg.py'),
+                    Environment::PROD => unmaskString('uggcf://purpxbhg.trgarg.py'),
+                    Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.trgarg.py'),
                 ];
                 break;
 
