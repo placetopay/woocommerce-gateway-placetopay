@@ -53,7 +53,7 @@ composer install --no-dev
 
 Log files path: `wp-content/uploads/wc-logs/PlacetoPay-xxx.log`
 
-> _Only in debug mode enable_
+> _Only in [debug mode](https://wordpress.org/support/article/debugging-in-wordpress/) enable_
 
 Cron task path: `wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php`
 

@@ -84,7 +84,6 @@ class GatewayMethod extends WC_Payment_Gateway
     private $testmode;
     private $merchant_phone;
     private $merchant_email;
-    private $debug;
     private $uri_service;
     private $taxes;
     private $minimum_amount;
@@ -275,7 +274,7 @@ class GatewayMethod extends WC_Payment_Gateway
             $notification = new Notification($data, $this->tran_key);
 
             if (!$notification->isValidNotification()) {
-                if ($this->testmode == 'yes') {
+                if ($this->testmode === 'yes') {
                     return $notification->makeSignature();
                 }
 
@@ -1009,7 +1008,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 return false;
             }
 
-            if ($this->testmode != 'yes' && (!$this->login || !$this->tran_key)) {
+            if ($this->testmode !== 'yes' && (!$this->login || !$this->tran_key)) {
                 return false;
             }
 
@@ -1027,7 +1026,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function logger($message, $type = null): void
     {
-        if ($this->debug != 'yes') {
+        if ($this->testmode !== 'yes') {
             return;
         }
 
@@ -1422,27 +1421,20 @@ class GatewayMethod extends WC_Payment_Gateway
             ? 'yes'
             : 'no';
 
-        if ($this->enviroment_mode == Environment::CUSTOM) {
-            $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
-        } else {
-            if ($this->testmode == 'yes') {
-                $this->debug = 'yes';
-                $this->log = $this->wooCommerceVersionCompare('2.1')
-                    ? new \WC_Logger()
-                    : WC()->logger();
-
-                $this->uri_service = $this->enviroment_mode === Environment::DEV
-                    ? $environments[Environment::DEV]
-                    : $environments[Environment::TEST];
-            } elseif ($this->enviroment_mode === Environment::PROD) {
-                    $this->debug = 'no';
-                    $this->uri_service = $environments[Environment::PROD];
-            }
+        if ($this->testmode === 'yes') {
+            $this->log = $this->wooCommerceVersionCompare('2.1')
+                ? new \WC_Logger()
+                : WC()->logger();
         }
 
-        if (defined('WP_DEBUG') && WP_DEBUG && $this->enviroment_mode !== Environment::CUSTOM) {
-            $this->settings['enviroment_mode'] = Environment::DEV;
-            $this->uri_service = $environments[Environment::DEV];
+        if ($this->enviroment_mode === Environment::CUSTOM) {
+            $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
+        } elseif ($this->enviroment_mode === Environment::PROD) {
+            $this->uri_service = $environments[Environment::PROD];
+        } else {
+            $this->uri_service = $this->enviroment_mode === Environment::DEV
+                ? $environments[Environment::DEV]
+                : $environments[Environment::TEST];
         }
     }
 
