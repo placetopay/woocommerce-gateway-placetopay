@@ -30,8 +30,8 @@ msgid "Approved"
 msgstr "Aprobada"
 
 #: src/GatewayMethod.php:262 woocommerce/myaccount/orders.php:92
-msgid "Rejected"
-msgstr "Rechazada"
+msgid "Refunded"
+msgstr "Reversada"
 
 #: src/GatewayMethod.php:263
 msgid "Cancelled"
@@ -213,11 +213,11 @@ msgstr "Chile"
 msgid "Puerto Rico"
 msgstr "Puerto Rico"
 
-msgid "Honduras"
-msgstr "Honduras"
-
 msgid "Belize"
 msgstr "Belice"
+
+msgid "Honduras"
+msgstr "Honduras"
 
 #: src/GatewayMethod.php:1282
 msgid "Development"
@@ -549,6 +549,9 @@ msgstr "Pago aprobado"
 #: src/config/form-fields.php:198
 msgid "Payment pending"
 msgstr "Pago pendiente"
+
+msgid "Payment refunded"
+msgstr "Pago reversado"
 
 #: woocommerce/checkout/thankyou.php:35
 msgid ""

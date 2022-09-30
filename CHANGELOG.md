@@ -1,14 +1,18 @@
 ## Changelog
 
 [Unreleased]
-- Added Honduras to countries list
-- Added Belize to countries list
+- Update debug mode, allow use in PROD enviroments
+- Resolve reverse payments when the transaction is pending
+- Support customizable app name
+
+### [2.20.0] - 2022-08-04
+- Add Honduras to countries list
+- Add Belize to countries list
 - Add validation and control the length and special characters in the description of the order sent to the gateway
 - Update plugin site information url
 - Update the message information when there are pending payments, do not show the payment authorization number
 - Fix getting payment installments
 - Remove support for custom translations of payment status. Use default translations
-- Support customizable app name
 
 ### [2.19.7] - 2022-07-12
 - Update headers when processing pending transactions
