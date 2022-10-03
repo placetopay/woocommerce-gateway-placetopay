@@ -1592,12 +1592,11 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getLightboxScriptSource(): string
     {
-        switch ($this->settings['country']) {
-            case Country::EC:
-                return 'https://checkout.placetopay.ec/lightbox.min.js';
-            default:
-                return 'https://checkout.placetopay.com/lightbox.min.js';
+        if ($this->settings['country'] === Country::EC) {
+            return 'https://checkout.placetopay.ec/lightbox.min.js';
         }
+
+        return 'https://checkout.placetopay.com/lightbox.min.js';
     }
 
     private function getPaymentRedirectUrl(WC_Order $order): string
