@@ -5,6 +5,7 @@
 - Resolve reverse payments when the transaction is pending
 - Added Panama to countries list
 - Remove the Installment amount from the order detail
+- Support customizable app name
 
 ### [2.20.0] - 2022-08-04
 - Add Honduras to countries list
@@ -62,7 +63,7 @@
 - Updated dnetix/redirection package
 
 ### [2.18.5] - 2021-08-19
-- Updated Getnet endpoints
+- Updated Chile endpoints
 
 ### [2.18.1] - 2021-05-06
 - Added sonda path on admin panel
