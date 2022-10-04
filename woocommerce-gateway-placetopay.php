@@ -4,7 +4,7 @@
  * Plugin URI: https://docs-gateway.placetopay.com/docs/webcheckout-docs/9016e976d1ea0-plugins-y-componentes
  * Description: Adds Placetopay Payment Gateway to Woocommerce e-commerce plugin
  * Author: Placetopay
- * Author URI: https://www.placetopay.com/
+ * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
  * Developer: PlacetoPay
  * Version: 2.20.0
  *
@@ -65,6 +65,7 @@ function wc_gateway_placetopay()
         return $template;
     }
 
+    require_once(__DIR__ . '/src/helpers.php');
     require_once(__DIR__ . '/vendor/autoload.php');
     return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance(
         \PlacetoPay\PaymentMethod\GatewayMethod::VERSION,
