@@ -1277,7 +1277,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return $this->getWooCommerceCountry() === Country::CL ? unmaskString('Trgarg') : 'PlacetoPay';
     }
 
-    protected function getAppName(): string
+    public function getAppName(): string
     {
         return !empty($this->app_name) ? $this->app_name : $this->getDefaultAppName() ;
     }
