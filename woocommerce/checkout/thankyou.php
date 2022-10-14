@@ -22,12 +22,12 @@ if (!defined('ABSPATH')) {
 
 use PlacetoPay\PaymentMethod\GatewayMethod;
 
+$gateway = new GatewayMethod();
+
 /** @var WC_Order $order */
-/** @var string $appName */
 ?>
 
 <div class="woocommerce-order">
-
     <?php if ($order) : ?>
 
         <?php if ($order->has_status('failed')) : ?>
@@ -69,7 +69,7 @@ use PlacetoPay\PaymentMethod\GatewayMethod;
                         __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in %s</a>',
                             'woocommerce-gateway-placetopay'),
                         urldecode($processUrl),
-                        $appName,
+                        $gateway->getAppName(),
                     ); ?>
 
                 <?php } ?>
