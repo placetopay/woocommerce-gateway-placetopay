@@ -95,7 +95,6 @@ class GatewayMethod extends WC_Payment_Gateway
     private $custom_connection_url;
     private $payment_button_image;
     private $version;
-    private $app_name;
 
     /**
      * GatewayMethod constructor.
@@ -115,7 +114,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public function configPaymentMethod()
     {
         $this->id = 'placetopay';
-        $this->app_name = $this->get_option('app_name');
+        $this->title = $this->get_option('title');
         $this->method_title = $this->getAppName();
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
         $this->has_fields = false;
@@ -129,7 +128,6 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->fill_buyer_information = $this->get_option('fill_buyer_information');
         $this->country = $this->get_option('country');
         $this->enviroment_mode = $this->get_option('enviroment_mode');
-        $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
         $this->login = $this->get_option('login');
         $this->tran_key = $this->get_option('tran_key');
@@ -749,17 +747,19 @@ class GatewayMethod extends WC_Payment_Gateway
                     );
                 }
 
-                if ($status == $sessionStatusInstance::ST_APPROVED && $currentPaymentStatus !== Status::ST_APPROVED) {
-                    $payment = $transactionInfo->lastApprovedTransaction();
+                if ($status == $sessionStatusInstance::ST_APPROVED) {
+                    if ($currentPaymentStatus !== Status::ST_APPROVED) {
+                        $payment = $transactionInfo->lastApprovedTransaction();
 
-                    if ($this->isRefunded($payment)) {
-                        $this->resolveRefundedPayment($order);
+                        if ($this->isRefunded($payment)) {
+                            $this->resolveRefundedPayment($order);
 
-                    } else {
-                        $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
-                        $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
-                        $order->payment_complete();
-                        $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                        } else {
+                            $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
+                            $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
+                            $order->payment_complete();
+                            $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+                        }
                     }
                 } else {
                     if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
@@ -1304,7 +1304,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public function getAppName(): string
     {
-        return !empty($this->app_name) ? $this->app_name : $this->getDefaultAppName() ;
+        return !empty($this->title) ? $this->title : $this->getDefaultAppName() ;
     }
 
     protected function getWooCommerceCountry(): string
