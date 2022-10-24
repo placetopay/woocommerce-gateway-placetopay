@@ -370,7 +370,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $req = [
             'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
-            'returnUrl' => $this->getPaymentRedirectUrl($order),
+            'returnUrl' => $this->getPaymentReturnUrl($order),
             'noBuyerFill' => $this->fill_buyer_information !== 'yes',
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
@@ -1623,7 +1623,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 P.init("' . $_REQUEST['redirect-url'] . '", { opacity: 0.4 });
 
                 P.on(\'response\', function() {
-                    window.location = "' . $this->getPaymentRedirectUrl($order) . '"
+                    window.location = "' . $this->getPaymentReturnUrl($order) . '"
                 });';
         }
 
@@ -1661,7 +1661,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return 'https://checkout.placetopay.com/lightbox.min.js';
     }
 
-    private function getPaymentRedirectUrl(WC_Order $order): string
+    private function getPaymentReturnUrl(WC_Order $order): string
     {
         $redirectUrl = $this->getRedirectUrl($order);
 
