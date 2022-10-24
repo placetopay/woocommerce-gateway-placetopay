@@ -4,17 +4,19 @@ namespace PlacetoPay\PaymentMethod\Constants;
 
 interface Country
 {
-    const CO = 'CO';
-
-    const EC = 'EC';
-
-    const CR = 'CR';
+    const BZ = 'BZ';
 
     const CL = 'CL';
 
-    const PR = 'PR';
+    const CO = 'CO';
 
-    const BZ = 'BZ';
+    const CR = 'CR';
+
+    const EC = 'EC';
 
     const HN = 'HN';
+
+    const PA = 'PA';
+
+    const PR = 'PR';
 }

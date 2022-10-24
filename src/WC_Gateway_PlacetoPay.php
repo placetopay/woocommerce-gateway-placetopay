@@ -195,7 +195,7 @@ class WC_Gateway_PlacetoPay
             $orderId = wc_get_order_id_by_order_key($_REQUEST['order_key']);
             $order = new \WC_Order($orderId);
 
-            wc_get_template('checkout/thankyou.php', array('order' => $order));
+            wc_get_template('checkout/thankyou.php', array('order' => $order, 'name'));
         }
     }
 }
