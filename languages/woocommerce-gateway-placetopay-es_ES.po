@@ -683,8 +683,8 @@ msgstr "Producto"
 msgid "Note:"
 msgstr "Nota:"
 
-msgid "Use WebCheckout lightbox"
-msgstr "Usar WebCheckout lightbox"
+msgid "Redirection using Lightbox"
+msgstr "Redireccionar usando Lightbox"
 
-msgid "Enable use WebCheckout with lightbox."
-msgstr "Habilitar el uso de WebCheckout con lightbox"
+msgid "Enable Lightbox Redirection"
+msgstr "Habilitar el redireccionamiento con Lightbox"
