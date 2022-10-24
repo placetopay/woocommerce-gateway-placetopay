@@ -1631,10 +1631,10 @@ class GatewayMethod extends WC_Payment_Gateway
 
 
         return 'jQuery("body").block({
-                message: "' . esc_js(__(
-                'We are now redirecting you to Placetopay to make payment, if you are not redirected please press the bottom.',
+                message: "' . esc_js(sprintf(__(
+                'We are now redirecting you to %s to make payment, if you are not redirected please press the bottom.',
                 'woocommerce-gateway-placetopay'
-            )) . '",
+            ), $this->getAppName())) . '",
                 baseZ: 99999,
                 overlayCSS: { background: "#fff", opacity: 0.6 },
                 css: {
