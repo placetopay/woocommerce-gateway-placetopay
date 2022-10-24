@@ -1,13 +1,13 @@
 ## Changelog
 
 [Unreleased]
+
+### [2.20.0] - 2022-10-24
 - Update debug mode, allow use in PROD enviroments
 - Resolve reverse payments when the transaction is pending
 - Added Panama to countries list
 - Remove the Installment amount from the order detail
 - Support customizable app name
-
-### [2.20.0] - 2022-08-04
 - Add Honduras to countries list
 - Add Belize to countries list
 - Add validation and control the length and special characters in the description of the order sent to the gateway
