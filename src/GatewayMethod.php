@@ -1599,17 +1599,19 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         static $codeCalled = false;
 
-        if (!$codeCalled) {
-            $code = $this->getWebCheckoutScript($order);
-
-            if ($this->wooCommerceVersionCompare('2.1')) {
-                wc_enqueue_js($code);
-            } else {
-                WC()->add_inline_js($code);
-            }
-
-            $codeCalled = true;
+        if ($codeCalled) {
+            return;
         }
+
+        $code = $this->getWebCheckoutScript($order);
+
+        if ($this->wooCommerceVersionCompare('2.1')) {
+            wc_enqueue_js($code);
+        } else {
+            WC()->add_inline_js($code);
+        }
+
+        $codeCalled = true;
     }
 
     private function getWebCheckoutScript(WC_Order $order): string
