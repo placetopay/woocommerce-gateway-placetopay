@@ -1429,7 +1429,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private function normalizeDescription(int $orderId, array $products): string
     {
         $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
-        $pattern = '/[^a-zñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/u';
+        $pattern = '/[^a-zA-ZñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/u';
         $products = preg_replace($pattern, '', $products);
 
         $description = sprintf($orderInfo, $orderId, implode(',', $products));
