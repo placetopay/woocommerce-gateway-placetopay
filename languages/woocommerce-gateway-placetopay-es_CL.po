@@ -685,3 +685,9 @@ msgstr "Producto"
 #: woocommerce/order/order-details.php:109
 msgid "Note:"
 msgstr "Nota:"
+
+msgid "Redirection using Lightbox"
+msgstr "Redireccionar usando Lightbox"
+
+msgid "Enable Lightbox Redirection"
+msgstr "Habilitar el redireccionamiento con Lightbox"

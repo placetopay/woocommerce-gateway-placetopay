@@ -49,6 +49,12 @@ return [
         'label' => sprintf(__('Allow to skip the %s result screen.', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'default' => 'no',
     ],
+    'use_lightbox' => [
+        'title' => __('Redirection using Lightbox', 'woocommerce-gateway-placetopay'),
+        'type' => 'checkbox',
+        'label' => __('Enable Lightbox Redirection', 'woocommerce-gateway-placetopay'),
+        'default' => 'no',
+    ],
     'title' => [
         'title' => __('Title:', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
