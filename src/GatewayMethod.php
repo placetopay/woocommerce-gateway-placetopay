@@ -1617,9 +1617,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private function getWebCheckoutScript(WC_Order $order): string
     {
         if ($this->use_lightbox) {
-            add_action('wp_enqueue_scripts', function() {
-                wp_enqueue_script( 'lightbox-script', $this->getLightboxScriptSource(), [], null);
-            });
+            wp_enqueue_script('lightbox-script', $this->getLightboxScriptSource(), [], null);
 
             return '
                 P.init("' . $_REQUEST['redirect-url'] . '", { opacity: 0.4 });
