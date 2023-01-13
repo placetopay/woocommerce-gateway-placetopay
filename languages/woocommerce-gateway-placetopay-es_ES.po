@@ -691,3 +691,6 @@ msgstr "Habilitar el redireccionamiento con Lightbox"
 
 msgid "It should only be used for payment methods without redirection"
 msgstr "Solo se debe utilizar para medios de pago sin redirección"
+
+msgid "Payment on %s No: %s"
+msgstr "Pago en %s No: %s"
