@@ -57,10 +57,23 @@ $gateway = new GatewayMethod();
         <?php else : ?>
 
             <p class="woocommerce-notice woocommerce-notice--success woocommerce-thankyou-order-received">
-                <?php echo apply_filters('woocommerce_thankyou_order_received_text',
-                    __('Thank you. Your order has been received.', 'woocommerce-gateway-placetopay'), $order); ?>
+                <?php if ($order->has_status('processing')) :
+                    echo apply_filters('woocommerce_thankyou_order_received_text',
+                        __('Thank you. Your order has been received.', 'woocommerce-gateway-placetopay'), $order);
 
-                <?php
+                elseif ($order->has_status('on-hold')) :
+                    echo apply_filters('woocommerce_thankyou_order_received_text',
+                        __('Pending transaction, please wait a moment while it is resolved.', 'woocommerce-gateway-placetopay'), $order);
+
+                elseif ($order->has_status('cancelled')) :
+                    echo apply_filters('woocommerce_thankyou_order_received_text',
+                        __('Declined transaction.', 'woocommerce-gateway-placetopay'), $order);
+
+                elseif ($order->has_status('refunded')) :
+                    echo apply_filters('woocommerce_thankyou_order_received_text',
+                        __('Refunded transaction.', 'woocommerce-gateway-placetopay'), $order);
+                endif;
+
                 $processUrl = get_post_meta($order->get_id(), GatewayMethod::META_PROCESS_URL, true);
 
                 if (!empty($processUrl)) { ?>
