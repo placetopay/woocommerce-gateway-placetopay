@@ -580,6 +580,15 @@ msgstr "Mi cuenta"
 msgid "Thank you. Your order has been received."
 msgstr "Gracias. Su orden ha sido recibida."
 
+msgid "Pending transaction, please wait a moment while it is resolved."
+msgstr "Transacción pendiente, por favor espera un momento mientras se resuelve."
+
+msgid "Declined transaction."
+msgstr "Transacción declinada."
+
+msgid "Refunded transaction."
+msgstr "Transacción reembolsada."
+
 #: woocommerce/checkout/thankyou.php:68
 #, php-format
 msgid "<br>For more information about the status of your order: <a href=\"%s\" "

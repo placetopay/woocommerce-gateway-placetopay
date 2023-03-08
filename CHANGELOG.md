@@ -4,6 +4,7 @@
 - Add support for consuming WebCheckout with lightbox
 - Update the payment description sent to the gateway
 - Update the validation rule for the payer's first and last name field, do not allow numbers
+- Fix messages in order detail
 
 ### [2.20.0] - 2022-10-24
 - Update debug mode, allow use in PROD enviroments
