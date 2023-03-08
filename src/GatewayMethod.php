@@ -24,7 +24,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.20.0';
+    const VERSION = '2.21.0';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -95,6 +95,7 @@ class GatewayMethod extends WC_Payment_Gateway
     private $custom_connection_url;
     private $payment_button_image;
     private $version;
+    private $use_lightbox;
 
     /**
      * GatewayMethod constructor.
@@ -134,8 +135,9 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
         $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
-        $this->allow_partial_payments = $this->get_option('allow_partial_payments') == "yes";
-        $this->skip_result = $this->get_option('skip_result') == "yes";
+        $this->allow_partial_payments = $this->get_option('allow_partial_payments') === "yes";
+        $this->use_lightbox = $this->get_option('use_lightbox') === 'yes';
+        $this->skip_result = $this->get_option('skip_result') === "yes";
         $this->custom_connection_url = $this->get_option('custom_connection_url');
         $this->payment_button_image = $this->get_option('payment_button_image');
         $this->icon = $this->getImageUrl();
@@ -365,10 +367,12 @@ class GatewayMethod extends WC_Payment_Gateway
             ? $this->expiration_time_minutes . ' minutes'
             : '+2 days';
 
+        $orderNumber = self::getOrderNumber($order);
+
         $req = [
             'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
-            'returnUrl' => $redirectUrl . '&key=' . $ref,
+            'returnUrl' => $this->getPaymentReturnUrl($order),
             'noBuyerFill' => $this->fill_buyer_information !== 'yes',
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
@@ -388,8 +392,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 ]
             ],
             'payment' => [
-                'reference' => self::getOrderNumber($order),
-                'description' => $this->getDescriptionOrder($orderId),
+                'reference' => $orderNumber,
+                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-placetopay'), $this->title, $orderNumber),
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => $order->get_total()
@@ -540,35 +544,8 @@ class GatewayMethod extends WC_Payment_Gateway
             $order = new WC_Order($orderId);
             $order->update_status('on-hold', sprintf(__('Redirecting to %s', 'woocommerce-gateway-placetopay'), $this->getAppName()));
 
-            $code = 'jQuery("body").block({
-                message: "' . esc_js(sprintf(__(
-                'We are now redirecting you to %s to make payment, if you are not redirected please press the bottom.',
-                'woocommerce-gateway-placetopay'
-            ), $this->getAppName())) . '",
-                baseZ: 99999,
-                overlayCSS: { background: "#fff", opacity: 0.6 },
-                css: {
-                    padding:        "20px",
-                    zindex:         "9999999",
-                    textAlign:      "center",
-                    color:          "#555",
-                    border:         "3px solid #aaa",
-                    backgroundColor:"#fff",
-                    cursor:         "wait",
-                    lineHeight:		"24px",
-                }
-            });
+            $this->resolveWebCheckout($order);
 
-            setTimeout( function() {
-                window.location.href = "' . $_REQUEST['redirect-url'] . '";
-            }, 1000 );
-            ';
-
-            if ($this->wooCommerceVersionCompare('2.1')) {
-                wc_enqueue_js($code);
-            } else {
-                WC()->add_inline_js($code);
-            }
         } catch (Exception $ex) {
             $this->logger($ex->getMessage(), 'error');
         }
@@ -1438,34 +1415,6 @@ class GatewayMethod extends WC_Payment_Gateway
         );
     }
 
-    private function getDescriptionOrder(int $orderId): string
-    {
-        $order = wc_get_order($orderId);
-        /** @var \WC_Order_item[] $items */
-        $products = [];
-
-        foreach ($order->get_items() as $item) {
-            $products[] = $item->get_name();
-        }
-
-        return $this->normalizeDescription($orderId, $products);
-    }
-
-    private function normalizeDescription(int $orderId, array $products): string
-    {
-        $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
-        $pattern = '/[^a-zA-ZñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/u';
-        $products = preg_replace($pattern, '', $products);
-
-        $description = sprintf($orderInfo, $orderId, implode(',', $products));
-
-        if (strlen($description) > 250) {
-            $description = substr($description, 0, 243) . ' etc...';
-        }
-
-        return $description;
-    }
-
     private function configureEnvironment()
     {
         $environments = $this->getCountryEnvironments();
@@ -1618,5 +1567,83 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-placetopay'));
         $this->logger('Payment refunded for order # ' . $order->get_id(), __METHOD__);
+    }
+
+    private function resolveWebCheckout(WC_Order $order)
+    {
+        static $codeCalled = false;
+
+        if ($codeCalled) {
+            return;
+        }
+
+        $code = $this->getWebCheckoutScript($order);
+
+        if ($this->wooCommerceVersionCompare('2.1')) {
+            wc_enqueue_js($code);
+        } else {
+            WC()->add_inline_js($code);
+        }
+
+        $codeCalled = true;
+    }
+
+    private function getWebCheckoutScript(WC_Order $order): string
+    {
+        if ($this->use_lightbox) {
+            wp_enqueue_script('lightbox-script', $this->getLightboxScriptSource(), [], null);
+
+            return '
+                P.init("' . $_REQUEST['redirect-url'] . '", { opacity: 0.4 });
+
+                P.on(\'response\', function() {
+                    window.location = "' . $this->getPaymentReturnUrl($order) . '"
+                });';
+        }
+
+
+        return 'jQuery("body").block({
+                message: "' . esc_js(sprintf(__(
+                'We are now redirecting you to %s to make payment, if you are not redirected please press the bottom.',
+                'woocommerce-gateway-placetopay'
+            ), $this->getAppName())) . '",
+                baseZ: 99999,
+                overlayCSS: { background: "#fff", opacity: 0.6 },
+                css: {
+                    padding:        "20px",
+                    zindex:         "9999999",
+                    textAlign:      "center",
+                    color:          "#555",
+                    border:         "3px solid #aaa",
+                    backgroundColor:"#fff",
+                    cursor:         "wait",
+                    lineHeight:		"24px",
+                }
+            });
+
+            setTimeout( function() {
+                window.location.href = "' . $_REQUEST['redirect-url'] . '";
+            }, 1000 );';
+    }
+
+    private function getLightboxScriptSource(): string
+    {
+        if ($this->settings['country'] === Country::EC) {
+            return 'https://checkout.placetopay.ec/lightbox.min.js';
+        }
+
+        return 'https://checkout.placetopay.com/lightbox.min.js';
+    }
+
+    private function getPaymentReturnUrl(WC_Order $order): string
+    {
+        $redirectUrl = $this->getRedirectUrl($order);
+
+        $redirectUrl = add_query_arg([
+            'wc-api'=> $this->getClassName(),
+            'order_id'=> $order->get_id(),
+        ], $redirectUrl);
+
+        return $redirectUrl . '&key=' . $order->get_order_key() . '-' . time();
     }
 }

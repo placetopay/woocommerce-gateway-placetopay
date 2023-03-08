@@ -580,6 +580,15 @@ msgstr "Mi cuenta"
 msgid "Thank you. Your order has been received."
 msgstr "Gracias. Su orden ha sido recibida."
 
+msgid "Pending transaction, please wait a moment while it is resolved."
+msgstr "Transacción pendiente, por favor espera un momento mientras se resuelve."
+
+msgid "Declined transaction."
+msgstr "Transacción declinada."
+
+msgid "Refunded transaction."
+msgstr "Transacción reembolsada."
+
 #: woocommerce/checkout/thankyou.php:68
 #, php-format
 msgid "<br>For more information about the status of your order: <a href=\"%s\" "
@@ -685,3 +694,15 @@ msgstr "Producto"
 #: woocommerce/order/order-details.php:109
 msgid "Note:"
 msgstr "Nota:"
+
+msgid "Redirection using Lightbox"
+msgstr "Redireccionar usando Lightbox"
+
+msgid "Enable Lightbox Redirection"
+msgstr "Habilitar el redireccionamiento con Lightbox"
+
+msgid "It should only be used for payment methods without redirection"
+msgstr "Solo se debe utilizar para medios de pago sin redirección"
+
+msgid "Payment on %s No: %s"
+msgstr "Pago en %s No: %s"

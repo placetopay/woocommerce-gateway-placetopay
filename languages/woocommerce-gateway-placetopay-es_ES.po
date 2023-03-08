@@ -577,6 +577,15 @@ msgstr "Mi cuenta"
 msgid "Thank you. Your order has been received."
 msgstr "Gracias. Su orden ha sido recibida."
 
+msgid "Pending transaction, please wait a moment while it is resolved."
+msgstr "Transacción pendiente, por favor espera un momento mientras se resuelve."
+
+msgid "Declined transaction."
+msgstr "Transacción declinada."
+
+msgid "Refunded transaction."
+msgstr "Transacción reembolsada."
+
 #: woocommerce/checkout/thankyou.php:68
 #, php-format
 msgid "<br>For more information about the status of your order: <a href=\"%s\" "
@@ -683,179 +692,14 @@ msgstr "Producto"
 msgid "Note:"
 msgstr "Nota:"
 
-#~ msgid "Credit"
-#~ msgstr "Credito"
+msgid "Redirection using Lightbox"
+msgstr "Redireccionar usando Lightbox"
 
-#~ msgid "Debit"
-#~ msgstr "Debito"
+msgid "Enable Lightbox Redirection"
+msgstr "Habilitar el redireccionamiento con Lightbox"
 
-#~ msgid ""
-#~ "Sorry, it seems that there are no available payment methods for your "
-#~ "location. Please contact us if you require assistance or wish to make "
-#~ "alternate arrangements."
-#~ msgstr ""
-#~ "Lo sentimos, parece que no hay métodos de pago disponibles para tu "
-#~ "ubicación. Comuníquese con nosotros si necesita ayuda o desea hacer "
-#~ "arreglos alternativos."
+msgid "It should only be used for payment methods without redirection"
+msgstr "Solo se debe utilizar para medios de pago sin redirección"
 
-#~ msgid "<strong>Country</strong>, is not valid."
-#~ msgstr "El <strong>País</strong>, no es válido."
-
-#~ msgid "<strong>State / Country</strong>, does not have a valid format"
-#~ msgstr "El <strong>Departamento</strong>, no tiene un formato válido"
-
-#~ msgid "<strong>Town / City</strong>, does not have a valid format"
-#~ msgstr "La <strong>Ciudad</strong>, no tiene un formato válido"
-
-#~ msgid "Adds Placetopay Payment Gateway to Woocommerce e-commerce plugin"
-#~ msgstr ""
-#~ "Agrega la pasarela de pagos Placetopay al listado de métodos de pago de "
-#~ "Woocommerce"
-
-#, fuzzy
-#~| msgid "<strong>Country</strong>, is not valid."
-#~ msgid "<strong>TOTAL</strong>, dno cumnple"
-#~ msgstr "El <strong>País</strong>, no es válido"
-
-#~ msgid "None"
-#~ msgstr "Ninguno"
-
-#~ msgid "Select taxes to included"
-#~ msgstr "Seleccione impuestos para incluir"
-
-#~ msgid "Select ICE taxes to included"
-#~ msgstr "Seleccione impuestos ICE para incluir"
-
-#~ msgid ""
-#~ "Enable the environment PlacetoPay for testing or production transactions."
-#~ "<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is "
-#~ "actived</b>"
-#~ msgstr ""
-#~ "Habilite el entorno PlacetoPay para realizar pruebas o transacciones de "
-#~ "producción. <br /> Nota: <b> Por defecto es \"Prueba de desarrollo\", si "
-#~ "WP_DEBUG está activado </ b>"
-
-#~ msgid "Payment error:"
-#~ msgstr "Error al pagar:"
-
-#~ msgid "Aborting, Order #"
-#~ msgstr "Cancelando, Orden #"
-
-#~ msgid "My Account"
-#~ msgstr "Mi cuenta"
-
-#~ msgid "Development Test"
-#~ msgstr "Desarrollo pruebas"
-
-#~ msgid "Production Test"
-#~ msgstr "Producción pruebas"
-
-#~ msgid "Enviroment mode"
-#~ msgstr "Entorno de desarrollo"
-
-#~ msgid ""
-#~ "Enable the enviroment PlacetoPay for testing or production transactions."
-#~ "<br />Note: <b>By default is \"Development Test\", if WP_DEBUG is "
-#~ "actived</b>"
-#~ msgstr ""
-#~ "Habilite el ambiente PlacetoPay para realizar transacciones en modo "
-#~ "pruebas o producción.<br />Nota: <b>Por defecto es \"Desarrollo pruebas"
-#~ "\", sí WP_DEBUG esta activado</b>"
-
-#~ msgid "Payment Method:"
-#~ msgstr "Método de pago:"
-
-#~ msgid "Return url. EndPoint (WP >= 4.6)"
-#~ msgstr "Url de retorno. Endpoint (WP >= 4.6)"
-
-#~ msgid ""
-#~ "Url of return where PlacetoPay will send a notification of a transaction "
-#~ "for Woocommerce.<br />If your Wordpress not support REST-API, please "
-#~ "visit: https://wordpress.org/plugins/rest-api/"
-#~ msgstr ""
-#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a "
-#~ "una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
-#~ "API, por favor visita: https://wordpress.org/plugins/rest-api/"
-
-#~ msgid "The <strong>Name</strong>, does not have a valid format"
-#~ msgstr "El <strong>nombre</strong>, no tiene un formato válido"
-
-#~ msgid "<strong>Last name</strong>, does not have a valid format"
-#~ msgstr "El <strong>apellido</strong>, no tiene un formato válido"
-
-#~ msgid "Test mode"
-#~ msgstr "Modo de pruebas"
-
-#~ msgid "Enable PlacetoPay TEST Transactions."
-#~ msgstr "Habilita las transacciones de prueba en PlacetoPay"
-
-#~ msgid "Tick to run TEST Transaction on the PlacetoPay platform"
-#~ msgstr ""
-#~ "Activar para hacer transacciones de prueba con la plataforma de "
-#~ "PlacetoPay."
-
-#~ msgid ""
-#~ "En este momento su orden # %s presenta un proceso de pago cuya "
-#~ "transacción se encuentra PENDIENTE de recibir confirmación por parte de "
-#~ "su entidad financiera,\n"
-#~ "                            por favor espere unos minutos y vuelva a "
-#~ "consultar más tarde para verificar si su pago fue confirmado de forma "
-#~ "exitosa.\n"
-#~ "                            Si desea mayor información sobre el estado "
-#~ "actual de su operación puede comunicarse a nuestras líneas de atención al "
-#~ "cliente %s o enviar un correo electrónico a %s\n"
-#~ "                            y preguntar por el estado de la transacción: "
-#~ "%s"
-#~ msgstr ""
-#~ "En este momento su orden # %s presenta un proceso de pago cuya "
-#~ "transacción se encuentra PENDIENTE de recibir confirmación por parte de "
-#~ "su entidad financiera,\n"
-#~ "                        por favor espere unos minutos y vuelva a "
-#~ "consultar más tarde para verificar si su pago fue confirmado de forma "
-#~ "exitosa.\n"
-#~ "                        Si desea mayor información sobre el estado actual "
-#~ "de su operación puede comunicarse a nuestras líneas de atención al "
-#~ "cliente %s o enviar un correo electrónico a %s\n"
-#~ "                        y preguntar por el estado de la transacción: %s"
-
-#~ msgid "Message for declined transaction"
-#~ msgstr "Mensaje para una transacción rechazada."
-
-#, fuzzy
-#~ msgid "Message for declined transaction "
-#~ msgstr "ID de la transacción"
-
-#~ msgid ""
-#~ "Url of return to PlacetoPay send a notification response to Woocommerce."
-#~ "<br />If your Wordpress not support REST-API, please visit: https://"
-#~ "wordpress.org/plugins/rest-api/"
-#~ msgstr ""
-#~ "Url de retorno donde PlacetoPay enviará una notificación como respuesta a "
-#~ "una transacción para Woocommerce .<br />Si tu Wordpress no soporta REST-"
-#~ "API, por favor visita: https://wordpress.org/plugins/rest-api/"
-
-#~ msgid ""
-#~ "Url of return or callback url to PlacetoPay send a notification response "
-#~ "to Woocommerce.<br />If your Wordpress not support REST-API, please "
-#~ "visit: https://wordpress.org/plugins/rest-api/"
-#~ msgstr "Url de retorno "
-
-#~ msgid "Return page EndPoint (WP >= 4.6)"
-#~ msgstr "Url de retorno. Endpoint (WP >= 4.6)"
-
-#~ msgid ""
-#~ "If your Wordpress not support REST-API, please visit: https://wordpress."
-#~ "org/plugins/rest-api/"
-#~ msgstr ""
-#~ "Si tu WordPress no soporta la funcionalidad de Rest-API, por favor "
-#~ "visita: https://wordpress.org/plugins/rest-api/"
-
-#~ msgid "Page End Point (WP >= 4.6)"
-#~ msgstr "Endpoint para pagina de regreso (WP >= 4.6)"
-
-#~ msgid "Return Page End Point."
-#~ msgstr "Endpoint para pagina de regreso"
-
-#, fuzzy
-#~ msgid "Redirecting to Place to Pay"
-#~ msgstr "Pagar con PlacetoPay."
+msgid "Payment on %s No: %s"
+msgstr "Pago en %s No: %s"
