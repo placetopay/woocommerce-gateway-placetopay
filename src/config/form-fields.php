@@ -53,6 +53,7 @@ return [
         'title' => __('Redirection using Lightbox', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
         'label' => __('Enable Lightbox Redirection', 'woocommerce-gateway-placetopay'),
+        'description' => __('It should only be used for payment methods without redirection', 'woocommerce-gateway-placetopay'),
         'default' => 'no',
     ],
     'title' => [
