@@ -1,7 +1,9 @@
 ## Changelog
 
 [Unreleased]
-- Add support for consuming WebCheckout with lightbox
+
+### [2.21.0] - 2023-03-08
+- Add support to use Lightbox
 - Update the payment description sent to the gateway
 - Update the validation rule for the payer's first and last name field, do not allow numbers
 - Fix messages in order detail
