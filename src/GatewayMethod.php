@@ -367,6 +367,8 @@ class GatewayMethod extends WC_Payment_Gateway
             ? $this->expiration_time_minutes . ' minutes'
             : '+2 days';
 
+        $orderNumber = self::getOrderNumber($order);
+
         $req = [
             'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
@@ -390,8 +392,8 @@ class GatewayMethod extends WC_Payment_Gateway
                 ]
             ],
             'payment' => [
-                'reference' => self::getOrderNumber($order),
-                'description' => $this->getDescriptionOrder($orderId),
+                'reference' => $orderNumber,
+                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-placetopay'), $this->title, $orderNumber),
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => $order->get_total()
@@ -1411,34 +1413,6 @@ class GatewayMethod extends WC_Payment_Gateway
             $version,
             $operator
         );
-    }
-
-    private function getDescriptionOrder(int $orderId): string
-    {
-        $order = wc_get_order($orderId);
-        /** @var \WC_Order_item[] $items */
-        $products = [];
-
-        foreach ($order->get_items() as $item) {
-            $products[] = $item->get_name();
-        }
-
-        return $this->normalizeDescription($orderId, $products);
-    }
-
-    private function normalizeDescription(int $orderId, array $products): string
-    {
-        $orderInfo = __('Order %s - Products: %s', 'woocommerce-gateway-placetopay');
-        $pattern = '/[^a-zA-ZñáéíóúäëïöüàèìòùÑÁÉÍÓÚÄËÏÖÜÀÈÌÒÙÇçÃã\s\d\.,\$#\&\-\_(\)\/\%\+\\\':;\|\@]/u';
-        $products = preg_replace($pattern, '', $products);
-
-        $description = sprintf($orderInfo, $orderId, implode(',', $products));
-
-        if (strlen($description) > 250) {
-            $description = substr($description, 0, 243) . ' etc...';
-        }
-
-        return $description;
     }
 
     private function configureEnvironment()
