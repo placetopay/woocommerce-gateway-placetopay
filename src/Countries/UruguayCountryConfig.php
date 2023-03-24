@@ -7,7 +7,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class UruguayCountryConfig extends CountryConfig
 {
-    public static function resolve(string $countryCode):bool
+    public static function resolve(string $countryCode): bool
     {
         return Country::BZ === $countryCode;
     }
