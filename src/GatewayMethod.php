@@ -1190,6 +1190,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
             Country::PA => __('Panama', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
+            Country::UY => __('Uruguay', 'woocommerce-gateway-placetopay'),
         ];
     }
 
