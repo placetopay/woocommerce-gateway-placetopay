@@ -9,7 +9,7 @@ abstract class UruguayCountryConfig extends CountryConfig
 {
     public static function resolve(string $countryCode): bool
     {
-        return Country::BZ === $countryCode;
+        return Country::UY === $countryCode;
     }
 
     public static function getEndpoints(): array
