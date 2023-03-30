@@ -15,6 +15,7 @@ use Exception;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
+use PlacetoPay\PaymentMethod\Countries\CountryConfigInterface;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -1189,6 +1190,7 @@ class GatewayMethod extends WC_Payment_Gateway
             Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
             Country::PA => __('Panama', 'woocommerce-gateway-placetopay'),
             Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
+            Country::UY => __('Uruguay', 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -1519,43 +1521,16 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getCountryEnvironments(): array
     {
-        switch ($this->settings['country']) {
-            case Country::BZ:
-                $environments = [
-                    Environment::PROD => 'https://abgateway.atlabank.com',
-                ];
-                break;
+        /** @var CountryConfigInterface $config */
+        foreach (Country::COUNTRIES_CONFIG as $config) {
+            if (!$config::resolve($this->settings['country'])) {
+                continue;
+            }
 
-            case Country::CL:
-                $environments = [
-                    Environment::PROD => unmaskString('uggcf://purpxbhg.trgarg.py'),
-                    Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.trgarg.py'),
-                ];
-                break;
-
-            case Country::EC:
-                $environments = [
-                    Environment::PROD => 'https://checkout.placetopay.ec',
-                    Environment::TEST => 'https://checkout-test.placetopay.ec',
-                    Environment::DEV => 'https://dev.placetopay.ec/redirection',
-                ];
-                break;
-
-            case Country::HN:
-                $environments = [
-                    Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
-                ];
-                break;
-
-            default:
-                $environments = [];
+            return $config::getEndpoints();
         }
 
-        return array_merge([
-            Environment::PROD => 'https://checkout.placetopay.com',
-            Environment::TEST => 'https://checkout-test.placetopay.com',
-            Environment::DEV => 'https://dev.placetopay.com/redirection',
-        ], $environments);
+        return [];
     }
 
     private function isRefunded(Transaction $payment): bool

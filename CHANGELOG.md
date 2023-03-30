@@ -2,6 +2,10 @@
 
 [Unreleased]
 
+### Added
+
+- Add Uruguay (Uy) country as option in country list.
+
 ### [2.21.0] - 2023-03-08
 - Add support to use Lightbox
 - Update the payment description sent to the gateway
