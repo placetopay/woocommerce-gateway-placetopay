@@ -2,9 +2,11 @@
 
 [Unreleased]
 
+### [2.21.1] - 2023-03-30
+
 ### Added
 
-- Add Uruguay (Uy) country as option in country list.
+- Add UY country as option in country list.
 
 ### [2.21.0] - 2023-03-08
 - Add support to use Lightbox
