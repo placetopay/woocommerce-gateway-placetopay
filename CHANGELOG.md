@@ -2,6 +2,12 @@
 
 [Unreleased]
 
+### [2.21.1] - 2023-03-30
+
+### Added
+
+- Add UY country as option in country list.
+
 ### [2.21.0] - 2023-03-08
 - Add support to use Lightbox
 - Update the payment description sent to the gateway
