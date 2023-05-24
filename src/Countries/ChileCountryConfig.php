@@ -2,6 +2,7 @@
 
 namespace PlacetoPay\PaymentMethod\Countries;
 
+use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 
@@ -18,5 +19,12 @@ abstract class ChileCountryConfig extends CountryConfig
             Environment::PROD => unmaskString('uggcf://purpxbhg.trgarg.py'),
             Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.trgarg.py'),
         ]);
+    }
+
+    public static function getClient(): array
+    {
+        return [
+            unmaskString(Client::GT) => __(unmaskString(Client::GT), 'woocommerce-gateway-placetopay')
+        ];
     }
 }

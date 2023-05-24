@@ -19,4 +19,11 @@ abstract class CountryConfig implements CountryConfigInterface
             Environment::PROD => 'https://checkout.placetopay.com',
         ];
     }
+
+    public static function getClient(): array
+    {
+        return [
+            'Placetopay' => __('Placetopay', 'woocommerce-gateway-placetopay'),
+        ];
+    }
 }
