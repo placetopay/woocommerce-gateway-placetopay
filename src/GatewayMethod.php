@@ -6,13 +6,16 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+use Dnetix\Redirection\Entities\PaymentModifier;
 use Dnetix\Redirection\Entities\Status;
 use Dnetix\Redirection\Entities\Transaction;
 use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
 use Exception;
+use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Country;
+use PlacetoPay\PaymentMethod\Constants\Discounts;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
 use PlacetoPay\PaymentMethod\Countries\CountryConfigInterface;
@@ -116,7 +119,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public function configPaymentMethod()
     {
         $this->id = 'placetopay';
-        $this->title = $this->get_option('title');
+        $this->title = $this->get_option('client');
         $this->method_title = $this->getAppName();
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
         $this->has_fields = false;
@@ -128,9 +131,9 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->endpoint = $this->settings['endpoint'];
         $this->expiration_time_minutes = $this->settings['expiration_time_minutes'];
         $this->fill_buyer_information = $this->get_option('fill_buyer_information');
-        $this->country = $this->get_option('country');
+        $this->country = explode(':', get_option('woocommerce_default_country'))[0];
         $this->enviroment_mode = $this->get_option('enviroment_mode');
-        $this->description = $this->get_option('description');
+        $this->description = sprintf('Pague seguro a través de %s', $this->getAppName());
         $this->login = $this->get_option('login');
         $this->tran_key = $this->get_option('tran_key');
         $this->redirect_page_id = $this->get_option('redirect_page_id');
@@ -200,9 +203,12 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if (empty($url)) {
             // format: null
-            switch ($this->settings['country']) {
-                case Country::CL:
+            switch ($this->getAppName()) {
+                case unmaskString(Client::GT):
                     $image = unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit');
+                    break;
+                case unmaskString(Client::GO):
+                    $image = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/goupagos-com-co/header.svg';
                     break;
                 default:
                     $image = 'https://static.placetopay.com/placetopay-logo.svg';
@@ -394,7 +400,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             'payment' => [
                 'reference' => $orderNumber,
-                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-placetopay'), $this->title, $orderNumber),
+                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-placetopay'), $this->getAppName(), $orderNumber),
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => $order->get_total()
@@ -409,6 +415,22 @@ class GatewayMethod extends WC_Payment_Gateway
                 ],
             ],
         ];
+
+        if ($this->country === Country::UY) {
+            $discountCode = $this->get_option('discount');
+
+            if ($discountCode != Discounts::UY_NONE) {
+                $req['payment']['modifiers'] = [
+                    new PaymentModifier([
+                        'type' => PaymentModifier::TYPE_FEDERAL_GOVERNMENT,
+                        'code' => $discountCode,
+                        'additional' => [
+                            'invoice' => $this->get_option('invoice')
+                        ]
+                    ])
+                ];
+            }
+        }
 
         if (count($order->get_taxes()) > 0) {
             $req['payment']['amount']['taxes'] = $this->getOrderTaxes($order);
@@ -484,9 +506,9 @@ class GatewayMethod extends WC_Payment_Gateway
             $taxData = $tax->get_data();
 
             if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
-                $shippingTax = (float) $order->get_shipping_tax();
+                $shippingTax = (float)$order->get_shipping_tax();
                 $totalTax = $shippingTax + $taxData['tax_total'];
-                $totalBase = $shippingTax > 0 ? ((float) $order->get_shipping_total() + $subTotal) : $subTotal;
+                $totalBase = $shippingTax > 0 ? ((float)$order->get_shipping_total() + $subTotal) : $subTotal;
 
                 $taxForP2P[] = [
                     'kind' => 'valueAddedTax',
@@ -615,7 +637,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $currentPaymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
 
         if ($isCallback && $currentPaymentStatus === Status::ST_APPROVED) {
-            $this->logger('Returning method is already '. $currentPaymentStatus, __METHOD__);
+            $this->logger('Returning method is already ' . $currentPaymentStatus, __METHOD__);
             return;
         }
 
@@ -1161,7 +1183,7 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * Get pages for return page setting
      *
-     * @param  boolean $title Title of the page
+     * @param boolean $title Title of the page
      * @return array
      */
     public function getPages($title = false)
@@ -1179,7 +1201,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return $pageList;
     }
 
-    public function getCountryList()
+    public function getCountryList(): array
     {
         return [
             Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
@@ -1194,12 +1216,41 @@ class GatewayMethod extends WC_Payment_Gateway
         ];
     }
 
+    public function getDiscounts()
+    {
+        return [
+            Discounts::UY_NONE => __(Discounts::UY_NONE, 'woocommerce-gateway-placetopay'),
+            Discounts::UY_IVA_REFUND => __(Discounts::UY_IVA_REFUND, 'woocommerce-gateway-placetopay'),
+            Discounts::UY_IMESI_REFUND => __(Discounts::UY_IMESI_REFUND, 'woocommerce-gateway-placetopay'),
+            Discounts::UY_FINANCIAL_INCLUSION => __(Discounts::UY_FINANCIAL_INCLUSION, 'woocommerce-gateway-placetopay'),
+            Discounts::UY_AFAM_REFUND => __(Discounts::UY_AFAM_REFUND, 'woocommerce-gateway-placetopay'),
+            Discounts::UY_TAX_REFUND => __(Discounts::UY_TAX_REFUND, 'woocommerce-gateway-placetopay'),
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getClientList()
+    {
+        /** @var CountryConfigInterface $config */
+        foreach (Country::COUNTRIES_CLIENT as $config) {
+            if (!$config::resolve($this->getCountry())) {
+                continue;
+            }
+
+            return $config::getClient();
+        }
+
+        return [];
+    }
+
     /**
      * Return list of environments for selection
      *
      * @return array
      */
-    protected function getEnvironments()
+    public function getEnvironments()
     {
         return [
             Environment::DEV => __('Development', 'woocommerce-gateway-placetopay'),
@@ -1214,7 +1265,7 @@ class GatewayMethod extends WC_Payment_Gateway
      *
      * @return array
      */
-    protected function getListOptionExpirationMinutes()
+    public function getListOptionExpirationMinutes()
     {
         $options = [];
         $format = '%d %s';
@@ -1253,7 +1304,7 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * @return array
      */
-    protected function getListTaxes()
+    public function getListTaxes()
     {
         $countries = $this->getCountryList();
         $formatTaxItem = '%s( %s ) - %s - %s %%';
@@ -1276,17 +1327,17 @@ class GatewayMethod extends WC_Payment_Gateway
         return $taxList;
     }
 
-    protected function getDefaultAppName(): string
+    public function getDefaultClient(): string
     {
-        return $this->getWooCommerceCountry() === Country::CL ? unmaskString('Trgarg') : 'PlacetoPay';
+        return $this->getCountry() === Country::CL ? unmaskString('Trgarg') : 'PlacetoPay';
     }
 
     public function getAppName(): string
     {
-        return !empty($this->title) ? $this->title : $this->getDefaultAppName() ;
+        return !empty($this->title) ? $this->title : $this->getDefaultClient();
     }
 
-    protected function getWooCommerceCountry(): string
+    public function getCountry(): string
     {
         return explode(':', get_option('woocommerce_default_country'))[0];
     }
@@ -1296,7 +1347,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
 
         return [
-            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION. ')',
+            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION . ')',
             'X-Source-Platform' => 'woocommerce',
         ];
     }
@@ -1324,7 +1375,7 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * Get the class name with namespaces modificated
      *
-     * @param  boolean $lowercase
+     * @param boolean $lowercase
      * @return string
      */
     private function getClassName($lowercase = false)
@@ -1411,10 +1462,10 @@ class GatewayMethod extends WC_Payment_Gateway
     private function wooCommerceVersionCompare($version, $operator = '>=')
     {
         return defined('WOOCOMMERCE_VERSION') && version_compare(
-            WOOCOMMERCE_VERSION,
-            $version,
-            $operator
-        );
+                WOOCOMMERCE_VERSION,
+                $version,
+                $operator
+            );
     }
 
     private function configureEnvironment()
@@ -1507,11 +1558,11 @@ class GatewayMethod extends WC_Payment_Gateway
         $installments = ['installments', 'installment'];
 
         if (isset($additionalData['credit'])) {
-            $key = array_keys(array_filter($additionalData['credit'], function($item) use ($installments) {
+            $key = array_keys(array_filter($additionalData['credit'], function ($item) use ($installments) {
                 return in_array($item, $installments);
             }, ARRAY_FILTER_USE_KEY));
 
-            if(isset($key[0])) {
+            if (isset($key[0])) {
                 return $additionalData['credit'][$key[0]];
             }
         }
@@ -1523,7 +1574,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         /** @var CountryConfigInterface $config */
         foreach (Country::COUNTRIES_CONFIG as $config) {
-            if (!$config::resolve($this->settings['country'])) {
+            if (!$config::resolve($this->getCountry())) {
                 continue;
             }
 
@@ -1615,8 +1666,8 @@ class GatewayMethod extends WC_Payment_Gateway
         $redirectUrl = $this->getRedirectUrl($order);
 
         $redirectUrl = add_query_arg([
-            'wc-api'=> $this->getClassName(),
-            'order_id'=> $order->get_id(),
+            'wc-api' => $this->getClassName(),
+            'order_id' => $order->get_id(),
         ], $redirectUrl);
 
         return $redirectUrl . '&key=' . $order->get_order_key() . '-' . time();
