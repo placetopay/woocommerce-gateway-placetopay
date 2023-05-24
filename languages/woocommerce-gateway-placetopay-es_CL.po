@@ -706,3 +706,33 @@ msgstr "Solo se debe utilizar para medios de pago sin redirección"
 
 msgid "Payment on %s No: %s"
 msgstr "Pago en %s No: %s"
+
+msgid "Pay securely through %s"
+msgstr "Pague seguro a través de %s"
+
+msgid "Discount"
+msgstr "Descuento de ley"
+
+msgid "Invoice"
+msgstr "Factura"
+
+msgid "Pay securely through %s"
+msgstr "Pague seguro a través de %s"
+
+msgid "17934"
+msgstr "17934 - Servicios gastronomicos"
+
+msgid "18083"
+msgstr "18083 - IMESI Brasil-Argentina"
+
+msgid "19210"
+msgstr "19210 - Inclusión Financiera"
+
+msgid "18910"
+msgstr "18910 - Asignaciones Familiares"
+
+msgid "18999"
+msgstr "18999 - Reintegro Inmobiliarias"
+
+msgid "0"
+msgstr "No devuelve impuestos"
