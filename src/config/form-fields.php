@@ -1,5 +1,7 @@
 <?php
 
+use PlacetoPay\PaymentMethod\Constants\Discounts;
+
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
@@ -12,7 +14,7 @@ if (!defined('ABSPATH')) {
  * This file will be included into of GatewayMethod class
  * @package \PlacetoPay;
  */
-return [
+$generalFields = [
     'enabled' => [
         'title' => __('Enable/Disable', 'woocommerce-gateway-placetopay'),
         'type' => 'checkbox',
@@ -56,21 +58,13 @@ return [
         'description' => __('It should only be used for payment methods without redirection', 'woocommerce-gateway-placetopay'),
         'default' => 'no',
     ],
-    'title' => [
-        'title' => __('Title:', 'woocommerce-gateway-placetopay'),
-        'type' => 'text',
-        'default' => $this->getDefaultAppName(),
-        'description' => __('This controls the title which the user sees during checkout.',
-            'woocommerce-gateway-placetopay'),
-        'desc_tip' => true,
-    ],
-    'description' => [
-        'title' => __('Description:', 'woocommerce-gateway-placetopay'),
-        'type' => 'textarea',
-        'default' => sprintf(__('Pay securely through %s.', 'woocommerce-gateway-placetopay'), $this->getAppName()),
-        'description' => __('This controls the description which the user sees during checkout.',
-            'woocommerce-gateway-placetopay'),
-        'desc_tip' => true
+    'client' => [
+        'title' => __('Client', 'woocommerce-gateway-placetopay'),
+        'type' => 'select',
+        'class' => 'wc-enhanced-select',
+        'default' => 'Getnet',
+        'options' => $this->getClientList(),
+        'description' => sprintf('Estoy integrado con %s', $this->getAppName()),
     ],
     'login' => [
         'title' => __('Login', 'woocommerce-gateway-placetopay'),
@@ -83,13 +77,6 @@ return [
         'type' => 'password',
         'description' => sprintf(__('Given to transactional key by %s', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'desc_tip' => true
-    ],
-    'country' => [
-        'title' => __('Country', 'woocommerce-gateway-placetopay'),
-        'type' => 'select',
-        'class' => 'wc-enhanced-select',
-        'default' => $this->getWooCommerceCountry(),
-        'options' => $this->getCountryList(),
     ],
     'enviroment_mode' => [
         'title' => __('Mode', 'woocommerce-gateway-placetopay'),
@@ -194,3 +181,19 @@ return [
         'desc_tip' => true,
     ],
 ];
+
+if ($this->getCountry() === \PlacetoPay\PaymentMethod\Constants\Country::UY) {
+    $generalFields['discount'] = [
+        'title' => __('Discount', 'woocommerce-gateway-placetopay'),
+        'type' => 'select',
+        'class' => 'wc-enhanced-select',
+        'options' => $this->getDiscounts(),
+    ];
+
+    $generalFields['invoice'] = [
+        'title' => __('Invoice', 'woocommerce-gateway-placetopay'),
+        'type' => 'text',
+    ];
+}
+
+return $generalFields;
