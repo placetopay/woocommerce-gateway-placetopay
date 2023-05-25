@@ -12,7 +12,7 @@ abstract class EcuadorCountryConfig extends CountryConfig
         return Country::EC === $countryCode;
     }
 
-    public static function getEndpoints(): array
+    public static function getEndpoints(string $client = ''): array
     {
         return array_merge(parent::getEndpoints(), [
             Environment::PROD => 'https://checkout.placetopay.ec',

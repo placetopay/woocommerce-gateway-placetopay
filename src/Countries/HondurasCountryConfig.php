@@ -12,7 +12,7 @@ abstract class HondurasCountryConfig extends CountryConfig
         return Country::HN === $countryCode;
     }
 
-    public static function getEndpoints(): array
+    public static function getEndpoints(string $client = ''): array
     {
         return array_merge(parent::getEndpoints(), [
             Environment::PROD => 'https://pagoenlinea.bancatlan.hn',

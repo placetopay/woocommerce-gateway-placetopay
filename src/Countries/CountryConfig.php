@@ -11,7 +11,7 @@ abstract class CountryConfig implements CountryConfigInterface
         return true;
     }
 
-    public static function getEndpoints(): array
+    public static function getEndpoints(string $client = ''): array
     {
         return [
             Environment::DEV => 'https://dev.placetopay.com/redirection',

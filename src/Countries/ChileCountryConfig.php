@@ -13,7 +13,7 @@ abstract class ChileCountryConfig extends CountryConfig
         return Country::CL === $countryCode;
     }
 
-    public static function getEndpoints(): array
+    public static function getEndpoints(string $client = ''): array
     {
         return array_merge(parent::getEndpoints(), [
             Environment::PROD => unmaskString('uggcf://purpxbhg.trgarg.py'),

@@ -1577,8 +1577,8 @@ class GatewayMethod extends WC_Payment_Gateway
             if (!$config::resolve($this->getCountry())) {
                 continue;
             }
-
-            return $config::getEndpoints();
+            
+            return $config::getEndpoints($this->getAppName());
         }
 
         return [];

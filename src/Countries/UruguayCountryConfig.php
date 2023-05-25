@@ -12,7 +12,7 @@ abstract class UruguayCountryConfig extends CountryConfig
         return Country::UY === $countryCode;
     }
 
-    public static function getEndpoints(): array
+    public static function getEndpoints(string $client = ''): array
     {
         return array_merge(parent::getEndpoints(), [
             Environment::TEST => 'https://uy-uat-checkout.placetopay.com',

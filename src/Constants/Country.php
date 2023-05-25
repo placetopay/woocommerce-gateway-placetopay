@@ -36,6 +36,7 @@ interface Country
         HondurasCountryConfig::class,
         BelizeCountryConfig::class,
         UruguayCountryConfig::class,
+        ColombiaCountryConfig::class,
         CountryConfig::class
     ];
 
