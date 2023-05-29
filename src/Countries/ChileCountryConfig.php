@@ -24,7 +24,7 @@ abstract class ChileCountryConfig extends CountryConfig
     public static function getClient(): array
     {
         return [
-            unmaskString(Client::GT) => __(unmaskString(Client::GT), 'woocommerce-gateway-placetopay')
+            unmaskString(Client::GNT) => __(unmaskString(Client::GNT), 'woocommerce-gateway-placetopay')
         ];
     }
 }

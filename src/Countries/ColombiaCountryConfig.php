@@ -15,7 +15,7 @@ class ColombiaCountryConfig extends CountryConfig
 
     public static function getEndpoints(string $client = ''): array
     {
-        if ($client === unmaskString(Client::GO)) {
+        if ($client === unmaskString(Client::GOU)) {
             return array_merge(parent::getEndpoints(), [
                 Environment::PROD => unmaskString('uggcf://purpxbhg.tbhcntbf.pbz.pb'),
                 Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.tbhcntbf.pbz.pb'),
@@ -28,8 +28,8 @@ class ColombiaCountryConfig extends CountryConfig
     public static function getClient(): array
     {
         return [
-            'Placetopay' => __('Placetopay', 'woocommerce-gateway-placetopay'),
-            unmaskString('TBH') => __(unmaskString('TBH'), 'woocommerce-gateway-placetopay'),
+            Client::P2P => __(Client::P2P, 'woocommerce-gateway-placetopay'),
+            unmaskString(Client::GOU) => __(unmaskString(Client::GOU), 'woocommerce-gateway-placetopay'),
         ];
     }
 }

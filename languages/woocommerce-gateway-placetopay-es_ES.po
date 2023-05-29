@@ -704,6 +704,12 @@ msgstr "Solo se debe utilizar para medios de pago sin redirección"
 msgid "Payment on %s No: %s"
 msgstr "Pago en %s No: %s"
 
+msgid "Login site"
+msgstr "Identificador"
+
+msgid "Client"
+msgstr "Cliente"
+
 msgid "Discount"
 msgstr "Descuento de ley"
 

@@ -2,6 +2,7 @@
 
 namespace PlacetoPay\PaymentMethod\Countries;
 
+use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class CountryConfig implements CountryConfigInterface
@@ -23,7 +24,7 @@ abstract class CountryConfig implements CountryConfigInterface
     public static function getClient(): array
     {
         return [
-            'Placetopay' => __('Placetopay', 'woocommerce-gateway-placetopay'),
+            Client::P2P => __(Client::P2P, 'woocommerce-gateway-placetopay'),
         ];
     }
 }

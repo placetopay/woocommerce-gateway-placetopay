@@ -204,10 +204,10 @@ class GatewayMethod extends WC_Payment_Gateway
         if (empty($url)) {
             // format: null
             switch ($this->getAppName()) {
-                case unmaskString(Client::GT):
+                case unmaskString(Client::GNT):
                     $image = unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit');
                     break;
-                case unmaskString(Client::GO):
+                case unmaskString(Client::GOU):
                     $image = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/goupagos-com-co/header.svg';
                     break;
                 default:

@@ -67,7 +67,7 @@ $generalFields = [
         'description' => sprintf('Estoy integrado con %s', $this->getAppName()),
     ],
     'login' => [
-        'title' => __('Login', 'woocommerce-gateway-placetopay'),
+        'title' => __('Login site', 'woocommerce-gateway-placetopay'),
         'type' => 'text',
         'description' => sprintf(__('Given to login by %s', 'woocommerce-gateway-placetopay'), $this->getAppName()),
         'desc_tip' => true

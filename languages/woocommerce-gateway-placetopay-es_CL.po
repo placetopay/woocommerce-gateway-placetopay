@@ -710,6 +710,12 @@ msgstr "Pago en %s No: %s"
 msgid "Pay securely through %s"
 msgstr "Pague seguro a través de %s"
 
+msgid "Login site"
+msgstr "Identificador"
+
+msgid "Client"
+msgstr "Cliente"
+
 msgid "Discount"
 msgstr "Descuento de ley"
 
