@@ -1,6 +1,6 @@
 <?php
 
-use PlacetoPay\PaymentMethod\Constants\Discounts;
+use PlacetoPay\PaymentMethod\Constants\Discount;
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly

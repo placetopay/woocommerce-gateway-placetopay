@@ -2,7 +2,7 @@
 
 namespace PlacetoPay\PaymentMethod\Constants;
 
-interface Discounts
+interface Discount
 {
     public const UY_IVA_REFUND = '17934';
 

@@ -15,7 +15,7 @@ use Dnetix\Redirection\PlacetoPay;
 use Exception;
 use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Country;
-use PlacetoPay\PaymentMethod\Constants\Discounts;
+use PlacetoPay\PaymentMethod\Constants\Discount;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
 use PlacetoPay\PaymentMethod\Countries\CountryConfigInterface;
@@ -419,7 +419,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if ($this->country === Country::UY) {
             $discountCode = $this->get_option('discount');
 
-            if ($discountCode != Discounts::UY_NONE) {
+            if ($discountCode != Discount::UY_NONE) {
                 $req['payment']['modifiers'] = [
                     new PaymentModifier([
                         'type' => PaymentModifier::TYPE_FEDERAL_GOVERNMENT,
@@ -1219,12 +1219,12 @@ class GatewayMethod extends WC_Payment_Gateway
     public function getDiscounts()
     {
         return [
-            Discounts::UY_NONE => __(Discounts::UY_NONE, 'woocommerce-gateway-placetopay'),
-            Discounts::UY_IVA_REFUND => __(Discounts::UY_IVA_REFUND, 'woocommerce-gateway-placetopay'),
-            Discounts::UY_IMESI_REFUND => __(Discounts::UY_IMESI_REFUND, 'woocommerce-gateway-placetopay'),
-            Discounts::UY_FINANCIAL_INCLUSION => __(Discounts::UY_FINANCIAL_INCLUSION, 'woocommerce-gateway-placetopay'),
-            Discounts::UY_AFAM_REFUND => __(Discounts::UY_AFAM_REFUND, 'woocommerce-gateway-placetopay'),
-            Discounts::UY_TAX_REFUND => __(Discounts::UY_TAX_REFUND, 'woocommerce-gateway-placetopay'),
+            Discount::UY_NONE => __(Discount::UY_NONE, 'woocommerce-gateway-placetopay'),
+            Discount::UY_IVA_REFUND => __(Discount::UY_IVA_REFUND, 'woocommerce-gateway-placetopay'),
+            Discount::UY_IMESI_REFUND => __(Discount::UY_IMESI_REFUND, 'woocommerce-gateway-placetopay'),
+            Discount::UY_FINANCIAL_INCLUSION => __(Discount::UY_FINANCIAL_INCLUSION, 'woocommerce-gateway-placetopay'),
+            Discount::UY_AFAM_REFUND => __(Discount::UY_AFAM_REFUND, 'woocommerce-gateway-placetopay'),
+            Discount::UY_TAX_REFUND => __(Discount::UY_TAX_REFUND, 'woocommerce-gateway-placetopay'),
         ];
     }
 
