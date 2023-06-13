@@ -13,19 +13,19 @@ class ColombiaCountryConfig extends CountryConfig
         return Country::CO === $countryCode;
     }
 
-    public static function getEndpoints(string $client = ''): array
+    public static function getEndpoints(string $client): array
     {
         if ($client === unmaskString(Client::GOU)) {
-            return array_merge(parent::getEndpoints(), [
+            return array_merge(parent::getEndpoints($client), [
                 Environment::PROD => unmaskString('uggcf://purpxbhg.tbhcntbf.pbz.pb'),
                 Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.tbhcntbf.pbz.pb'),
             ]);
         }
 
-        return parent::getEndpoints();
+        return parent::getEndpoints($client);
     }
 
-    public static function getClient(): array
+    public static function getClients(): array
     {
         return [
             Client::P2P => __(Client::P2P, 'woocommerce-gateway-placetopay'),

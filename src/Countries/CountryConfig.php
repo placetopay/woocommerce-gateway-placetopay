@@ -12,7 +12,7 @@ abstract class CountryConfig implements CountryConfigInterface
         return true;
     }
 
-    public static function getEndpoints(string $client = ''): array
+    public static function getEndpoints(string $client): array
     {
         return [
             Environment::DEV => 'https://dev.placetopay.com/redirection',
@@ -21,7 +21,7 @@ abstract class CountryConfig implements CountryConfigInterface
         ];
     }
 
-    public static function getClient(): array
+    public static function getClients(): array
     {
         return [
             Client::P2P => __(Client::P2P, 'woocommerce-gateway-placetopay'),
