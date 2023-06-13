@@ -132,7 +132,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->expiration_time_minutes = $this->settings['expiration_time_minutes'];
         $this->fill_buyer_information = $this->get_option('fill_buyer_information');
         $this->enviroment_mode = $this->get_option('enviroment_mode');
-        $this->description = sprintf(__('Pay securely through %s', 'woocommerce-gateway-placetopay'), $this->getClient());
+        $this->description = sprintf(__('Pay securely through %s.', 'woocommerce-gateway-placetopay'), $this->getClient());
         $this->login = $this->get_option('login');
         $this->tran_key = $this->get_option('tran_key');
         $this->redirect_page_id = $this->get_option('redirect_page_id');

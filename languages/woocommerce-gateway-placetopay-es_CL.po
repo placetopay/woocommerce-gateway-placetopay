@@ -379,13 +379,6 @@ msgstr "Esto controla el nombre del método de pago que el usuario ve al pagar."
 msgid "Description:"
 msgstr "Descripción:"
 
-#: src/config/form-fields.php:63
-msgid "Pay securely through %s."
-msgstr ""
-"Paga seguro todo lo que necesitas con %s utilizando tus tarjetas de "
-"crédito, débito y prepago, de todos los emisores nacionales e "
-"internacionales."
-
 #: src/config/form-fields.php:64
 msgid "This controls the description which the user sees during checkout."
 msgstr "Esto controla la descripción que el usuario ve al pagar."
@@ -707,8 +700,8 @@ msgstr "Solo se debe utilizar para medios de pago sin redirección"
 msgid "Payment on %s No: %s"
 msgstr "Pago en %s No: %s"
 
-msgid "Pay securely through %s"
-msgstr "Pague seguro a través de %s"
+msgid "Pay securely through %s."
+msgstr "Pague seguro a través de %s."
 
 msgid "I am integrated with %s"
 msgstr "Estoy integrado con %s"

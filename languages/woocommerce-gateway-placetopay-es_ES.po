@@ -719,9 +719,6 @@ msgstr "Descuento de ley"
 msgid "Invoice"
 msgstr "Factura"
 
-msgid "Pay securely through %s"
-msgstr "Pague seguro a través de %s"
-
 msgid "17934"
 msgstr "17934 - Servicios gastronomicos"
 
