@@ -246,14 +246,6 @@ msgstr "Hora(s)"
 msgid "Day(s)"
 msgstr "Día(s)"
 
-#: src/GatewayMethod.php:1314
-msgid "Week(s)"
-msgstr "Semana(s)"
-
-#: src/GatewayMethod.php:1321
-msgid "Month(s)"
-msgstr "Mes"
-
 #: src/GatewayMethod.php:1394
 msgid ""
 "<strong>Pending order</strong>, the payment could not be continued because a "
@@ -382,6 +374,9 @@ msgstr "Descripción:"
 #: src/config/form-fields.php:63
 msgid "Pay securely through %s."
 msgstr "Pague seguro a través de %s."
+
+msgid "I am integrated with %s"
+msgstr "Estoy integrado con %s"
 
 #: src/config/form-fields.php:64
 msgid "This controls the description which the user sees during checkout."
@@ -703,3 +698,33 @@ msgstr "Solo se debe utilizar para medios de pago sin redirección"
 
 msgid "Payment on %s No: %s"
 msgstr "Pago en %s No: %s"
+
+msgid "Login site"
+msgstr "Identificador"
+
+msgid "Client"
+msgstr "Cliente"
+
+msgid "Discount"
+msgstr "Descuento de ley"
+
+msgid "Invoice"
+msgstr "Factura"
+
+msgid "17934"
+msgstr "17934 - Servicios gastronomicos"
+
+msgid "18083"
+msgstr "18083 - IMESI Brasil-Argentina"
+
+msgid "19210"
+msgstr "19210 - Inclusión Financiera"
+
+msgid "18910"
+msgstr "18910 - Asignaciones Familiares"
+
+msgid "18999"
+msgstr "18999 - Reintegro Inmobiliarias"
+
+msgid "0"
+msgstr "No devuelve impuestos"

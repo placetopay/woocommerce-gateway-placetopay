@@ -4,6 +4,7 @@ namespace PlacetoPay\PaymentMethod\Constants;
 
 use PlacetoPay\PaymentMethod\Countries\BelizeCountryConfig;
 use PlacetoPay\PaymentMethod\Countries\ChileCountryConfig;
+use PlacetoPay\PaymentMethod\Countries\ColombiaCountryConfig;
 use PlacetoPay\PaymentMethod\Countries\CountryConfig;
 use PlacetoPay\PaymentMethod\Countries\EcuadorCountryConfig;
 use PlacetoPay\PaymentMethod\Countries\HondurasCountryConfig;
@@ -35,6 +36,13 @@ interface Country
         HondurasCountryConfig::class,
         BelizeCountryConfig::class,
         UruguayCountryConfig::class,
+        ColombiaCountryConfig::class,
+        CountryConfig::class
+    ];
+
+    public const COUNTRIES_CLIENT = [
+        ChileCountryConfig::class,
+        ColombiaCountryConfig::class,
         CountryConfig::class
     ];
 }

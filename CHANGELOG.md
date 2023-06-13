@@ -2,6 +2,10 @@
 
 [Unreleased]
 
+### Added
+
+- Add branding by client country.
+
 ### [2.21.1] - 2023-03-30
 
 ### Added

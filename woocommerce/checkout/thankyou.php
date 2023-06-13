@@ -82,7 +82,7 @@ $gateway = new GatewayMethod();
                         __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in %s</a>',
                             'woocommerce-gateway-placetopay'),
                         urldecode($processUrl),
-                        $gateway->getAppName(),
+                        $gateway->getClient(),
                     ); ?>
 
                 <?php } ?>
