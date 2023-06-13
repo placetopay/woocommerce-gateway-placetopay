@@ -80,7 +80,6 @@ class GatewayMethod extends WC_Payment_Gateway
     private $expiration_time_minutes;
     private $endpoint;
     private $currency;
-    private $country;
     private $enviroment_mode;
     private $fill_buyer_information;
     private $login;
@@ -1540,7 +1539,7 @@ class GatewayMethod extends WC_Payment_Gateway
             if (!$config::resolve($this->getCountry())) {
                 continue;
             }
-            
+
             return $config::getEndpoints($this->getClient());
         }
 
