@@ -10,6 +10,7 @@ class ResolveTranslations
         'es_CL',
         'es_ES',
         'es_PR',
+        'es_UY'
     ];
 
     function __construct()

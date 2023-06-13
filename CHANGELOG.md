@@ -2,10 +2,19 @@
 
 [Unreleased]
 
+### [2.22.0] - 2023-06-14
+
+### Added
+- Add branding by client country.
+- Add modifiers support: UY.
+
+### Removed
+- Remove time expiration for months and weeks.
+- Remove customization for title and description.
+
 ### [2.21.1] - 2023-03-30
 
 ### Added
-
 - Add UY country as option in country list.
 
 ### [2.21.0] - 2023-03-08
