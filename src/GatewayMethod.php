@@ -57,7 +57,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     const NOTIFICATION_RETURN_PAGE = 'placetopay_notification_return_page';
 
-    const EXPIRATION_TIME_MINUTES_LIMIT = 40320;
+    const EXPIRATION_TIME_MINUTES_LIMIT = 8640;
 
 
     /**
@@ -362,7 +362,6 @@ class GatewayMethod extends WC_Payment_Gateway
             ];
         }
 
-        $ref = $order->get_order_key() . '-' . time();
         $redirectUrl = $this->getRedirectUrl($order);
 
         //For wooCoomerce 2.0
@@ -1264,23 +1263,9 @@ class GatewayMethod extends WC_Payment_Gateway
             } elseif ($minutes >= 60 && $minutes < 1440) {
                 $options[$minutes] = sprintf($format, $minutes / 60, __('Hour(s)', 'woocommerce-gateway-placetopay'));
                 $minutes += 60;
-            } elseif ($minutes >= 1440 && $minutes < 10080) {
+            } else {
                 $options[$minutes] = sprintf($format, $minutes / 1440, __('Day(s)', 'woocommerce-gateway-placetopay'));
                 $minutes += 1440;
-            } elseif ($minutes >= 10080 && $minutes < 40320) {
-                $options[$minutes] = sprintf(
-                    $format,
-                    $minutes / 10080,
-                    __('Week(s)', 'woocommerce-gateway-placetopay')
-                );
-                $minutes += 10080;
-            } else {
-                $options[$minutes] = sprintf(
-                    $format,
-                    $minutes / 40320,
-                    __('Month(s)', 'woocommerce-gateway-placetopay')
-                );
-                $minutes += 40320;
             }
         }
 

@@ -246,14 +246,6 @@ msgstr "Hora(s)"
 msgid "Day(s)"
 msgstr "Día(s)"
 
-#: src/GatewayMethod.php:1314
-msgid "Week(s)"
-msgstr "Semana(s)"
-
-#: src/GatewayMethod.php:1321
-msgid "Month(s)"
-msgstr "Mes"
-
 #: src/GatewayMethod.php:1394
 msgid ""
 "<strong>Pending order</strong>, the payment could not be continued because a "
