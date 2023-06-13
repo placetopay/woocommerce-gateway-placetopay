@@ -6,5 +6,5 @@ interface Client
 {
     public const GNT = 'Trgarg';
     public const GOU = 'TBH';
-    public const P2P = 'Placetopay';
+    public const PTP = 'Cynprgbcnl';
 }

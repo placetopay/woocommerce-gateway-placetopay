@@ -24,7 +24,7 @@ abstract class CountryConfig implements CountryConfigInterface
     public static function getClients(): array
     {
         return [
-            Client::P2P => __(Client::P2P, 'woocommerce-gateway-placetopay'),
+            unmaskString(Client::PTP) => __(unmaskString(Client::PTP), 'woocommerce-gateway-placetopay'),
         ];
     }
 }

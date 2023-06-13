@@ -28,7 +28,7 @@ class ColombiaCountryConfig extends CountryConfig
     public static function getClients(): array
     {
         return [
-            Client::P2P => __(Client::P2P, 'woocommerce-gateway-placetopay'),
+            unmaskString(Client::PTP) => __(unmaskString(Client::PTP), 'woocommerce-gateway-placetopay'),
             unmaskString(Client::GOU) => __(unmaskString(Client::GOU), 'woocommerce-gateway-placetopay'),
         ];
     }
