@@ -48,7 +48,7 @@ abstract class CountryConfig implements CountryConfigInterface
 
     public static function getFields(GatewayMethod $gatewayMethod): array
     {
-        return [
+        $fields = [
             'enabled' => [
                 'title' => __('Enable/Disable', 'woocommerce-gateway-placetopay'),
                 'type' => 'checkbox',
@@ -134,20 +134,6 @@ abstract class CountryConfig implements CountryConfigInterface
                 'description' => __('URL of success page', 'woocommerce-gateway-placetopay'),
                 'desc_tip' => true
             ],
-            'endpoint' => [
-                'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay'),
-                'type' => 'text',
-                'class' => 'readonly',
-                'description' => sprintf(__('Url of notification where %s will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
-                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
-            ],
-            'schedule_task_path' => [
-                'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
-                'type' => 'text',
-                'class' => 'readonly',
-                'default' => $gatewayMethod->getScheduleTaskPath(),
-                'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
-            ],
             'payment_button_image' => [
                 'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
@@ -200,5 +186,25 @@ abstract class CountryConfig implements CountryConfigInterface
                     'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
             ],
         ];
+
+        if (WP_DEBUG) {
+            $fields['endpoint'] = [
+                'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay'),
+                'type' => 'text',
+                'class' => 'readonly',
+                'description' => sprintf(__('Url of notification where %s will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
+                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
+            ];
+
+            $fields['schedule_task_path'] = [
+                'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
+                'type' => 'text',
+                'class' => 'readonly',
+                'default' => $gatewayMethod->getScheduleTaskPath(),
+                'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
+            ];
+        }
+
+        return $fields;
     }
 }
