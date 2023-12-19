@@ -25,9 +25,9 @@ abstract class CountryConfig implements CountryConfigInterface
     public static function getConfiguration(GatewayMethod $gatewayMethod): array
     {
         return [
-            'allow_to_pay_with_pending_orders' => $gatewayMethod->get_option('allow_to_pay_with_pending_orders'),
+            'allow_to_pay_with_pending_orders' => $gatewayMethod->get_option('allow_to_pay_with_pending_orders') === "yes",
             'allow_partial_payments' => $gatewayMethod->get_option('allow_partial_payments') === "yes",
-            'fill_buyer_information' => $gatewayMethod->get_option('fill_buyer_information'),
+            'fill_buyer_information' => $gatewayMethod->get_option('fill_buyer_information') === "yes",
             'minimum_amount' => $gatewayMethod->get_option('minimum_amount'),
             'maximum_amount' => $gatewayMethod->get_option('maximum_amount'),
             'expiration_time_minutes' => $gatewayMethod->get_option('expiration_time_minutes'),

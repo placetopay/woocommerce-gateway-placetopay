@@ -373,7 +373,7 @@ class GatewayMethod extends WC_Payment_Gateway
             'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
             'returnUrl' => $this->getPaymentReturnUrl($order),
-            'noBuyerFill' => $this->fill_buyer_information !== 'yes',
+            'noBuyerFill' => !$this->fill_buyer_information,
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'skipResult' => $this->skip_result,
@@ -1349,7 +1349,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $isValid = true;
 
-        if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
+        if (!$this->allow_to_pay_with_pending_orders && $this->getLastPendingOrder() !== null) {
             wc_add_notice(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
                 'woocommerce-gateway-placetopay'

@@ -32,9 +32,9 @@ abstract class ChileCountryConfig extends CountryConfig
     public static function getConfiguration(GatewayMethod $gatewayMethod): array
     {
         return [
-            'allow_to_pay_with_pending_orders' => 'yes',
+            'allow_to_pay_with_pending_orders' => true,
             'allow_partial_payments' => false,
-            'fill_buyer_information' => 'yes',
+            'fill_buyer_information' => true,
             'minimum_amount' => '',
             'maximum_amount' => '',
             'expiration_time_minutes' => 10,
