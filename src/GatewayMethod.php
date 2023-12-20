@@ -28,7 +28,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.21.1';
+    const VERSION = '2.23.0';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -78,15 +78,12 @@ class GatewayMethod extends WC_Payment_Gateway
     private $log;
 
     private $expiration_time_minutes;
-    private $endpoint;
     private $currency;
     private $enviroment_mode;
     private $fill_buyer_information;
     private $login;
     private $redirect_page_id;
-    private $form_method;
     private $testmode;
-    private $merchant_phone;
     private $merchant_email;
     private $uri_service;
     private $taxes;
@@ -128,35 +125,34 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->settings['endpoint'] = home_url('/wp-json/') . self::getPaymentEndpoint();
 
         $this->endpoint = $this->settings['endpoint'];
-        $this->expiration_time_minutes = $this->settings['expiration_time_minutes'];
-        $this->fill_buyer_information = $this->get_option('fill_buyer_information');
+
         $this->enviroment_mode = $this->get_option('enviroment_mode');
         $this->description = sprintf(__('Pay securely through %s.', 'woocommerce-gateway-placetopay'), $this->getClient());
         $this->login = $this->get_option('login');
         $this->tran_key = $this->get_option('tran_key');
         $this->redirect_page_id = $this->get_option('redirect_page_id');
         $this->form_method = $this->get_option('form_method');
-        $this->allow_to_pay_with_pending_orders = $this->get_option('allow_to_pay_with_pending_orders');
-        $this->allow_partial_payments = $this->get_option('allow_partial_payments') === "yes";
+
         $this->use_lightbox = $this->get_option('use_lightbox') === 'yes';
         $this->skip_result = $this->get_option('skip_result') === "yes";
         $this->custom_connection_url = $this->get_option('custom_connection_url');
         $this->payment_button_image = $this->get_option('payment_button_image');
+        $this->merchant_email = get_option('woocommerce_email_from_address');
         $this->icon = $this->getImageUrl();
-
-        $this->taxes = [
-            'taxes_others' => $this->get_option('taxes_others', []),
-            'taxes_ico' => $this->get_option('taxes_ico', []),
-            'taxes_ice' => $this->get_option('taxes_ice', []),
-        ];
-
-        $this->minimum_amount = $this->get_option('minimum_amount');
-        $this->maximum_amount = $this->get_option('maximum_amount');
-        $this->merchant_phone = $this->get_option('merchant_phone');
-        $this->merchant_email = $this->get_option('merchant_email');
-
         $this->currency = get_woocommerce_currency();
         $this->currency = $this->currency ?? 'COP';
+
+        foreach (Country::COUNTRIES_CONFIG as $config) {
+            if (!$config::resolve($this->getCountry())) {
+                continue;
+            }
+
+            $configurations = $config::getConfiguration($this);
+            foreach ($configurations as $key => $value) {
+                $this->$key = $value;
+            }
+            break;
+        }
 
         $this->configureEnvironment();
     }
@@ -377,7 +373,7 @@ class GatewayMethod extends WC_Payment_Gateway
             'locale' => get_locale(),
             'expiration' => date('c', strtotime($timeExpiration)),
             'returnUrl' => $this->getPaymentReturnUrl($order),
-            'noBuyerFill' => $this->fill_buyer_information !== 'yes',
+            'noBuyerFill' => !$this->fill_buyer_information,
             'ipAddress' => (new RemoteAddress())->getIpAddress(),
             'userAgent' => $_SERVER['HTTP_USER_AGENT'],
             'skipResult' => $this->skip_result,
@@ -978,11 +974,10 @@ class GatewayMethod extends WC_Payment_Gateway
             __(
                 'At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
                 please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
-                state of your operation you may contact our customer service line at %s or send your concerns to the email %s and ask for the status of the transaction',
+                state of your operation you may contact our customer service line or send your concerns to the email %s and ask for the status of the transaction',
                 'woocommerce-gateway-placetopay'
             ),
             (string)$order->get_id(),
-            $this->merchant_phone,
             $this->merchant_email
         );
 
@@ -1354,7 +1349,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $isValid = true;
 
-        if ($this->allow_to_pay_with_pending_orders === 'no' && $this->getLastPendingOrder() !== null) {
+        if (!$this->allow_to_pay_with_pending_orders && $this->getLastPendingOrder() !== null) {
             wc_add_notice(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
                 'woocommerce-gateway-placetopay'
