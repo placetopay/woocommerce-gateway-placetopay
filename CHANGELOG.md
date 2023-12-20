@@ -2,6 +2,11 @@
 
 [Unreleased]
 
+### [2.23.0] - 2023-12-20
+
+### Added
+- Allow setup default configuration (values and fields) by tenant
+
 ### [2.22.0] - 2023-06-14
 
 ### Added
