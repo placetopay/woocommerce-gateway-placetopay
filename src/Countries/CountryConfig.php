@@ -31,6 +31,7 @@ abstract class CountryConfig implements CountryConfigInterface
             'minimum_amount' => $gatewayMethod->get_option('minimum_amount'),
             'maximum_amount' => $gatewayMethod->get_option('maximum_amount'),
             'expiration_time_minutes' => $gatewayMethod->get_option('expiration_time_minutes'),
+            'payment_button_image' => $gatewayMethod->get_option('payment_button_image') ?? $gatewayMethod->getImageUrl(),
             'taxes' => [
                 'taxes_others' => $gatewayMethod->get_option('taxes_others', []),
                 'taxes_ico' => $gatewayMethod->get_option('taxes_ico', []),
@@ -191,7 +192,9 @@ abstract class CountryConfig implements CountryConfigInterface
             $fields['endpoint'] = [
                 'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
-                'class' => 'readonly',
+                'custom_attributes' => [
+                    'readonly' => 'readonly'
+                ],
                 'description' => sprintf(__('Url of notification where %s will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
                     'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
             ];
@@ -199,7 +202,9 @@ abstract class CountryConfig implements CountryConfigInterface
             $fields['schedule_task_path'] = [
                 'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
-                'class' => 'readonly',
+                'custom_attributes' => [
+                    'readonly' => 'readonly'
+                ],
                 'default' => $gatewayMethod->getScheduleTaskPath(),
                 'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
             ];
