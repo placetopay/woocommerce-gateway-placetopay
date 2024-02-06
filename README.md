@@ -144,3 +144,7 @@ make compile PLUGIN_VERSION=-X.Y.Z
 You should add/chage translations in .po files from *languages* directory
 after, you need covert this in .mo files to replace current files (languages(*.mo)
 > If don't convertion, cannot see any changes
+
+## WP_DEBUG
+
+To be able to see the location of the probe and the notification url, it is necessary to set wp_debug to true, this variable is found in wp_config.php
