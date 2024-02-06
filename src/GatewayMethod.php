@@ -172,7 +172,7 @@ class GatewayMethod extends WC_Payment_Gateway
         add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
         add_action('placetopay_init', [$this, 'successfulRequest']);
 
-        if ($this->wooCommerceVersionCompare('2.0.0')) {
+        if (self::wooCommerceVersionCompare('2.0.0')) {
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [&$this, 'process_admin_options']);
 
             return;
@@ -329,11 +329,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public static function validateVersionSupportBlocks(): bool
     {
-        if ((float)WOOCOMMERCE_VERSION >= 8.3) {
-            return true;
-        }
-
-        return false;
+        return self::wooCommerceVersionCompare(8.3) &&
+            class_exists('\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry');
     }
 
     /**
@@ -429,12 +426,6 @@ class GatewayMethod extends WC_Payment_Gateway
                 'redirect' => urldecode($processUrl)
             ];
         }
-
-        $redirectUrl = $this->getRedirectUrl($order);
-
-        //For wooCoomerce 2.0
-        $redirectUrl = add_query_arg('wc-api', $this->getClassName(), $redirectUrl);
-        $redirectUrl = add_query_arg('order_id', $orderId, $redirectUrl);
 
         $timeExpiration = $this->expiration_time_minutes
             ? $this->expiration_time_minutes . ' minutes'
@@ -1494,7 +1485,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param string $operator
      * @return bool
      */
-    private function wooCommerceVersionCompare($version, $operator = '>=')
+    public static function wooCommerceVersionCompare($version, $operator = '>=')
     {
         return defined('WOOCOMMERCE_VERSION') && version_compare(
                 WOOCOMMERCE_VERSION,
@@ -1512,7 +1503,7 @@ class GatewayMethod extends WC_Payment_Gateway
             : 'no';
 
         if ($this->testmode === 'yes') {
-            $this->log = $this->wooCommerceVersionCompare('2.1')
+            $this->log = self::wooCommerceVersionCompare('2.1')
                 ? new \WC_Logger()
                 : WC()->logger();
         }
@@ -1635,7 +1626,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $code = $this->getWebCheckoutScript($order);
 
-        if ($this->wooCommerceVersionCompare('2.1')) {
+        if (self::wooCommerceVersionCompare('2.1')) {
             wc_enqueue_js($code);
         } else {
             WC()->add_inline_js($code);
@@ -1695,11 +1686,8 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $redirectUrl = $this->getRedirectUrl($order);
 
-        $redirectUrl = add_query_arg([
-            'wc-api' => $this->getClassName(),
+        return add_query_arg([
             'order_id' => $order->get_id(),
         ], $redirectUrl);
-
-        return $redirectUrl . '&key=' . $order->get_order_key() . '-' . time();
     }
 }
