@@ -2,6 +2,8 @@
 
 namespace PlacetoPay\PaymentMethod;
 
+use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
+
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
@@ -58,6 +60,23 @@ class WC_Gateway_PlacetoPay
         add_action('woocommerce_checkout_process', [new GatewayMethod(), 'checkoutFieldProcess']);
 
         add_action(GatewayMethod::NOTIFICATION_RETURN_PAGE, [$this, 'notificationReturnPage']);
+
+        if (GatewayMethod::validateVersionSupportBlocks() && class_exists('\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry')) {
+            add_action('plugins_loaded', [$this, 'woocommerce_myplugin'], 0);
+            add_action('woocommerce_blocks_loaded', [$this, 'register_gateway_method_adapter']);
+            add_action('before_woocommerce_init', [$this, 'declare_cart_checkout_blocks_compatibility']);
+            add_action('wp_enqueue_scripts', [$this, 'placetopay_enqueue_checkout_script']);
+            add_action(
+                'woocommerce_blocks_payment_method_type_registration',
+                function( PaymentMethodRegistry $payment_method_registry ) {
+                    $payment_method_registry->register( new GatewayMethodBlocks() );
+                });
+
+            add_filter('woocommerce_rest_checkout_request', function ($request_data) {
+                error_log(print_r($request_data, true));
+                return $request_data;
+            });
+        }
 
         // Register endpoint for placetopay
         add_action('rest_api_init', function () {
@@ -196,6 +215,33 @@ class WC_Gateway_PlacetoPay
             $order = new \WC_Order($orderId);
 
             wc_get_template('checkout/thankyou.php', array('order' => $order, 'name'));
+        }
+    }
+
+    function woocommerce_myplugin(){
+        if (!class_exists('WC_Payment_Gateway')){
+            return;
+        }
+        include(plugin_dir_path(__FILE__) . 'GatewayMethod.php.php');
+    }
+
+    public  function declare_cart_checkout_blocks_compatibility() {
+        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+        }
+    }
+
+    public  function register_gateway_method_adapter() {
+        if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
+            return;
+        }
+
+        require_once plugin_dir_path(__FILE__) . 'GatewayMethodBlocks.php';
+    }
+
+    public  function placetopay_enqueue_checkout_script() {
+        if (is_checkout() && !is_wc_endpoint_url()) {
+            wp_enqueue_script('checkout-js', plugin_dir_path(__FILE__) . 'block/checkout.js', array('wc-checkout'), '1.0.0', true);
         }
     }
 }
