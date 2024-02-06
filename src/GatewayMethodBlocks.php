@@ -4,21 +4,19 @@ namespace PlacetoPay\PaymentMethod;
 
 use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
 
-require_once plugin_dir_path(__FILE__) . 'GatewayMethod.php';
-
 class GatewayMethodBlocks extends AbstractPaymentMethodType
 {
-    public function initialize()
+    public function initialize(): void
     {
         $this->gateway = new GatewayMethod();
     }
 
-    public function is_active()
+    public function is_active(): bool
     {
         return $this->gateway->is_available();
     }
 
-    public function get_payment_method_data()
+    public function get_payment_method_data(): array
     {
         return [
             'title' => $this->gateway->title,
@@ -26,7 +24,8 @@ class GatewayMethodBlocks extends AbstractPaymentMethodType
          ];
     }
 
-    public function get_payment_method_script_handles() {
+    public function get_payment_method_script_handles(): array
+    {
         wp_register_script(
             'my_custom_gateway-blocks-integration',
             plugin_dir_url(__FILE__) . '../block/checkout.js',
