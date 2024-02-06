@@ -37,6 +37,7 @@ abstract class ChileCountryConfig extends CountryConfig
             'fill_buyer_information' => true,
             'minimum_amount' => '',
             'maximum_amount' => '',
+            'payment_button_image' => unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit'),
             'expiration_time_minutes' => 10,
             'taxes' => [
                 'taxes_others' => '',
@@ -59,6 +60,17 @@ abstract class ChileCountryConfig extends CountryConfig
         unset($fields['taxes_others']);
         unset($fields['taxes_ico']);
         unset($fields['taxes_ice']);
+
+        $fields['payment_button_image'] = [
+            'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
+            'type' => 'text',
+            'custom_attributes' => [
+                'readonly' => 'readonly'
+            ],
+            'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder',
+                'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+            'default' => unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit'),
+        ];
 
         return $fields;
     }
