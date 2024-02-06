@@ -2,6 +2,8 @@
 
 [Unreleased]
 
+### [2.23.1] - 2024-02-06
+
 ### Added
 - Add fields with default configuration by tenant
 
