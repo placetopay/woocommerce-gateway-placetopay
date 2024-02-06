@@ -5,6 +5,11 @@
 ### Added
 - Support payments by blocks
 
+### [2.23.1] - 2024-02-06
+
+### Added
+- Add fields with default configuration by tenant
+
 ### [2.23.0] - 2023-12-20
 
 ### Added
