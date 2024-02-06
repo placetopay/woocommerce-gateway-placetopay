@@ -28,7 +28,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.23.0';
+    const VERSION = '2.23.1';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -136,7 +136,6 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->use_lightbox = $this->get_option('use_lightbox') === 'yes';
         $this->skip_result = $this->get_option('skip_result') === "yes";
         $this->custom_connection_url = $this->get_option('custom_connection_url');
-        $this->payment_button_image = $this->get_option('payment_button_image');
         $this->merchant_email = get_option('woocommerce_email_from_address');
         $this->icon = $this->getImageUrl();
         $this->currency = get_woocommerce_currency();
@@ -191,7 +190,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->init_settings();
     }
 
-    private function getImageUrl(): ?string
+    public function getImageUrl(): ?string
     {
         $url = $this->payment_button_image;
 
