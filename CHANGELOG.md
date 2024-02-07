@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+### Added
+- Support payments by blocks
+
 ### [2.23.1] - 2024-02-06
 
 ### Added

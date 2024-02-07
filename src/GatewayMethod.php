@@ -19,6 +19,7 @@ use PlacetoPay\PaymentMethod\Constants\Discount;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
 use PlacetoPay\PaymentMethod\Countries\CountryConfigInterface;
+use stdClass;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
@@ -171,7 +172,7 @@ class GatewayMethod extends WC_Payment_Gateway
         add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
         add_action('placetopay_init', [$this, 'successfulRequest']);
 
-        if ($this->wooCommerceVersionCompare('2.0.0')) {
+        if (self::wooCommerceVersionCompare('2.0.0')) {
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [&$this, 'process_admin_options']);
 
             return;
@@ -326,12 +327,78 @@ class GatewayMethod extends WC_Payment_Gateway
         ];
     }
 
+    public static function validateVersionSupportBlocks(): bool
+    {
+        return self::wooCommerceVersionCompare(8.3) &&
+            class_exists('\Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry');
+    }
+
     /**
      * Before process submit, check fields
      */
     public function checkoutFieldProcess()
     {
         $this->validateFields($_POST);
+    }
+
+    /**
+     * @return array|stdClass|WC_Order[]
+     */
+    private function getPendingOrders($order)
+    {
+        $userId = $order->get_customer_id();
+
+        if (!$userId) {
+            return [];
+        }
+
+        return wc_get_orders([
+            'customer_id' => $userId,
+            'status' => ['wc-pending', 'wc-on-hold'],
+            'limit' => 1,
+        ]);
+    }
+
+    private function validateBlocksFields($order)
+    {
+        if (!$this->allow_to_pay_with_pending_orders && !empty($this->getPendingOrders($order))) {
+            throw new Exception(__(
+                '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
+                'woocommerce-gateway-placetopay'
+            ));
+        }
+
+        if (!preg_match(Rules::PATTERN_NAME, trim($order->get_billing_first_name()))) {
+            throw new Exception(__('<strong>First Name</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+        }
+
+        if (!preg_match(Rules::PATTERN_NAME, trim($order->get_billing_last_name()))) {
+            throw new Exception(__('<strong>Last Name</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+        }
+
+        if (!preg_match(Rules::PATTERN_PHONE, trim($order->get_billing_phone()))) {
+            throw new Exception(__('<strong>Phone</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+        }
+
+        if (!preg_match(Rules::PATTERN_EMAIL, trim($order->get_billing_email()))) {
+            throw new Exception(__('<strong>Email</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+        }
+
+        if ($this->minimum_amount != null && $order->get_total() < $this->minimum_amount) {
+            throw new Exception(sprintf(__(
+                '<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.'
+                , 'woocommerce-gateway-placetopay'), number_format($this->minimum_amount, 2, '.', ',')
+            ));
+        }
+
+        if ($this->maximum_amount != null && $order->get_total() > $this->maximum_amount) {
+            throw new Exception(sprintf(__(
+                '<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.'
+                , 'woocommerce-gateway-placetopay'), number_format($this->maximum_amount, 2, '.', ',')
+            ));
+        }
+
+        return true;
     }
 
     /**
@@ -347,6 +414,10 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $paymentStatus = get_post_meta($orderId, self::META_STATUS, true);
 
+        if (self::validateVersionSupportBlocks()) {
+            $this->validateBlocksFields($order);
+        }
+
         if ($paymentStatus && $paymentStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
             $processUrl = get_post_meta($order->get_id(), GatewayMethod::META_PROCESS_URL, true);
 
@@ -355,12 +426,6 @@ class GatewayMethod extends WC_Payment_Gateway
                 'redirect' => urldecode($processUrl)
             ];
         }
-
-        $redirectUrl = $this->getRedirectUrl($order);
-
-        //For wooCoomerce 2.0
-        $redirectUrl = add_query_arg('wc-api', $this->getClassName(), $redirectUrl);
-        $redirectUrl = add_query_arg('order_id', $orderId, $redirectUrl);
 
         $timeExpiration = $this->expiration_time_minutes
             ? $this->expiration_time_minutes . ' minutes'
@@ -1420,7 +1485,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param string $operator
      * @return bool
      */
-    private function wooCommerceVersionCompare($version, $operator = '>=')
+    public static function wooCommerceVersionCompare($version, $operator = '>=')
     {
         return defined('WOOCOMMERCE_VERSION') && version_compare(
                 WOOCOMMERCE_VERSION,
@@ -1438,7 +1503,7 @@ class GatewayMethod extends WC_Payment_Gateway
             : 'no';
 
         if ($this->testmode === 'yes') {
-            $this->log = $this->wooCommerceVersionCompare('2.1')
+            $this->log = self::wooCommerceVersionCompare('2.1')
                 ? new \WC_Logger()
                 : WC()->logger();
         }
@@ -1561,7 +1626,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $code = $this->getWebCheckoutScript($order);
 
-        if ($this->wooCommerceVersionCompare('2.1')) {
+        if (self::wooCommerceVersionCompare('2.1')) {
             wc_enqueue_js($code);
         } else {
             WC()->add_inline_js($code);
@@ -1621,11 +1686,9 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $redirectUrl = $this->getRedirectUrl($order);
 
-        $redirectUrl = add_query_arg([
+        return add_query_arg([
             'wc-api' => $this->getClassName(),
             'order_id' => $order->get_id(),
         ], $redirectUrl);
-
-        return $redirectUrl . '&key=' . $order->get_order_key() . '-' . time();
     }
 }
