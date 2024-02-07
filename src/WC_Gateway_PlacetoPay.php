@@ -213,7 +213,7 @@ class WC_Gateway_PlacetoPay
         }
     }
 
-    function blocks_woocommerce_my_gateway(): void
+    public function blocks_woocommerce_my_gateway(): void
     {
         if (!class_exists('WC_Payment_Gateway')){
             return;
@@ -221,14 +221,14 @@ class WC_Gateway_PlacetoPay
         include(plugin_dir_path(__FILE__) . 'GatewayMethod.php.php');
     }
 
-    public  function blocks_declare_cart_checkout_blocks_compatibility(): void
+    public function blocks_declare_cart_checkout_blocks_compatibility(): void
     {
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
             \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
         }
     }
 
-    public  function blocks_register_gateway_method_adapter(): void
+    public function blocks_register_gateway_method_adapter(): void
     {
         if (!class_exists('Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType')) {
             return;
@@ -237,7 +237,7 @@ class WC_Gateway_PlacetoPay
         require_once plugin_dir_path(__FILE__) . 'GatewayMethodBlocks.php';
     }
 
-    public  function blocks_placetopay_enqueue_checkout_script(): void
+    public function blocks_placetopay_enqueue_checkout_script(): void
     {
         if (is_checkout() && !is_wc_endpoint_url()) {
             wp_enqueue_script('checkout-js', plugin_dir_path(__FILE__) . 'block/checkout.js', array('wc-checkout'), '1.0.0', true);

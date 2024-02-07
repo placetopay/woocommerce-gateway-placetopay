@@ -1687,6 +1687,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $redirectUrl = $this->getRedirectUrl($order);
 
         return add_query_arg([
+            'wc-api' => $this->getClassName(),
             'order_id' => $order->get_id(),
         ], $redirectUrl);
     }
