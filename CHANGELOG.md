@@ -2,8 +2,10 @@
 
 [Unreleased]
 
+### [2.24.0] - 2024-02-07
+
 ### Added
-- Support payments by blocks
+- Support payments by blocks (required in WooCommerce >= 8.3)
 
 ### [2.23.1] - 2024-02-06
 
