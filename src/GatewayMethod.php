@@ -1576,15 +1576,33 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getInstallments(array $additionalData): int
     {
-        $installments = ['installments', 'installment'];
+        $installmentKeys = ['installments', 'installment'];
 
-        if (isset($additionalData['credit'])) {
-            $key = array_keys(array_filter($additionalData['credit'], function ($item) use ($installments) {
-                return in_array($item, $installments);
-            }, ARRAY_FILTER_USE_KEY));
+        foreach ($installmentKeys as $key) {
+            if (isset($additionalData[$key]) && is_numeric($additionalData[$key])) {
+                return (int) $additionalData[$key];
+            }
+        }
 
-            if (isset($key[0])) {
-                return $additionalData['credit'][$key[0]];
+        if (isset($additionalData['processorFields']) && is_array($additionalData['processorFields'])) {
+            foreach ($additionalData['processorFields'] as $field) {
+                if (isset($field['value']) && is_array($field['value'])) {
+                    foreach ($installmentKeys as $key) {
+                        if (isset($field['value'][$key]) && is_numeric($field['value'][$key])) {
+                            return (int) $field['value'][$key];
+                        }
+                    }
+                }
+            }
+        }
+
+        foreach ($additionalData as $value) {
+            if (is_array($value)) {
+                foreach ($installmentKeys as $key) {
+                    if (isset($value[$key]) && is_numeric($value[$key])) {
+                        return (int) $value[$key];
+                    }
+                }
             }
         }
 
