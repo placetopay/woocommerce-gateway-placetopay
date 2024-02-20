@@ -1,36 +1,24 @@
-#!/bin/bash
+#!/bin/sh
 
-CONTAINER_WP = wp_plugin_wordpress
-CONTAINER_DB = wp_plugin_db
 CURRENT_FOLDER=$(shell pwd)
 UID=$(shell id -u)
 MODULE_NAME=woocommerce-gateway-placetopay
 
-up:
-	docker-compose up -d
+# Usage:
+# make compile PLUGIN_VERSION=-2.24.1-php-7.4.x PHP_VERSION=7.4
+# make compile PLUGIN_VERSION=-2.24.1-php-8.x   PHP_VERSION=8.0
 
-down:
-	docker-compose down
-
-rebuild: down
-	docker-compose up -d --build
-
-bash:
-	docker exec -it $(CONTAINER_WP) bash
-
-mysql:
-	docker exec -it $(CONTAINER_DB) mysql --user=wordpress --password=wordpress wordpress
-
-install: up
-	docker exec -u 1000:1000 -it $(CONTAINER_WP) composer install -d ./wp-content/plugins/woocommerce-gateway-placetopay
-
+.PHONY: compile
 compile:
+	$(eval PHP_VERSION=${PHP_VERSION:-7.4})
 	$(eval MODULE_NAME_VR=$(MODULE_NAME)$(PLUGIN_VERSION))
 	@touch ~/Downloads/woocommerce-gateway-placetopay-test \
         && rm -Rf ~/Downloads/woocommerce-gateway-placetopay* \
         && cp -pr $(CURRENT_FOLDER) ~/Downloads/woocommerce-gateway-placetopay \
         && cd ~/Downloads/woocommerce-gateway-placetopay \
-        && composer install --no-dev \
+        && sed -i 's/"php": ".*"/"php": "^$(PHP_VERSION)"/' ~/Downloads/woocommerce-gateway-placetopay/composer.json \
+        && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/composer.lock \
+        && php$(PHP_VERSION) `which composer` install --no-dev \
         && find ~/Downloads/woocommerce-gateway-placetopay/ -type d -name ".git*" -exec rm -Rf {} + \
         && find ~/Downloads/woocommerce-gateway-placetopay/ -type d -name "squizlabs" -exec rm -Rf {} + \
         && rm -Rf ~/Downloads/woocommerce-gateway-placetopay/.git* \
@@ -57,4 +45,4 @@ compile:
         && chown $(UID):$(UID) $(MODULE_NAME_VR).zip \
         && chmod 644 $(MODULE_NAME_VR).zip \
         && rm -Rf ~/Downloads/woocommerce-gateway-placetopay
-	@echo "Compile file complete: ~/Downloads/$(MODULE_NAME_VR).zip"
+	@echo "Compile file complete: ~/Downloads/$(MODULE_NAME_VR).zip using $(PHP_VERSION)"
