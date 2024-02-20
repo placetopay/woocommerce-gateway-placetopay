@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+### Updated
+- Change method to get installments of the payment.
+
 ### [2.24.0] - 2024-02-07
 
 ### Added
