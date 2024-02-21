@@ -45,4 +45,4 @@ compile:
         && chown $(UID):$(UID) $(MODULE_NAME_VR).zip \
         && chmod 644 $(MODULE_NAME_VR).zip \
         && rm -Rf ~/Downloads/woocommerce-gateway-placetopay
-	@echo "Compile file complete: ~/Downloads/$(MODULE_NAME_VR).zip using $(PHP_VERSION)"
+	@echo "Compile file complete: ~/Downloads/$(MODULE_NAME_VR).zip using PHP $(PHP_VERSION)"
