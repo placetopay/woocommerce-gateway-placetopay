@@ -224,7 +224,10 @@ class WC_Gateway_PlacetoPay
     public function blocks_declare_cart_checkout_blocks_compatibility(): void
     {
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+                'cart_checkout_blocks',
+                plugin_dir_path(__FILE__) . 'woocommerce-gateway-placetopay.php',
+            );
         }
     }
 

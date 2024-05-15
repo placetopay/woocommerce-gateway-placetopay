@@ -2,6 +2,11 @@
 
 [Unreleased]
 
+### [2.24.2] - 2024-05-16
+
+### Updated
+- Change path to declare blocks compatibility
+
 ### [2.24.1] - 2024-02-20
 
 ### Updated
