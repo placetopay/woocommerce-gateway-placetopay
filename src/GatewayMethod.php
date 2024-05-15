@@ -97,6 +97,8 @@ class GatewayMethod extends WC_Payment_Gateway
     private $payment_button_image;
     private $version;
     private $use_lightbox;
+    private $endpoint;
+    private $form_method;
 
     /**
      * GatewayMethod constructor.

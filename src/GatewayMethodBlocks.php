@@ -6,6 +6,8 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
 
 class GatewayMethodBlocks extends AbstractPaymentMethodType
 {
+    private $gateway;
+
     public function initialize(): void
     {
         $this->gateway = new GatewayMethod();
