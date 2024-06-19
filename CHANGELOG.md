@@ -2,6 +2,11 @@
 
 [Unreleased]
 
+### [2.24.3] - 2024-06-20
+
+### Added
+- Add information in the readme
+
 ### [2.24.2] - 2024-05-16
 
 ### Updated
