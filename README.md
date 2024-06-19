@@ -2,6 +2,8 @@
 
 [PlacetoPay](https://www.placetopay.com) Plugin Payment for [WooCommerce](https://woocommerce.com/)
 
+For more information about the component and the functionalities it offers, visit the following link **[Woocommerce-Placetopay](https://placetopay.dev/plugins/woocommerce)**.
+
 ## Prerequisites
 
 - `wordpress` >= 4.4.1 _recommended: >= 6.0.1_
