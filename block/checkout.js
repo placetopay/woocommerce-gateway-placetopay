@@ -15,9 +15,38 @@ const ImageContent = () => (
     })
 );
 
+const Label = () => {
+    const title = label
+    const imagePath = settings.image;
+
+    const paymentImage = React.createElement("img", {
+        src: imagePath,
+        alt: `${title} logo`,
+        style: {
+            width: '100px',
+            height: 'auto',
+            maxWidth: '100%',
+            maxHeight: '100%'
+        }
+    });
+
+    return React.createElement("div", {
+            style: {
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                width: '100%'
+            }
+        },
+        React.createElement("span", {}, title),
+        paymentImage
+    );
+};
+
+
 const Block_Gateway = {
     name: 'placetopay',
-    label: label,
+    label: Object(window.wp.element.createElement)(Label),
     content: Object(window.wp.element.createElement)(() => (
         React.createElement("div", {
                 style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }
