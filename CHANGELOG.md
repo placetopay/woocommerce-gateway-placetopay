@@ -2,6 +2,12 @@
 
 [Unreleased]
 
+### [2.24.4] - 2024-09-26
+
+### Added
+- Add manage error blocks messages
+- Add brand image in payment option 
+
 ### [2.24.3] - 2024-06-20
 
 ### Added
