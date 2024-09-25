@@ -9,6 +9,7 @@ if (!defined('ABSPATH')) {
 use Dnetix\Redirection\Entities\PaymentModifier;
 use Dnetix\Redirection\Entities\Status;
 use Dnetix\Redirection\Entities\Transaction;
+use Dnetix\Redirection\Exceptions\PlacetoPayServiceException;
 use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
@@ -520,8 +521,10 @@ class GatewayMethod extends WC_Payment_Gateway
                 ];
             }
 
-            wc_add_notice(__('Payment error: ', 'woocommerce-gateway-placetopay') . $res->status()->message(), 'error');
             $this->logger('Payment error: ' . $res->status()->message(), 'error');
+            throw new PlacetoPayServiceException($res->status()->message());
+        } catch (PlacetoPayServiceException $exception) {
+            throw new Exception(__('Payment error: ', 'woocommerce-gateway-placetopay'). $exception->getMessage());
         } catch (Exception $ex) {
             $this->logger($ex->getMessage(), 'error');
             wc_add_notice(__('Payment error: Server error internal.', 'woocommerce-gateway-placetopay'), 'error');
