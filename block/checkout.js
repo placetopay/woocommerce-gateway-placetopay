@@ -49,18 +49,16 @@ const Block_Gateway = {
     label: Object(window.wp.element.createElement)(Label),
     content: Object(window.wp.element.createElement)(() => (
         React.createElement("div", {
-                style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }
+                style: { display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }
             },
             React.createElement(Content, null),
-            React.createElement(ImageContent, null)
         )
     )),
     edit: Object(window.wp.element.createElement)(() => (
         React.createElement("div", {
-                style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }
+                style: { display: 'flex', justifyContent: 'center',alignItems: 'center', width: '150%' }
             },
             React.createElement(Content, null),
-            React.createElement(ImageContent, null)
         )
     )),
     canMakePayment: () => true,
