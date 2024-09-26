@@ -30,7 +30,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '2.24.2';
+    const VERSION = '2.24.4';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
