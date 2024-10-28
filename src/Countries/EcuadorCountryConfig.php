@@ -17,7 +17,6 @@ abstract class EcuadorCountryConfig extends CountryConfig
         return array_merge(parent::getEndpoints($client), [
             Environment::PROD => 'https://checkout.placetopay.ec',
             Environment::TEST => 'https://checkout-test.placetopay.ec',
-            Environment::DEV => 'https://dev.placetopay.ec/redirection',
         ]);
     }
 }
