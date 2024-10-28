@@ -2,38 +2,64 @@
 /**
  * Plugin Name: WooCommerce Placetopay Gateway
  * Plugin URI: https://docs-gateway.placetopay.com/docs/webcheckout-docs/9016e976d1ea0-plugins-y-componentes
- * Description: Adds Placetopay Payment Gateway to Woocommerce e-commerce plugin
+ * Description: Adds Placetopay Payment Gateway to WooCommerce e-commerce plugin
  * Author: Placetopay
  * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
  * Developer: PlacetoPay
- * Version: 2.24.4
+ * Version: 2.24.5
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2024 Evertec PlacetoPay S.A.S.
- * @version 2.24.4
+ * @version 2.24.5
  */
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
+if ( is_admin() ) {
+    add_filter( 'all_plugins', 'dynamic_plugin_name' );
+}
+
 /**
- * Return instance of \PlacetoPay\WC_Gateway_PlacetoPay
+ * Modifica el nombre del plugin dinámicamente.
+ *
+ * @param array $plugins Lista de todos los plugins.
+ * @return array Lista de plugins modificada.
+ */
+function dynamic_plugin_name( $plugins ) {
+    $plugin_file = plugin_basename( __FILE__ );
+
+    if ( isset( $plugins[ $plugin_file ] ) ) {
+        $settings = get_option( 'woocommerce_placetopay_settings', false );
+
+        $client = $settings['client'] ?? 'Placetopay';
+
+        $plugins[ $plugin_file ]['Name'] = 'WooCommerce '. $client . ' Gateway';
+        $plugins[ $plugin_file ]['Description'] = 'Adds ' . $client  . ' Payment Gateway to WooCommerce e-commerce plugin';
+        $plugins[ $plugin_file ]['Author'] = $client;
+    }
+
+    return $plugins;
+}
+
+/**
+ * Función principal del plugin.
  *
  * @return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay
  */
 function wc_gateway_placetopay()
 {
-    // carga las traducciones de PlacetoPay
+    // Carga las traducciones de PlacetoPay
     load_plugin_textdomain('woocommerce-gateway-placetopay', false, dirname(plugin_basename(__FILE__)) . '/languages/');
     add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate', 201, 3);
 
     /**
-     * @param $template
-     * @param $templateName
-     * @param $templatePath
+     * @param string $template
+     * @param string $templateName
+     * @param string $templatePath
      * @return string
      */
     function wooAddonPluginTemplate($template, $templateName, $templatePath)
@@ -48,7 +74,7 @@ function wc_gateway_placetopay()
 
         $pluginPath = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/';
 
-        // Look within passed path within the theme - this is priority
+        // Buscar dentro del tema
         $template = locate_template([
             $templatePath . $templateName,
             $templateName
