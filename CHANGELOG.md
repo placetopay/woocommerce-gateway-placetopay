@@ -2,6 +2,11 @@
 
 [Unreleased]
 
+### [2.24.5] - 2024-10-29
+
+### Added
+- Add dynamic plugin name
+
 ### [2.24.4] - 2024-09-26
 
 ### Added
