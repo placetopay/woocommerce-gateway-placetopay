@@ -24,10 +24,8 @@ if ( is_admin() ) {
 }
 
 /**
- * Modifica el nombre del plugin dinámicamente.
- *
- * @param array $plugins Lista de todos los plugins.
- * @return array Lista de plugins modificada.
+ * @param array $plugins
+ * @return array
  */
 function dynamic_plugin_name( $plugins ) {
     $plugin_file = plugin_basename( __FILE__ );
@@ -46,8 +44,6 @@ function dynamic_plugin_name( $plugins ) {
 }
 
 /**
- * Función principal del plugin.
- *
  * @return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay
  */
 function wc_gateway_placetopay()
@@ -57,9 +53,9 @@ function wc_gateway_placetopay()
     add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate', 201, 3);
 
     /**
-     * @param string $template
-     * @param string $templateName
-     * @param string $templatePath
+     * @param $template
+     * @param $templateName
+     * @param $templatePath
      * @return string
      */
     function wooAddonPluginTemplate($template, $templateName, $templatePath)
@@ -74,7 +70,6 @@ function wc_gateway_placetopay()
 
         $pluginPath = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/';
 
-        // Buscar dentro del tema
         $template = locate_template([
             $templatePath . $templateName,
             $templateName
