@@ -2,11 +2,19 @@
 
 [Unreleased]
 
+### [2.24.5] - 2024-10-29
+
+### Added
+- Add dynamic plugin name
+
+### Fixed
+- Ensures that the order's creation date is accessed properly [#47](https://github.com/placetopay/woocommerce-gateway-placetopay/issues/47)
+
 ### [2.24.4] - 2024-09-26
 
 ### Added
 - Add manage error blocks messages
-- Add brand image in payment option 
+- Add brand image in payment option
 
 ### [2.24.3] - 2024-06-20
 

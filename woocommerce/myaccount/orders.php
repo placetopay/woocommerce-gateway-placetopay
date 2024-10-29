@@ -79,7 +79,7 @@ if ($has_orders) : ?>
                         </td>
 
                         <td class="order-date" data-title="<?php _e('Date', 'woocommerce-gateway-placetopay'); ?>">
-                            <time datetime="<?php echo date('Y-m-d H:i:s', strtotime($order->order_date)); ?>" title="<?php echo esc_attr(strtotime($order->order_date)); ?>">
+                            <time datetime="<?php echo date('Y-m-d H:i:s', strtotime($order->get_date_created())); ?>" title="<?php echo esc_attr(strtotime($order->get_date_created())); ?>">
                                 <?php echo esc_html(
                                     wc_format_datetime(
                                         $order->get_date_created()

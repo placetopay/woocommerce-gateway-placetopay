@@ -16,7 +16,7 @@ abstract class CountryConfig implements CountryConfigInterface
     public static function getEndpoints(string $client): array
     {
         return [
-            Environment::DEV => 'https://dev.placetopay.com/redirection',
+            Environment::DEV => 'https://checkout-co.placetopay.dev',
             Environment::TEST => 'https://checkout-test.placetopay.com',
             Environment::PROD => 'https://checkout.placetopay.com',
         ];
