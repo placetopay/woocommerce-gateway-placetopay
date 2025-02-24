@@ -2,6 +2,7 @@
 
 use PlacetoPay\PaymentMethod\GatewayMethod;
 
+$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 require_once(dirname(__FILE__) . '/../../../../wp-blog-header.php');
