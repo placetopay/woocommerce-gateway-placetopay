@@ -5,8 +5,8 @@ UID=$(shell id -u)
 MODULE_NAME=woocommerce-gateway-placetopay
 
 # Usage:
-# make compile PLUGIN_VERSION=-2.24.6-php-7.4.x PHP_VERSION=7.4
-# make compile PLUGIN_VERSION=-2.24.6-php-8.x   PHP_VERSION=8.0
+# make compile PLUGIN_VERSION=-2.24.7-php-7.4.x PHP_VERSION=7.4
+# make compile PLUGIN_VERSION=-2.24.7-php-8.x   PHP_VERSION=8.0
 
 .PHONY: compile
 compile:
