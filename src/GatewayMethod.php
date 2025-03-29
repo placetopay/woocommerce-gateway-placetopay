@@ -205,7 +205,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     $image = unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit');
                     break;
                 case Client::GOU:
-                    $image = unmaskString('uggcf://cynprgbcnl-fgngvp-cebq-ohpxrg.f3.hf-rnfg-2.nznmbanjf.pbz/tbhcntbf-pbz-pb/urnqre.fit');
+                    $image = unmaskString('uggcf://cynprgbcnl-fgngvp-hng-ohpxrg.f3.hf-rnfg-2.nznmbanjf.pbz/ninycnlpragre-pbz/ybtbf/Urnqre+Pbeerb+-+Ybtb+Ninycnl.fit');
                     break;
                 default:
                     $image = unmaskString('uggcf://fgngvp.cynprgbcnl.pbz/cynprgbcnl-ybtb.fit');
@@ -497,6 +497,8 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         try {
+            $this->logger('Payment URI: ' . $this->uri_service, __METHOD__);
+
             $res = $this->placetopay->request($req);
 
             if ($res->isSuccessful()) {
@@ -522,6 +524,7 @@ class GatewayMethod extends WC_Payment_Gateway
             }
 
             $this->logger('Payment error: ' . $res->status()->message(), 'error');
+
             throw new PlacetoPayServiceException($res->status()->message());
         } catch (PlacetoPayServiceException $exception) {
             throw new Exception(__('Payment error: ', 'woocommerce-gateway-placetopay'). $exception->getMessage());

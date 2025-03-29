@@ -2,6 +2,8 @@
 
 [Unreleased]
 
+- Update branding for clients
+
 ## [2.24.6] - 2025-02-24
 - Add definition in cron job from HTTP_HOST to localhost, avoid notices in Multi-Sites configurations for other plugins.
 
