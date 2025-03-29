@@ -17,8 +17,8 @@ class ColombiaCountryConfig extends CountryConfig
     {
         if ($client === unmaskString(Client::GOU)) {
             return array_merge(parent::getEndpoints($client), [
-                Environment::PROD => unmaskString('uggcf://purpxbhg.tbhcntbf.pbz.pb'),
-                Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.tbhcntbf.pbz.pb'),
+                Environment::PROD => unmaskString('uggcf://purpxbhg.ninycnlpragre.pbz'),
+                Environment::TEST => unmaskString('uggcf://purpxbhg.grfg.ninycnlpragre.pbz'),
             ]);
         }
 
