@@ -1,24 +1,22 @@
 <?php
 
-namespace PlacetoPay\PaymentMethod\Countries;
+namespace PlacetoPay\PaymentMethod;
 
-use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Environment;
-use PlacetoPay\PaymentMethod\GatewayMethod;
 
-abstract class CountryConfig implements CountryConfigInterface
+abstract class CountryConfig
 {
-    public static function resolve(string $countryCode): bool
-    {
-        return true;
-    }
+    public const CLIENT = 'Placetopay';
+    public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
+    public const COUNTRY_CODE = 'BZ';
+    public const COUNTRY_NAME = 'Belice';
 
-    public static function getEndpoints(string $client): array
+    public static function getEndpoints(): array
     {
         return [
             Environment::DEV => 'https://checkout-co.placetopay.dev',
-            Environment::TEST => 'https://checkout-test.placetopay.com',
-            Environment::PROD => 'https://checkout.placetopay.com',
+            Environment::TEST => 'https://checkout-test.placetopay.ec',
+            Environment::PROD => 'https://abgateway.atlabank.com',
         ];
     }
 
@@ -37,13 +35,6 @@ abstract class CountryConfig implements CountryConfigInterface
                 'taxes_ico' => $gatewayMethod->get_option('taxes_ico', []),
                 'taxes_ice' => $gatewayMethod->get_option('taxes_ice', []),
             ],
-        ];
-    }
-
-    public static function getClients(): array
-    {
-        return [
-            unmaskString(Client::PTP) => __(unmaskString(Client::PTP), 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -92,14 +83,6 @@ abstract class CountryConfig implements CountryConfigInterface
                 'label' => __('Enable Lightbox Redirection', 'woocommerce-gateway-placetopay'),
                 'description' => __('It should only be used for payment methods without redirection', 'woocommerce-gateway-placetopay'),
                 'default' => 'no',
-            ],
-            'client' => [
-                'title' => __('Client', 'woocommerce-gateway-placetopay'),
-                'type' => 'select',
-                'class' => 'wc-enhanced-select',
-                'default' => 'Getnet',
-                'options' => $gatewayMethod->getClientList(),
-                'description' => sprintf(__('I am integrated with %s', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
             ],
             'login' => [
                 'title' => __('Login site', 'woocommerce-gateway-placetopay'),
