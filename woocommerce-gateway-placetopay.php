@@ -33,7 +33,7 @@ function dynamic_plugin_name( $plugins ) {
     if ( isset( $plugins[ $plugin_file ] ) ) {
         $settings = get_option( 'woocommerce_placetopay_settings', false );
 
-        $client = $settings['client'] ?? 'Placetopay';
+        $client = \PlacetoPay\PaymentMethod\CountryConfig::CLIENT;
 
         $plugins[ $plugin_file ]['Name'] = 'WooCommerce '. $client . ' Gateway';
         $plugins[ $plugin_file ]['Description'] = 'Adds ' . $client  . ' Payment Gateway to WooCommerce e-commerce plugin';

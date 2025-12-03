@@ -14,12 +14,10 @@ use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
 use Exception;
-use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Discount;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
-use PlacetoPay\PaymentMethod\Countries\CountryConfigInterface;
 use stdClass;
 use WC_HTTPS;
 use WC_Order;
@@ -119,8 +117,8 @@ class GatewayMethod extends WC_Payment_Gateway
     public function configPaymentMethod()
     {
         $this->id = 'placetopay';
-        $this->title = $this->get_option('client');
-        $this->method_title = $this->getClient();
+        $this->title = CountryConfig::CLIENT;
+        $this->method_title = CountryConfig::CLIENT;
         $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
         $this->has_fields = false;
 
@@ -145,16 +143,9 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->currency = get_woocommerce_currency();
         $this->currency = $this->currency ?? 'COP';
 
-        foreach (Country::COUNTRIES_CONFIG as $config) {
-            if (!$config::resolve($this->getCountry())) {
-                continue;
-            }
-
-            $configurations = $config::getConfiguration($this);
-            foreach ($configurations as $key => $value) {
-                $this->$key = $value;
-            }
-            break;
+        $configurations = CountryConfig::getConfiguration($this);
+        foreach ($configurations as $key => $value) {
+            $this->$key = $value;
         }
 
         $this->configureEnvironment();
@@ -199,17 +190,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $url = $this->payment_button_image;
 
         if (empty($url)) {
-            // format: null
-            switch (unmaskString($this->getClient())) {
-                case Client::GNT:
-                    $image = unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit');
-                    break;
-                case Client::GOU:
-                    $image = unmaskString('uggcf://cynprgbcnl-fgngvp-hng-ohpxrg.f3.hf-rnfg-2.nznmbanjf.pbz/ninycnlpragre-pbz/ybtbf/Urnqre+Pbeerb+-+Ybtb+Ninycnl.fit');
-                    break;
-                default:
-                    $image = unmaskString('uggcf://fgngvp.cynprgbcnl.pbz/cynprgbcnl-ybtb.fit');
-            }
+            $image = CountryConfig::IMAGE;
         } elseif ($this->checkValidUrl($url)) {
             // format: https://www.domain.test/image.svg
             $image = $url;
@@ -242,17 +223,12 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $labels = [
             'pending' => __('Pending', 'woocommerce-gateway-placetopay'),
-            //Order received (unpaid)
             'processing' => __('Approved', 'woocommerce-gateway-placetopay'),
-            //Payment received and stock has been reduced- the order is awaiting fulfillment
             'on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
-            //Awaiting payment – stock is reduced, but you need to confirm payment
             'completed' => __('Approved', 'woocommerce-gateway-placetopay'),
-            //Order fulfilled and complete – requires no further action
             'refunded' => __('Refunded', 'woocommerce-gateway-placetopay'),
             'cancelled' => __('Cancelled', 'woocommerce-gateway-placetopay'),
             'failed' => __('Failed', 'woocommerce-gateway-placetopay'),
-            //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
         ];
 
         if ($status) {
@@ -1265,21 +1241,6 @@ class GatewayMethod extends WC_Payment_Gateway
         return $pageList;
     }
 
-    public function getCountryList(): array
-    {
-        return [
-            Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
-            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
-            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
-            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
-            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
-            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
-            Country::PA => __('Panama', 'woocommerce-gateway-placetopay'),
-            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
-            Country::UY => __('Uruguay', 'woocommerce-gateway-placetopay'),
-        ];
-    }
-
     public function getDiscounts(): array
     {
         return [
@@ -1290,20 +1251,6 @@ class GatewayMethod extends WC_Payment_Gateway
             Discount::UY_AFAM_REFUND => __(Discount::UY_AFAM_REFUND, 'woocommerce-gateway-placetopay'),
             Discount::UY_TAX_REFUND => __(Discount::UY_TAX_REFUND, 'woocommerce-gateway-placetopay'),
         ];
-    }
-
-    public function getClientList(): array
-    {
-        /** @var CountryConfigInterface $config */
-        foreach (Country::COUNTRIES_CLIENT as $config) {
-            if (!$config::resolve($this->getCountry())) {
-                continue;
-            }
-
-            return $config::getClients();
-        }
-
-        return [];
     }
 
     public function getEnvironments(): array
@@ -1340,40 +1287,31 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public function getListTaxes(): array
     {
-        $countries = $this->getCountryList();
         $formatTaxItem = '%s( %s ) - %s - %s %%';
         $taxList = [];
 
-        foreach ($countries as $countryCode => $countryName) {
-            $taxes = \WC_Tax::find_rates(['country' => $countryCode]);
-
-            foreach ($taxes as $taxId => $tax) {
-                $taxList[$taxId . '_'] = sprintf(
-                    $formatTaxItem,
-                    $countryName,
-                    $countryCode,
-                    $tax['label'],
-                    $tax['rate']
-                );
-            }
+        $taxes = \WC_Tax::find_rates(['country' => CountryConfig::COUNTRY_CODE]);
+        foreach ($taxes as $taxId => $tax) {
+            $taxList[$taxId . '_'] = sprintf(
+                $formatTaxItem,
+                CountryConfig::COUNTRY_NAME,
+                CountryConfig::COUNTRY_CODE,
+                $tax['label'],
+                $tax['rate']
+            );
         }
 
         return $taxList;
     }
 
-    public function getDefaultClient(): string
-    {
-        return $this->getCountry() === Country::CL ? unmaskString('Trgarg') : 'PlacetoPay';
-    }
-
     public function getClient(): string
     {
-        return !empty($this->title) ? $this->title : $this->getDefaultClient();
+        return $this->title;
     }
 
     public function getCountry(): string
     {
-        return explode(':', get_option('woocommerce_default_country'))[0];
+        return CountryConfig::COUNTRY_CODE;
     }
 
     private function getHeaders(): array
@@ -1504,7 +1442,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function configureEnvironment()
     {
-        $environments = $this->getCountryEnvironments();
+        $environments = CountryConfig::getEndpoints();
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || defined('WP_DEBUG') && WP_DEBUG
             ? 'yes'
@@ -1615,20 +1553,6 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return 0;
-    }
-
-    private function getCountryEnvironments(): array
-    {
-        /** @var CountryConfigInterface $config */
-        foreach (Country::COUNTRIES_CONFIG as $config) {
-            if (!$config::resolve($this->getCountry())) {
-                continue;
-            }
-
-            return $config::getEndpoints($this->getClient());
-        }
-
-        return [];
     }
 
     private function isRefunded(Transaction $payment): bool
