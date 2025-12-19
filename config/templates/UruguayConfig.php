@@ -6,6 +6,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class CountryConfig
 {
+    public const CLIENT_ID = 'uruguay';
     public const CLIENT = 'Placetopay';
     public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
     public const COUNTRY_CODE = 'UY';

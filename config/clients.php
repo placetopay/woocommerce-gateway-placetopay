@@ -9,6 +9,7 @@
  */
 
 return [
+    'colombia',
     'ecuador',
     'belice',
     'getnet',

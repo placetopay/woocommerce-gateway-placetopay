@@ -6,6 +6,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class CountryConfig
 {
+    public const CLIENT_ID = 'banchile';
     public const CLIENT = 'Banchile';
     public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/banchile/logos/Logotipo_superior.png';
     public const COUNTRY_CODE = 'CL';
