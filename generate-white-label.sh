@@ -888,6 +888,12 @@ cleanup_build_files() {
     rm -rf "$work_dir/temp_builds"
     rm -rf "$work_dir/config"*
     rm -rf "$work_dir"/*.sh
+    
+    # Limpiar archivos de desarrollo adicionales
+    rm -Rf "$work_dir/.phpactor.json"
+    rm -Rf "$work_dir/.php-cs-fixer.cache"
+    rm -Rf "$work_dir/.vimrc.setup"
+    rm -Rf "$work_dir"/*.log
 
     # Limpiar vendor según el Makefile de WooCommerce (líneas 34-42)
     if [[ -d "$work_dir/vendor" ]]; then
@@ -1159,9 +1165,15 @@ create_white_label_version_with_php() {
     php_function_id=$(get_php_function_id "$CLIENT_ID")
     update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$php_function_id" "$namespace_name"
 
-    # Eliminar el archivo original si tiene nombre diferente
-    if [[ "$project_name_base.php" != "woocommerce-gateway-translations.php" ]]; then
-        rm -f "$work_dir/woocommerce-gateway-translations.php"
+    # Eliminar archivos originales que no corresponden a este cliente
+    # Eliminar woocommerce-gateway-placetopay.php (archivo original del template)
+    rm -f "$work_dir/woocommerce-gateway-placetopay.php"
+    # Eliminar woocommerce-gateway-translations.php si existe (nombre temporal)
+    rm -f "$work_dir/woocommerce-gateway-translations.php"
+    # Asegurarse de que solo quede el archivo con el nombre correcto del cliente
+    if [[ -f "$work_dir/${project_name_base}.php" ]] && [[ "$project_name_base.php" != "woocommerce-gateway-placetopay.php" ]]; then
+        # Verificar que el archivo nuevo existe antes de eliminar otros posibles archivos
+        print_status "Archivo principal del plugin creado: ${project_name_base}.php"
     fi
 
     # Actualizar composer.json con el nuevo namespace y nombre único por cliente
