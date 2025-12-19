@@ -6,18 +6,18 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class CountryConfig
 {
-    public const CLIENT_ID = 'banchile';
-    public const CLIENT = 'Banchile';
-    public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/banchile/logos/Logotipo_superior.png';
-    public const COUNTRY_CODE = 'CL';
-    public const COUNTRY_NAME = 'Chile';
+    public const CLIENT_ID = 'placetopay-honduras';
+    public const CLIENT = 'Placetopay';
+    public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
+    public const COUNTRY_CODE = 'HN';
+    public const COUNTRY_NAME = 'Honduras';
 
     public static function getEndpoints(): array
     {
         return [
             Environment::DEV => 'https://checkout-co.placetopay.dev',
-            Environment::TEST => 'https://checkout.test.banchilepagos.cl',
-            Environment::PROD => 'https://checkout.banchilepagos.cl',
+            Environment::TEST => 'https://checkout-test.placetopay.ec',
+            Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
         ];
     }
 

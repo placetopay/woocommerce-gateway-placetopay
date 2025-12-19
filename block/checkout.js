@@ -10,7 +10,20 @@
     
     if (clientIdMatch && clientIdMatch[1]) {
         const expectedClientId = clientIdMatch[1];
-        const expectedVarName = 'gatewayData' + expectedClientId.charAt(0).toUpperCase() + expectedClientId.slice(1);
+
+        const camelCaseVarName = expectedClientId.split('-').map((word, index) => {
+            if (index === 0) {
+                return word.toLowerCase();
+            } else {
+                return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+            }
+        }).join('');
+
+        const pascalCaseVarName = expectedClientId.split('-').map((word) => {
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        }).join('');
+        
+        const expectedVarName = 'gatewayData' + pascalCaseVarName;
         
         if (window[expectedVarName] && window[expectedVarName].id === expectedClientId) {
             gatewayData = window[expectedVarName];
@@ -82,7 +95,6 @@
             );
         };
 
-        // Usar el ID del gateway dinámicamente
         const Block_Gateway = {
             name: gatewayId,
             label: Object(window.wp.element.createElement)(Label),

@@ -40,20 +40,37 @@ print_error() {
 }
 
 # Función para obtener el nombre de la clase de configuración desde la clave del cliente
+# Formato esperado: "cliente-país" (ej: "getnet-chile", "placetopay-colombia")
 get_config_class_name() {
     local client_key="$1"
     
-    # Convertir clave del cliente al nombre de la clase de template
+    # Convertir clave del cliente (formato "cliente-país") al nombre de la clase de template
+    # Ejemplo: "getnet-chile" -> "GetnetChileConfig"
     case "$client_key" in
-        "colombia") echo "ColombiaConfig" ;;
-        "ecuador") echo "EcuadorConfig" ;;
-        "belice") echo "BeliceConfig" ;;
-        "getnet") echo "GetnetConfig" ;;
-        "honduras") echo "HondurasConfig" ;;
-        "uruguay") echo "UruguayConfig" ;;
-        "avalpay") echo "AvalPayConfig" ;;
-        "banchile") echo "BanchileConfig" ;;
-        *) echo "" ;;  # Cliente no encontrado
+        "placetopay-colombia") echo "PlacetopayColombiaConfig" ;;
+        "placetopay-ecuador") echo "PlacetopayEcuadorConfig" ;;
+        "placetopay-belice") echo "PlacetopayBeliceConfig" ;;
+        "placetopay-honduras") echo "PlacetopayHondurasConfig" ;;
+        "placetopay-uruguay") echo "PlacetopayUruguayConfig" ;;
+        "getnet-chile") echo "GetnetChileConfig" ;;
+        "banchile-chile") echo "BanchileChileConfig" ;;
+        "avalpay-colombia") echo "AvalpayColombiaConfig" ;;
+        *)
+            # Intentar construir el nombre desde la clave
+            # Convertir "cliente-país" a "ClientePaisConfig"
+            echo "$client_key" | awk -F'-' '{
+                result = ""
+                for (i=1; i<=NF; i++) {
+                    word = $i
+                    if (length(word) > 0) {
+                        first = toupper(substr(word,1,1))
+                        rest = tolower(substr(word,2))
+                        result = result first rest
+                    }
+                }
+                print result "Config"
+            }'
+            ;;
     esac
 }
 
@@ -126,22 +143,28 @@ get_all_clients() {
         " 2>/dev/null && return
     fi
     
-    # Fallback: listar archivos de templates
+    # Fallback: listar archivos de templates y construir claves en formato cliente-país
     local templates_dir="${BASE_DIR}/config/templates"
     if [[ -d "$templates_dir" ]]; then
         for file in "$templates_dir"/*Config.php; do
             [[ -f "$file" ]] || continue
             local basename=$(basename "$file" .php)
-            # Convertir nombre de clase de vuelta a clave de cliente
+            # Convertir nombre de clase de vuelta a clave de cliente en formato cliente-país
+            # Ejemplo: "GetnetChileConfig" -> "getnet-chile"
             case "$basename" in
-                "ColombiaConfig") echo -n "colombia " ;;
-                "EcuadorConfig") echo -n "ecuador " ;;
-                "BeliceConfig") echo -n "belice " ;;
-                "GetnetConfig") echo -n "getnet " ;;
-                "HondurasConfig") echo -n "honduras " ;;
-                "UruguayConfig") echo -n "uruguay " ;;
-                "AvalPayConfig") echo -n "avalpay " ;;
-                "BanchileConfig") echo -n "banchile " ;;
+                "PlacetopayColombiaConfig") echo -n "placetopay-colombia " ;;
+                "PlacetopayEcuadorConfig") echo -n "placetopay-ecuador " ;;
+                "PlacetopayBeliceConfig") echo -n "placetopay-belice " ;;
+                "GetnetChileConfig") echo -n "getnet-chile " ;;
+                "PlacetopayHondurasConfig") echo -n "placetopay-honduras " ;;
+                "PlacetopayUruguayConfig") echo -n "placetopay-uruguay " ;;
+                "AvalpayColombiaConfig") echo -n "avalpay-colombia " ;;
+                "BanchileChileConfig") echo -n "banchile-chile " ;;
+                *)
+                    # Intentar convertir desde el nombre de archivo
+                    # "ClientePaisConfig" -> "cliente-pais"
+                    echo -n "$(echo "$basename" | sed 's/Config$//' | sed 's/\([A-Z]\)/-\1/g' | sed 's/^-//' | tr '[:upper:]' '[:lower:]') "
+                    ;;
             esac
         done
         echo ""
@@ -175,6 +198,18 @@ parse_config() {
     done
 }
 
+# Función para generar CLIENT_ID en formato "cliente-país" (con guión)
+get_client_id() {
+    local client="$1"
+    local country_name="$2"
+    
+    # Convertir cliente y país a minúsculas y combinarlos con guión
+    local client_lower=$(echo "$client" | tr '[:upper:]' '[:lower:]')
+    local country_lower=$(echo "$country_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    
+    echo "${client_lower}-${country_lower}"
+}
+
 # Función para obtener nombre del proyecto
 get_project_name() {
     local client="$1"
@@ -189,21 +224,60 @@ get_project_name() {
     fi
 }
 
+# Función para convertir CLIENT_ID a formato válido para nombres de funciones PHP
+# Convierte "getnet-chile" -> "getnet_chile" (reemplaza guiones con guiones bajos)
+get_php_function_id() {
+    local client_id="$1"
+    # Reemplazar guiones con guiones bajos para nombres de funciones PHP válidos
+    echo "$client_id" | tr '-' '_'
+}
+
 # Función para obtener el nombre del namespace desde CLIENT_ID
+# Convierte "getnet-chile" -> "GetnetChile" (capitaliza cada palabra después del guión)
 get_namespace_name() {
     local client_id="$1"
     
-    # 1. Limpiar client_id de cualquier cosa que no sea alfanumérica
-    local clean_id=$(echo "$client_id" | sed 's/[^a-zA-Z0-9]//g')
+    # Convertir formato "cliente-país" a "ClientePais" (PascalCase)
+    # Dividir por guiones, capitalizar primera letra de cada palabra, unir sin espacios
+    echo "$client_id" | awk -F'-' '{
+        result = ""
+        for (i=1; i<=NF; i++) {
+            word = $i
+            if (length(word) > 0) {
+                first = toupper(substr(word,1,1))
+                rest = tolower(substr(word,2))
+                result = result first rest
+            }
+        }
+        print result
+    }'
+}
+
+# Función para convertir CLIENT_ID a camelCase para JavaScript
+# Convierte "getnet-chile" -> "getnetChile" (primera palabra minúscula, resto en PascalCase)
+get_camel_case_name() {
+    local client_id="$1"
     
-    # 2. Obtener primera letra y convertir a mayúscula
-    local first_letter=$(echo "${clean_id:0:1}" | tr '[:lower:]' '[:upper:]')
-    
-    # 3. Obtener el resto de la cadena
-    local rest=$(echo "${clean_id:1}")
-    
-    # 4. Imprimir resultado limpio
-    echo "${first_letter}${rest}"
+    # Convertir formato "cliente-país" a "clientePais" (camelCase)
+    # Primera palabra en minúsculas, resto en PascalCase
+    echo "$client_id" | awk -F'-' '{
+        result = ""
+        for (i=1; i<=NF; i++) {
+            word = $i
+            if (length(word) > 0) {
+                if (i == 1) {
+                    # Primera palabra: toda en minúsculas
+                    result = result tolower(word)
+                } else {
+                    # Resto: PascalCase
+                    first = toupper(substr(word,1,1))
+                    rest = tolower(substr(word,2))
+                    result = result first rest
+                }
+            }
+        }
+        print result
+    }'
 }
 
 # Función para reemplazar namespaces en archivos PHP
@@ -358,6 +432,8 @@ replace_class_names() {
 replace_payment_method_ids() {
     local work_dir="$1"
     local client_id="$2"
+    local namespace_name
+    namespace_name=$(get_namespace_name "$client_id")
     
     print_status "Reemplazando payment method IDs y endpoints para: $client_id"
     
@@ -365,6 +441,41 @@ replace_payment_method_ids() {
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\\\$this->id = 'placetopay'/\\\$this->id = '${client_id}'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'placetopay'/'${client_id}'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"placetopay\"/\"${client_id}\"/g" {} \;
+    
+    # Reemplazar ucfirst($client_id) y ucfirst(CountryConfig::CLIENT_ID) con el namespace_name correcto
+    # Esto corrige el problema donde ucfirst('banchile-chile') genera 'Banchile-chile' en lugar de 'BanchileChile'
+    # Reemplazar en concatenaciones de strings: 'GatewayMethod' . ucfirst(...) -> 'GatewayMethod${namespace_name}'
+    # Hacer múltiples reemplazos para cubrir variaciones de espacios alrededor del punto
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod' \. ucfirst(\\\$client_id)/'GatewayMethod${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod'\.ucfirst(\\\$client_id)/'GatewayMethod${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\" \. ucfirst(\\\$client_id)/\"GatewayMethod${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\"\.ucfirst(\\\$client_id)/\"GatewayMethod${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod' \. ucfirst(CountryConfig::CLIENT_ID)/'GatewayMethod${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod'\.ucfirst(CountryConfig::CLIENT_ID)/'GatewayMethod${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\" \. ucfirst(CountryConfig::CLIENT_ID)/\"GatewayMethod${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\"\.ucfirst(CountryConfig::CLIENT_ID)/\"GatewayMethod${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod' \. ucfirst(\\\\PlacetoPay\\\\PaymentMethod\\\\CountryConfig::CLIENT_ID)/'GatewayMethod${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\" \. ucfirst(\\\\PlacetoPay\\\\PaymentMethod\\\\CountryConfig::CLIENT_ID)/\"GatewayMethod${namespace_name}\"/g" {} \;
+    # Reemplazar 'GatewayMethodBlocks' . ucfirst(...) -> 'GatewayMethodBlocks${namespace_name}'
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethodBlocks' \. ucfirst(\\\$client_id)/'GatewayMethodBlocks${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethodBlocks'\.ucfirst(\\\$client_id)/'GatewayMethodBlocks${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethodBlocks\" \. ucfirst(\\\$client_id)/\"GatewayMethodBlocks${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethodBlocks\"\.ucfirst(\\\$client_id)/\"GatewayMethodBlocks${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethodBlocks' \. ucfirst(CountryConfig::CLIENT_ID)/'GatewayMethodBlocks${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethodBlocks\" \. ucfirst(CountryConfig::CLIENT_ID)/\"GatewayMethodBlocks${namespace_name}\"/g" {} \;
+    # Reemplazar 'gatewayData' . ucfirst(...) -> 'gatewayData${namespace_name}' (para JavaScript)
+    # PHP genera: 'gatewayData' . ucfirst($client_id) pero ucfirst('banchile-chile') = 'Banchile-chile' (inválido)
+    # Necesitamos reemplazarlo con 'gatewayDataBanchileChile' (PascalCase completo después de gatewayData)
+    # El namespace_name ya está en PascalCase (BanchileChile), así que solo lo concatenamos
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'gatewayData' \. ucfirst(\\\$client_id)/'gatewayData${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'gatewayData'\.ucfirst(\\\$client_id)/'gatewayData${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"gatewayData\" \. ucfirst(\\\$client_id)/\"gatewayData${namespace_name}\"/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'gatewayData' \. ucfirst(CountryConfig::CLIENT_ID)/'gatewayData${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"gatewayData\" \. ucfirst(CountryConfig::CLIENT_ID)/\"gatewayData${namespace_name}\"/g" {} \;
+    # Reemplazar casos simples de ucfirst(...) sin concatenación (menos común pero posible)
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ucfirst(\\\$client_id)/'${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ucfirst(CountryConfig::CLIENT_ID)/'${namespace_name}'/g" {} \;
+    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ucfirst(\\\\PlacetoPay\\\\PaymentMethod\\\\CountryConfig::CLIENT_ID)/'${namespace_name}'/g" {} \;
     
     # Reemplazar endpoints REST: 'placetopay-payment/v2' -> '{client_id}-payment/v2'
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'placetopay-payment\/v2'/'${client_id}-payment\/v2'/g" {} \;
@@ -976,6 +1087,10 @@ create_white_label_version_with_php() {
     # Parsear configuración
     parse_config "$config"
 
+    # Generar CLIENT_ID en formato "cliente-país" (con guión)
+    # Esto sobrescribe el CLIENT_ID del template si existe
+    CLIENT_ID=$(get_client_id "$CLIENT" "$COUNTRY_NAME")
+
     # Determinar nombre del proyecto
     local project_name_base
     project_name_base=$(get_project_name "$CLIENT" "$COUNTRY_NAME")
@@ -1039,7 +1154,10 @@ create_white_label_version_with_php() {
 
     # Actualizar archivo principal del plugin
     print_status "Actualizando archivo principal del plugin..."
-    update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$CLIENT_ID" "$namespace_name"
+    # Convertir CLIENT_ID a formato válido para nombres de funciones PHP (reemplazar guiones con guiones bajos)
+    local php_function_id
+    php_function_id=$(get_php_function_id "$CLIENT_ID")
+    update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$php_function_id" "$namespace_name"
 
     # Eliminar el archivo original si tiene nombre diferente
     if [[ "$project_name_base.php" != "woocommerce-gateway-translations.php" ]]; then

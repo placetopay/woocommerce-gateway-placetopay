@@ -6,18 +6,18 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class CountryConfig
 {
-    public const CLIENT_ID = 'belice';
+    public const CLIENT_ID = 'placetopay-uruguay';
     public const CLIENT = 'Placetopay';
     public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
-    public const COUNTRY_CODE = 'BZ';
-    public const COUNTRY_NAME = 'Belice';
+    public const COUNTRY_CODE = 'UY';
+    public const COUNTRY_NAME = 'Uruguay';
 
     public static function getEndpoints(): array
     {
         return [
             Environment::DEV => 'https://checkout-co.placetopay.dev',
-            Environment::TEST => 'https://checkout-test.placetopay.ec',
-            Environment::PROD => 'https://abgateway.atlabank.com',
+            Environment::TEST => 'https://uy-uat-checkout.placetopay.com',
+            Environment::PROD => 'https://checkout.placetopay.uy',
         ];
     }
 
@@ -170,6 +170,19 @@ abstract class CountryConfig
                 'description' => sprintf(__('Select the taxes that are included as an ICE tax rate for %s',
                     'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
             ],
+        ];
+
+        // Campos adicionales específicos para Uruguay
+        $fields['discount'] = [
+            'title' => __('Discount', 'woocommerce-gateway-placetopay'),
+            'type' => 'select',
+            'class' => 'wc-enhanced-select',
+            'options' => $gatewayMethod->getDiscounts(),
+        ];
+
+        $fields['invoice'] = [
+            'title' => __('Invoice', 'woocommerce-gateway-placetopay'),
+            'type' => 'text',
         ];
 
         if (WP_DEBUG) {

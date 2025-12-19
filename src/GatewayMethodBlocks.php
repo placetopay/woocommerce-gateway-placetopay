@@ -114,7 +114,11 @@ class GatewayMethodBlocks extends AbstractPaymentMethodType
         );
 
         if( function_exists( 'wp_set_script_translations' ) ) {
-            wp_set_script_translations($script_handle);
+            wp_set_script_translations(
+                $script_handle,
+                'woocommerce-gateway-translations',
+                plugin_dir_path(__FILE__) . '../languages'
+            );
         }
         return [$script_handle];
     }

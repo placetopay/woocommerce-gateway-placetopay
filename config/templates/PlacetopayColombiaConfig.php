@@ -6,18 +6,18 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 
 abstract class CountryConfig
 {
-    public const CLIENT_ID = 'honduras';
+    public const CLIENT_ID = 'placetopay-colombia';
     public const CLIENT = 'Placetopay';
     public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
-    public const COUNTRY_CODE = 'HN';
-    public const COUNTRY_NAME = 'Honduras';
+    public const COUNTRY_CODE = 'CO';
+    public const COUNTRY_NAME = 'Colombia';
 
     public static function getEndpoints(): array
     {
         return [
             Environment::DEV => 'https://checkout-co.placetopay.dev',
-            Environment::TEST => 'https://checkout-test.placetopay.ec',
-            Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
+            Environment::PROD => 'https://checkout.placetopay.com',
         ];
     }
 
@@ -122,20 +122,22 @@ abstract class CountryConfig
             'payment_button_image' => [
                 'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
-                'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder',
-                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'default' => '',
             ],
             'minimum_amount' => [
-                'title' => __('Minimum Amount', 'woocommerce-gateway-placetopay'),
+                'title' => __('Minimum amount', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
+                'description' => __('Minimum amount to use this payment method', 'woocommerce-gateway-placetopay'),
                 'default' => '',
-                'description' => __('Select a minimum amount per transaction', 'woocommerce-gateway-placetopay')
+                'desc_tip' => true,
             ],
             'maximum_amount' => [
-                'title' => __('Maximum Amount', 'woocommerce-gateway-placetopay'),
+                'title' => __('Maximum amount', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
+                'description' => __('Maximum amount to use this payment method', 'woocommerce-gateway-placetopay'),
                 'default' => '',
-                'description' => __('Select a maximum amount per transaction', 'woocommerce-gateway-placetopay')
+                'desc_tip' => true,
             ],
             'expiration_time_minutes' => [
                 'title' => __('Expiration time session', 'woocommerce-gateway-placetopay'),
@@ -197,3 +199,4 @@ abstract class CountryConfig
         return $fields;
     }
 }
+
