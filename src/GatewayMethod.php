@@ -14,12 +14,10 @@ use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
 use Exception;
-use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Discount;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
-use PlacetoPay\PaymentMethod\Countries\CountryConfigInterface;
 use stdClass;
 use WC_HTTPS;
 use WC_Order;
@@ -118,20 +116,19 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function configPaymentMethod()
     {
-        $this->id = 'placetopay';
-        $this->title = $this->get_option('client');
-        $this->method_title = $this->getClient();
-        $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-placetopay');
+        $this->id = CountryConfig::CLIENT_ID;
+        $this->title = CountryConfig::CLIENT;
+        $this->method_title = CountryConfig::CLIENT;
+        $this->method_description = __('Sells online safely and agile', 'woocommerce-gateway-translations');
         $this->has_fields = false;
 
-        // Init settings
         $this->initFormFields();
         $this->settings['endpoint'] = home_url('/wp-json/') . self::getPaymentEndpoint();
 
         $this->endpoint = $this->settings['endpoint'];
 
         $this->enviroment_mode = $this->get_option('enviroment_mode');
-        $this->description = sprintf(__('Pay securely through %s.', 'woocommerce-gateway-placetopay'), $this->getClient());
+        $this->description = sprintf(__('Pay securely through %s.', 'woocommerce-gateway-translations'), $this->getClient());
         $this->login = $this->get_option('login');
         $this->tran_key = $this->get_option('tran_key');
         $this->redirect_page_id = $this->get_option('redirect_page_id');
@@ -145,16 +142,9 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->currency = get_woocommerce_currency();
         $this->currency = $this->currency ?? 'COP';
 
-        foreach (Country::COUNTRIES_CONFIG as $config) {
-            if (!$config::resolve($this->getCountry())) {
-                continue;
-            }
-
-            $configurations = $config::getConfiguration($this);
-            foreach ($configurations as $key => $value) {
-                $this->$key = $value;
-            }
-            break;
+        $configurations = CountryConfig::getConfiguration($this);
+        foreach ($configurations as $key => $value) {
+            $this->$key = $value;
         }
 
         $this->configureEnvironment();
@@ -162,7 +152,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public function getScheduleTaskPath(): string
     {
-        return WP_PLUGIN_DIR . '/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php';
+        return WP_PLUGIN_DIR . '/woocommerce-gateway-translations/cron/ProcessPendingOrderCron.php';
     }
 
     /**
@@ -199,17 +189,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $url = $this->payment_button_image;
 
         if (empty($url)) {
-            // format: null
-            switch (unmaskString($this->getClient())) {
-                case Client::GNT:
-                    $image = unmaskString('uggcf://onapb.fnagnaqre.py/hcybnqf/000/029/870/0620s532-9sp9-4248-o99r-78onr9s13r1q/bevtvany/Ybtb_JroPurpxbhg_Trgarg.fit');
-                    break;
-                case Client::GOU:
-                    $image = unmaskString('uggcf://cynprgbcnl-fgngvp-hng-ohpxrg.f3.hf-rnfg-2.nznmbanjf.pbz/ninycnlpragre-pbz/ybtbf/Urnqre+Pbeerb+-+Ybtb+Ninycnl.fit');
-                    break;
-                default:
-                    $image = unmaskString('uggcf://fgngvp.cynprgbcnl.pbz/cynprgbcnl-ybtb.fit');
-            }
+            $image = CountryConfig::IMAGE;
         } elseif ($this->checkValidUrl($url)) {
             // format: https://www.domain.test/image.svg
             $image = $url;
@@ -241,18 +221,13 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function getOrderStatusLabels($status = null)
     {
         $labels = [
-            'pending' => __('Pending', 'woocommerce-gateway-placetopay'),
-            //Order received (unpaid)
-            'processing' => __('Approved', 'woocommerce-gateway-placetopay'),
-            //Payment received and stock has been reduced- the order is awaiting fulfillment
-            'on-hold' => __('Pending', 'woocommerce-gateway-placetopay'),
-            //Awaiting payment – stock is reduced, but you need to confirm payment
-            'completed' => __('Approved', 'woocommerce-gateway-placetopay'),
-            //Order fulfilled and complete – requires no further action
-            'refunded' => __('Refunded', 'woocommerce-gateway-placetopay'),
-            'cancelled' => __('Cancelled', 'woocommerce-gateway-placetopay'),
-            'failed' => __('Failed', 'woocommerce-gateway-placetopay'),
-            //Payment failed or was declined (unpaid). Note that this status may not show immediately and instead show as pending until verified
+            'pending' => __('Pending', 'woocommerce-gateway-translations'),
+            'processing' => __('Approved', 'woocommerce-gateway-translations'),
+            'on-hold' => __('Pending', 'woocommerce-gateway-translations'),
+            'completed' => __('Approved', 'woocommerce-gateway-translations'),
+            'refunded' => __('Refunded', 'woocommerce-gateway-translations'),
+            'cancelled' => __('Cancelled', 'woocommerce-gateway-translations'),
+            'failed' => __('Failed', 'woocommerce-gateway-translations'),
         ];
 
         if ($status) {
@@ -367,37 +342,37 @@ class GatewayMethod extends WC_Payment_Gateway
         if (!$this->allow_to_pay_with_pending_orders && !empty($this->getPendingOrders($order))) {
             throw new Exception(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ));
         }
 
         if (!preg_match(Rules::PATTERN_NAME, trim($order->get_billing_first_name()))) {
-            throw new Exception(__('<strong>First Name</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+            throw new Exception(__('<strong>First Name</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
         }
 
         if (!preg_match(Rules::PATTERN_NAME, trim($order->get_billing_last_name()))) {
-            throw new Exception(__('<strong>Last Name</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+            throw new Exception(__('<strong>Last Name</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
         }
 
         if (!preg_match(Rules::PATTERN_PHONE, trim($order->get_billing_phone()))) {
-            throw new Exception(__('<strong>Phone</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+            throw new Exception(__('<strong>Phone</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
         }
 
         if (!preg_match(Rules::PATTERN_EMAIL, trim($order->get_billing_email()))) {
-            throw new Exception(__('<strong>Email</strong>, does not have a valid format', 'woocommerce-gateway-placetopay'));
+            throw new Exception(__('<strong>Email</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
         }
 
         if ($this->minimum_amount != null && $order->get_total() < $this->minimum_amount) {
             throw new Exception(sprintf(__(
                 '<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.'
-                , 'woocommerce-gateway-placetopay'), number_format($this->minimum_amount, 2, '.', ',')
+                , 'woocommerce-gateway-translations'), number_format($this->minimum_amount, 2, '.', ',')
             ));
         }
 
         if ($this->maximum_amount != null && $order->get_total() > $this->maximum_amount) {
             throw new Exception(sprintf(__(
                 '<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.'
-                , 'woocommerce-gateway-placetopay'), number_format($this->maximum_amount, 2, '.', ',')
+                , 'woocommerce-gateway-translations'), number_format($this->maximum_amount, 2, '.', ',')
             ));
         }
 
@@ -460,7 +435,7 @@ class GatewayMethod extends WC_Payment_Gateway
             ],
             'payment' => [
                 'reference' => $orderNumber,
-                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-placetopay'), $this->getClient(), $orderNumber),
+                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-translations'), $this->getClient(), $orderNumber),
                 'amount' => [
                     'currency' => $this->currency,
                     'total' => $order->get_total()
@@ -527,10 +502,10 @@ class GatewayMethod extends WC_Payment_Gateway
 
             throw new PlacetoPayServiceException($res->status()->message());
         } catch (PlacetoPayServiceException $exception) {
-            throw new Exception(__('Payment error: ', 'woocommerce-gateway-placetopay'). $exception->getMessage());
+            throw new Exception(__('Payment error: ', 'woocommerce-gateway-translations'). $exception->getMessage());
         } catch (Exception $ex) {
             $this->logger($ex->getMessage(), 'error');
-            wc_add_notice(__('Payment error: Server error internal.', 'woocommerce-gateway-placetopay'), 'error');
+            wc_add_notice(__('Payment error: Server error internal.', 'woocommerce-gateway-translations'), 'error');
         }
 
         return null;
@@ -630,7 +605,7 @@ class GatewayMethod extends WC_Payment_Gateway
             // Add information to the order to notify that exit to PlacetoPay
             // and invalidates the shopping cart
             $order = new WC_Order($orderId);
-            $order->update_status('on-hold', sprintf(__('Redirecting to %s', 'woocommerce-gateway-placetopay'), $this->getClient()));
+            $order->update_status('on-hold', sprintf(__('Redirecting to %s', 'woocommerce-gateway-translations'), $this->getClient()));
 
             $this->resolveWebCheckout($order);
 
@@ -654,7 +629,7 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
-        wp_die(sprintf(__("%s Request Failure", 'woocommerce-gateway-placetopay'), $this->getClient()));
+        wp_die(sprintf(__("%s Request Failure", 'woocommerce-gateway-translations'), $this->getClient()));
     }
 
     /**
@@ -677,7 +652,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $redirectUrl = add_query_arg([
             'msg' => urlencode(__(
                 'There was an error on the request. please contact the website administrator.',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             )),
             'type' => 'woocommerce-info'
         ], wc_get_checkout_url());
@@ -787,7 +762,7 @@ class GatewayMethod extends WC_Payment_Gateway
                     if (count($paymentMethodName) > 0) {
                         update_post_meta(
                             $order->get_id(),
-                            __('Payment type', 'woocommerce-gateway-placetopay'),
+                            __('Payment type', 'woocommerce-gateway-translations'),
                             implode(",", $paymentMethodName)
                         );
                     }
@@ -796,7 +771,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 // Validate Amount
                 if ($order->get_total() != floatval($totalAmount)) {
                     $message = sprintf(
-                        __('Validation error: %s amounts do not match (gross %s).', 'woocommerce-gateway-placetopay'),
+                        __('Validation error: %s amounts do not match (gross %s).', 'woocommerce-gateway-translations'),
                         $this->getClient(),
                         $totalAmount
                     );
@@ -807,7 +782,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 if (!empty($payerEmail)) {
                     update_post_meta(
                         $order->get_id(),
-                        sprintf(__('Payer %s email', 'woocommerce-gateway-placetopay'), $this->getClient()),
+                        sprintf(__('Payer %s email', 'woocommerce-gateway-translations'), $this->getClient()),
                         $payerEmail
                     );
                 }
@@ -839,14 +814,14 @@ class GatewayMethod extends WC_Payment_Gateway
 
                             $order->update_status(
                                 'pending',
-                                __('Payment pending', 'woocommerce-gateway-placetopay') . ': ' . $status
+                                __('Payment pending', 'woocommerce-gateway-translations') . ': ' . $status
                             );
                         }
 
                         break;
                     }
 
-                    $order->add_order_note(__('Payment pending', 'woocommerce-gateway-placetopay'));
+                    $order->add_order_note(__('Payment pending', 'woocommerce-gateway-translations'));
 
                 }
 
@@ -854,7 +829,7 @@ class GatewayMethod extends WC_Payment_Gateway
             case $sessionStatusInstance::ST_REJECTED:
                 $order->update_status(
                     'cancelled',
-                    sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
+                    sprintf(__('Payment rejected.', 'woocommerce-gateway-translations'), $status)
                 );
 
                 if ($paymentFirstStatus) {
@@ -876,7 +851,7 @@ class GatewayMethod extends WC_Payment_Gateway
             default:
                 $order->update_status(
                     'failed',
-                    sprintf(__('Payment rejected.', 'woocommerce-gateway-placetopay'), $status)
+                    sprintf(__('Payment rejected.', 'woocommerce-gateway-translations'), $status)
                 );
 
                 if (!self::versionCheck()) {
@@ -908,57 +883,57 @@ class GatewayMethod extends WC_Payment_Gateway
     private function getOrderNote($id, Transaction $payment, string $status, $total)
     {
         $installmentType = $this->getInstallments($payment->additionalData()) > 0
-            ? sprintf(__('%s installments', 'woocommerce-gateway-placetopay'), $this->getInstallments($payment->additionalData()))
-            : __('No installments', 'woocommerce-gateway-placetopay');
-        $message = '<p>' . __('Payment approved', 'woocommerce-gateway-placetopay') . '</p>';
+            ? sprintf(__('%s installments', 'woocommerce-gateway-translations'), $this->getInstallments($payment->additionalData()))
+            : __('No installments', 'woocommerce-gateway-translations');
+        $message = '<p>' . __('Payment approved', 'woocommerce-gateway-translations') . '</p>';
 
         $details = [
             [
-                'key' => __('Buying order: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Buying order: ', 'woocommerce-gateway-translations'),
                 'value' => $id,
             ],
             [
-                'key' => __('Status: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Status: ', 'woocommerce-gateway-translations'),
                 'value' => $status,
             ],
             [
-                'key' => __('Receipt: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Receipt: ', 'woocommerce-gateway-translations'),
                 'value' => $payment->receipt(),
             ],
             [
-                'key' => __('Authorization Code: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Authorization Code: ', 'woocommerce-gateway-translations'),
                 'value' => $payment->authorization(),
             ],
             [
-                'key' => __('Card last Digits: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Card last Digits: ', 'woocommerce-gateway-translations'),
                 'value' => str_replace('*', '', $payment->additionalData()['lastDigits']),
             ],
             [
-                'key' => __('Amount: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Amount: ', 'woocommerce-gateway-translations'),
                 'value' => '$' . number_format($total, '0', ',', '.'),
             ],
             [
-                'key' => __('Response code: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Response code: ', 'woocommerce-gateway-translations'),
                 'value' => $payment->status()->reason(),
             ],
             [
-                'key' => __('Payment Type: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Payment Type: ', 'woocommerce-gateway-translations'),
                 'value' => $payment->paymentMethodName(),
             ],
             [
-                'key' => __('Installments Type: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Installments Type: ', 'woocommerce-gateway-translations'),
                 'value' => $installmentType,
             ],
             [
-                'key' => __('Installments: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Installments: ', 'woocommerce-gateway-translations'),
                 'value' => $this->getInstallments($payment->additionalData()),
             ],
             [
-                'key' => __('Transaction Date: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Transaction Date: ', 'woocommerce-gateway-translations'),
                 'value' => $payment->status()->date(),
             ],
             [
-                'key' => __('Internal id: ', 'woocommerce-gateway-placetopay'),
+                'key' => __('Internal id: ', 'woocommerce-gateway-translations'),
                 'value' => $payment->internalReference(),
             ],
         ];
@@ -1023,7 +998,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         // Validate key
         if ($key && $order->get_order_key() !== $orderKey) {
-            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-placetopay'), 'getOrder');
+            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-translations'), 'getOrder');
             exit;
         }
 
@@ -1047,7 +1022,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 'At this time your order #%s display a checkout transaction which is pending receipt of confirmation from your financial institution,
                 please wait a few minutes and check back later to see if your payment was successfully confirmed. For more information about the current
                 state of your operation you may contact our customer service line or send your concerns to the email %s and ask for the status of the transaction',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ),
             (string)$order->get_id(),
             $this->merchant_email
@@ -1102,7 +1077,7 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         $this->log->add(
-            'PlacetoPay',
+            CountryConfig::CLIENT_ID,
             ($type ? "($type): " : '') . $message
         );
     }
@@ -1253,66 +1228,37 @@ class GatewayMethod extends WC_Payment_Gateway
     public function getPages($title = false)
     {
         $pageList = [
-            'default' => __('Default Page', 'woocommerce-gateway-placetopay'),
+            'default' => __('Default Page', 'woocommerce-gateway-translations'),
         ];
 
         if ($title) {
             $pageList[] = $title;
         }
 
-        $pageList['my-orders'] = __('My Orders', 'woocommerce-gateway-placetopay');
+        $pageList['my-orders'] = __('My Orders', 'woocommerce-gateway-translations');
 
         return $pageList;
-    }
-
-    public function getCountryList(): array
-    {
-        return [
-            Country::BZ => __('Belize', 'woocommerce-gateway-placetopay'),
-            Country::CL => __('Chile', 'woocommerce-gateway-placetopay'),
-            Country::CO => __('Colombia', 'woocommerce-gateway-placetopay'),
-            Country::CR => __('Costa Rica', 'woocommerce-gateway-placetopay'),
-            Country::EC => __('Ecuador', 'woocommerce-gateway-placetopay'),
-            Country::HN => __('Honduras', 'woocommerce-gateway-placetopay'),
-            Country::PA => __('Panama', 'woocommerce-gateway-placetopay'),
-            Country::PR => __('Puerto Rico', 'woocommerce-gateway-placetopay'),
-            Country::UY => __('Uruguay', 'woocommerce-gateway-placetopay'),
-        ];
     }
 
     public function getDiscounts(): array
     {
         return [
-            Discount::UY_NONE => __(Discount::UY_NONE, 'woocommerce-gateway-placetopay'),
-            Discount::UY_IVA_REFUND => __(Discount::UY_IVA_REFUND, 'woocommerce-gateway-placetopay'),
-            Discount::UY_IMESI_REFUND => __(Discount::UY_IMESI_REFUND, 'woocommerce-gateway-placetopay'),
-            Discount::UY_FINANCIAL_INCLUSION => __(Discount::UY_FINANCIAL_INCLUSION, 'woocommerce-gateway-placetopay'),
-            Discount::UY_AFAM_REFUND => __(Discount::UY_AFAM_REFUND, 'woocommerce-gateway-placetopay'),
-            Discount::UY_TAX_REFUND => __(Discount::UY_TAX_REFUND, 'woocommerce-gateway-placetopay'),
+            Discount::UY_NONE => __(Discount::UY_NONE, 'woocommerce-gateway-translations'),
+            Discount::UY_IVA_REFUND => __(Discount::UY_IVA_REFUND, 'woocommerce-gateway-translations'),
+            Discount::UY_IMESI_REFUND => __(Discount::UY_IMESI_REFUND, 'woocommerce-gateway-translations'),
+            Discount::UY_FINANCIAL_INCLUSION => __(Discount::UY_FINANCIAL_INCLUSION, 'woocommerce-gateway-translations'),
+            Discount::UY_AFAM_REFUND => __(Discount::UY_AFAM_REFUND, 'woocommerce-gateway-translations'),
+            Discount::UY_TAX_REFUND => __(Discount::UY_TAX_REFUND, 'woocommerce-gateway-translations'),
         ];
-    }
-
-    public function getClientList(): array
-    {
-        /** @var CountryConfigInterface $config */
-        foreach (Country::COUNTRIES_CLIENT as $config) {
-            if (!$config::resolve($this->getCountry())) {
-                continue;
-            }
-
-            return $config::getClients();
-        }
-
-        return [];
     }
 
     public function getEnvironments(): array
     {
         return [
-            Environment::DEV => __('Development', 'woocommerce-gateway-placetopay'),
-            Environment::TEST => __('Test', 'woocommerce-gateway-placetopay'),
-            Environment::PROD => __('Production', 'woocommerce-gateway-placetopay'),
-            Environment::CUSTOM => __('Custom', 'woocommerce-gateway-placetopay'),
+            Environment::DEV => __('Development', 'woocommerce-gateway-translations'),
+            Environment::TEST => __('Test', 'woocommerce-gateway-translations'),
+            Environment::PROD => __('Production', 'woocommerce-gateway-translations'),
+            Environment::CUSTOM => __('Custom', 'woocommerce-gateway-translations'),
         ];
     }
 
@@ -1324,13 +1270,13 @@ class GatewayMethod extends WC_Payment_Gateway
 
         while ($minutes <= self::EXPIRATION_TIME_MINUTES_LIMIT) {
             if ($minutes < 60) {
-                $options[$minutes] = sprintf($format, $minutes, __('Minutes', 'woocommerce-gateway-placetopay'));
+                $options[$minutes] = sprintf($format, $minutes, __('Minutes', 'woocommerce-gateway-translations'));
                 $minutes += 10;
             } elseif ($minutes >= 60 && $minutes < 1440) {
-                $options[$minutes] = sprintf($format, $minutes / 60, __('Hour(s)', 'woocommerce-gateway-placetopay'));
+                $options[$minutes] = sprintf($format, $minutes / 60, __('Hour(s)', 'woocommerce-gateway-translations'));
                 $minutes += 60;
             } else {
-                $options[$minutes] = sprintf($format, $minutes / 1440, __('Day(s)', 'woocommerce-gateway-placetopay'));
+                $options[$minutes] = sprintf($format, $minutes / 1440, __('Day(s)', 'woocommerce-gateway-translations'));
                 $minutes += 1440;
             }
         }
@@ -1340,40 +1286,31 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public function getListTaxes(): array
     {
-        $countries = $this->getCountryList();
         $formatTaxItem = '%s( %s ) - %s - %s %%';
         $taxList = [];
 
-        foreach ($countries as $countryCode => $countryName) {
-            $taxes = \WC_Tax::find_rates(['country' => $countryCode]);
-
-            foreach ($taxes as $taxId => $tax) {
-                $taxList[$taxId . '_'] = sprintf(
-                    $formatTaxItem,
-                    $countryName,
-                    $countryCode,
-                    $tax['label'],
-                    $tax['rate']
-                );
-            }
+        $taxes = \WC_Tax::find_rates(['country' => CountryConfig::COUNTRY_CODE]);
+        foreach ($taxes as $taxId => $tax) {
+            $taxList[$taxId . '_'] = sprintf(
+                $formatTaxItem,
+                CountryConfig::COUNTRY_NAME,
+                CountryConfig::COUNTRY_CODE,
+                $tax['label'],
+                $tax['rate']
+            );
         }
 
         return $taxList;
     }
 
-    public function getDefaultClient(): string
-    {
-        return $this->getCountry() === Country::CL ? unmaskString('Trgarg') : 'PlacetoPay';
-    }
-
     public function getClient(): string
     {
-        return !empty($this->title) ? $this->title : $this->getDefaultClient();
+        return $this->title;
     }
 
     public function getCountry(): string
     {
-        return explode(':', get_option('woocommerce_default_country'))[0];
+        return CountryConfig::COUNTRY_CODE;
     }
 
     private function getHeaders(): array
@@ -1381,7 +1318,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
 
         return [
-            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION . ')',
+            'User-Agent' => "woocommerce-gateway-translations/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION . ')',
             'X-Source-Platform' => 'woocommerce',
         ];
     }
@@ -1424,7 +1361,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if (!$this->allow_to_pay_with_pending_orders && $this->getLastPendingOrder() !== null) {
             wc_add_notice(__(
                 '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), 'error');
 
             $isValid = false;
@@ -1434,7 +1371,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if (preg_match(Rules::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
             wc_add_notice(__(
                 '<strong>First Name</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), 'error');
 
             $isValid = false;
@@ -1443,7 +1380,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if (preg_match(Rules::PATTERN_NAME, trim($request['billing_last_name'])) !== 1) {
             wc_add_notice(__(
                 '<strong>Last Name</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), 'error');
 
             $isValid = false;
@@ -1452,7 +1389,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if (preg_match(Rules::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
             wc_add_notice(__(
                 '<strong>Phone</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), 'error');
 
             $isValid = false;
@@ -1461,7 +1398,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if (preg_match(Rules::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
             wc_add_notice(__(
                 '<strong>Email</strong>, does not have a valid format',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), 'error');
 
             $isValid = false;
@@ -1470,7 +1407,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if ($this->minimum_amount != null && WC()->cart->total < $this->minimum_amount) {
             wc_add_notice(sprintf(__(
                 '<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), number_format($this->minimum_amount, 2, '.', ',')), 'error');
 
             $isValid = false;
@@ -1479,7 +1416,7 @@ class GatewayMethod extends WC_Payment_Gateway
         if ($this->maximum_amount != null && WC()->cart->total > $this->maximum_amount) {
             wc_add_notice(sprintf(__(
                 '<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), number_format($this->maximum_amount, 2, '.', ',')), 'error');
 
             $isValid = false;
@@ -1504,7 +1441,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function configureEnvironment()
     {
-        $environments = $this->getCountryEnvironments();
+        $environments = CountryConfig::getEndpoints();
 
         $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || defined('WP_DEBUG') && WP_DEBUG
             ? 'yes'
@@ -1617,20 +1554,6 @@ class GatewayMethod extends WC_Payment_Gateway
         return 0;
     }
 
-    private function getCountryEnvironments(): array
-    {
-        /** @var CountryConfigInterface $config */
-        foreach (Country::COUNTRIES_CONFIG as $config) {
-            if (!$config::resolve($this->getCountry())) {
-                continue;
-            }
-
-            return $config::getEndpoints($this->getClient());
-        }
-
-        return [];
-    }
-
     private function isRefunded(Transaction $payment): bool
     {
         return $payment->refunded();
@@ -1638,7 +1561,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function resolveRefundedPayment($order): void
     {
-        $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-placetopay'));
+        $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-translations'));
         $this->logger('Payment refunded for order # ' . $order->get_id(), __METHOD__);
     }
 
@@ -1678,7 +1601,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return 'jQuery("body").block({
                 message: "' . esc_js(sprintf(__(
                 'We are now redirecting you to %s to make payment, if you are not redirected please press the bottom.',
-                'woocommerce-gateway-placetopay'
+                'woocommerce-gateway-translations'
             ), $this->getClient())) . '",
                 baseZ: 99999,
                 overlayCSS: { background: "#fff", opacity: 0.6 },

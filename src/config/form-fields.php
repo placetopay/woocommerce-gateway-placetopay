@@ -1,6 +1,7 @@
 <?php
 
 use PlacetoPay\PaymentMethod\Constants\Country;
+use PlacetoPay\PaymentMethod\CountryConfig;
 
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
@@ -10,10 +11,5 @@ if (!defined('ABSPATH')) {
  * @var \PlacetoPay\PaymentMethod\GatewayMethod $this
  */
 
-foreach (Country::COUNTRIES_CONFIG as $config) {
-    if (!$config::resolve($this->getCountry())) {
-        continue;
-    }
+return CountryConfig::getFields($this);
 
-    return $config::getFields($this);
-}

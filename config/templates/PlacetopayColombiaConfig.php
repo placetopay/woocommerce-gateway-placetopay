@@ -1,19 +1,18 @@
 <?php
 
-namespace PlacetoPay\PaymentMethod\Countries;
+namespace PlacetoPay\PaymentMethod;
 
-use PlacetoPay\PaymentMethod\Constants\Client;
 use PlacetoPay\PaymentMethod\Constants\Environment;
-use PlacetoPay\PaymentMethod\GatewayMethod;
 
-abstract class CountryConfig implements CountryConfigInterface
+abstract class CountryConfig
 {
-    public static function resolve(string $countryCode): bool
-    {
-        return true;
-    }
+    public const CLIENT_ID = 'placetopay-colombia';
+    public const CLIENT = 'Placetopay';
+    public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
+    public const COUNTRY_CODE = 'CO';
+    public const COUNTRY_NAME = 'Colombia';
 
-    public static function getEndpoints(string $client): array
+    public static function getEndpoints(): array
     {
         return [
             Environment::DEV => 'https://checkout-co.placetopay.dev',
@@ -37,13 +36,6 @@ abstract class CountryConfig implements CountryConfigInterface
                 'taxes_ico' => $gatewayMethod->get_option('taxes_ico', []),
                 'taxes_ice' => $gatewayMethod->get_option('taxes_ice', []),
             ],
-        ];
-    }
-
-    public static function getClients(): array
-    {
-        return [
-            unmaskString(Client::PTP) => __(unmaskString(Client::PTP), 'woocommerce-gateway-placetopay'),
         ];
     }
 
@@ -93,14 +85,6 @@ abstract class CountryConfig implements CountryConfigInterface
                 'description' => __('It should only be used for payment methods without redirection', 'woocommerce-gateway-placetopay'),
                 'default' => 'no',
             ],
-            'client' => [
-                'title' => __('Client', 'woocommerce-gateway-placetopay'),
-                'type' => 'select',
-                'class' => 'wc-enhanced-select',
-                'default' => 'Getnet',
-                'options' => $gatewayMethod->getClientList(),
-                'description' => sprintf(__('I am integrated with %s', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
-            ],
             'login' => [
                 'title' => __('Login site', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
@@ -138,20 +122,22 @@ abstract class CountryConfig implements CountryConfigInterface
             'payment_button_image' => [
                 'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
-                'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder',
-                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'default' => '',
             ],
             'minimum_amount' => [
-                'title' => __('Minimum Amount', 'woocommerce-gateway-placetopay'),
+                'title' => __('Minimum amount', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
+                'description' => __('Minimum amount to use this payment method', 'woocommerce-gateway-placetopay'),
                 'default' => '',
-                'description' => __('Select a minimum amount per transaction', 'woocommerce-gateway-placetopay')
+                'desc_tip' => true,
             ],
             'maximum_amount' => [
-                'title' => __('Maximum Amount', 'woocommerce-gateway-placetopay'),
+                'title' => __('Maximum amount', 'woocommerce-gateway-placetopay'),
                 'type' => 'text',
+                'description' => __('Maximum amount to use this payment method', 'woocommerce-gateway-placetopay'),
                 'default' => '',
-                'description' => __('Select a maximum amount per transaction', 'woocommerce-gateway-placetopay')
+                'desc_tip' => true,
             ],
             'expiration_time_minutes' => [
                 'title' => __('Expiration time session', 'woocommerce-gateway-placetopay'),
@@ -213,3 +199,4 @@ abstract class CountryConfig implements CountryConfigInterface
         return $fields;
     }
 }
+

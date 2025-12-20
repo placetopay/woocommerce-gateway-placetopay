@@ -52,30 +52,45 @@ class WC_Gateway_PlacetoPay
             return null;
         }
 
+        $this->migrateSettings();
+
         add_filter('woocommerce_payment_gateways', [$this, 'addPlacetoPayGatewayMethod']);
         add_filter('plugin_action_links_' . plugin_basename($file), [$this, 'actionLinksPlacetopay']);
 
-        add_action('woocommerce_before_checkout_form', [new GatewayMethod(), 'checkoutMessage']);
-        add_action('woocommerce_before_account_orders', [new GatewayMethod(), 'checkoutMessage']);
-        add_action('woocommerce_checkout_process', [new GatewayMethod(), 'checkoutFieldProcess']);
+        $client_id = CountryConfig::CLIENT_ID;
+        $gateway_class_name = 'GatewayMethod' . ucfirst($client_id);
+        $gateway_blocks_class_name = 'GatewayMethodBlocks' . ucfirst($client_id);
+        $gateway_full_class = __NAMESPACE__ . '\\' . $gateway_class_name;
+        $gateway_blocks_full_class = __NAMESPACE__ . '\\' . $gateway_blocks_class_name;
 
-        add_action(GatewayMethod::NOTIFICATION_RETURN_PAGE, [$this, 'notificationReturnPage']);
+        $gateway_instance = new $gateway_full_class();
+        
+        add_action('woocommerce_before_checkout_form', [$gateway_instance, 'checkoutMessage']);
+        add_action('woocommerce_before_account_orders', [$gateway_instance, 'checkoutMessage']);
+        add_action('woocommerce_checkout_process', [$gateway_instance, 'checkoutFieldProcess']);
 
-        if (GatewayMethod::validateVersionSupportBlocks()) {
+        $notification_hook = $gateway_full_class::NOTIFICATION_RETURN_PAGE;
+        add_action($notification_hook, [$this, 'notificationReturnPage']);
+
+        if ($gateway_full_class::validateVersionSupportBlocks()) {
             add_action('plugins_loaded', [$this, 'blocks_woocommerce_my_gateway'], 0);
             add_action('woocommerce_blocks_loaded', [$this, 'blocks_register_gateway_method_adapter']);
             add_action('before_woocommerce_init', [$this, 'blocks_declare_cart_checkout_blocks_compatibility']);
-            add_action('wp_enqueue_scripts', [$this, 'blocks_placetopay_enqueue_checkout_script']);
             add_action(
                 'woocommerce_blocks_payment_method_type_registration',
-                function( PaymentMethodRegistry $payment_method_registry ) {
-                    $payment_method_registry->register( new GatewayMethodBlocks() );
+                function( PaymentMethodRegistry $payment_method_registry ) use ($gateway_blocks_full_class, $client_id) {
+                    $instance = new $gateway_blocks_full_class();
+                    
+                    if (defined('WP_DEBUG') && WP_DEBUG) {
+                        error_log(sprintf('[Gateway Blocks] Registrando método de pago en registry para %s: %s', $client_id, $gateway_blocks_full_class));
+                    }
+                    
+                    $payment_method_registry->register( $instance );
                 });
         }
 
-        // Register endpoint for placetopay
-        add_action('rest_api_init', function () {
-            $self = new GatewayMethod();
+        add_action('rest_api_init', function () use ($gateway_full_class) {
+            $self = new $gateway_full_class();
             $self->logger('register rest route', 'rest_api_init');
 
             register_rest_route($self::PAYMENT_ENDPOINT_NAMESPACE, $self::PAYMENT_ENDPOINT_CALLBACK, [
@@ -88,7 +103,6 @@ class WC_Gateway_PlacetoPay
         }, 1);
 
         $this->version = $version;
-        // Paths
         $this->plugin_path = trailingslashit(plugin_dir_path($file));
         $this->plugin_url = trailingslashit(plugin_dir_url($file));
     }
@@ -133,17 +147,34 @@ class WC_Gateway_PlacetoPay
     }
 
     /**
+     * Migrate settings from old format to new client-specific format
+     * @return void
+     */
+    private function migrateSettings()
+    {
+        if (class_exists('PlacetoPay\PaymentMethod\DataMigration')) {
+            $client_id = DataMigration::getCurrentClientId();
+            $client_name = DataMigration::getCurrentClientName();
+            
+            if ($client_id && $client_name) {
+                DataMigration::migrateIfNeeded($client_id, $client_name);
+            }
+        }
+    }
+
+    /**
      * Add the links to show aside of the plugin
      * @param  array $links
      * @return array
      */
     public function actionLinksPlacetopay($links)
     {
+        $client_id = CountryConfig::CLIENT_ID;
         $customLinks = [
             'settings' => sprintf(
                 '<a href="%s">%s</a>',
-                admin_url('admin.php?page=wc-settings&tab=checkout&section=placetopay'),
-                __('Settings', 'woocommerce-gateway-placetopay')
+                admin_url('admin.php?page=wc-settings&tab=checkout&section=' . $client_id),
+                __('Settings', 'woocommerce-gateway-translations')
             )
         ];
 
@@ -155,7 +186,15 @@ class WC_Gateway_PlacetoPay
      **/
     public function addPlacetoPayGatewayMethod($methods)
     {
-        $methods[] = GatewayMethod::class;
+        $client_id = CountryConfig::CLIENT_ID;
+        $gateway_class_name = 'GatewayMethod' . ucfirst($client_id);
+        $gateway_full_class = __NAMESPACE__ . '\\' . $gateway_class_name;
+        
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log(sprintf('[Gateway] Registrando método de pago: %s (ID: %s)', $gateway_full_class, $client_id));
+        }
+        
+        $methods[] = $gateway_full_class;
         return $methods;
     }
 
@@ -202,9 +241,10 @@ class WC_Gateway_PlacetoPay
 
     public function notificationReturnPage()
     {
+        $client_id = CountryConfig::CLIENT_ID;
         if (isset($_REQUEST['order_key'])
             && isset($_REQUEST['payment_method'])
-            && $_REQUEST['payment_method'] === 'placetopay'
+            && $_REQUEST['payment_method'] === $client_id
         ) {
             $orderId = wc_get_order_id_by_order_key($_REQUEST['order_key']);
             $order = new \WC_Order($orderId);
@@ -218,15 +258,18 @@ class WC_Gateway_PlacetoPay
         if (!class_exists('WC_Payment_Gateway')){
             return;
         }
-        include(plugin_dir_path(__FILE__) . 'GatewayMethod.php.php');
+        $client_class_name = 'GatewayMethod' . ucfirst(\PlacetoPay\PaymentMethod\CountryConfig::CLIENT_ID);
+        include(plugin_dir_path(__FILE__) . $client_class_name . '.php');
     }
 
     public function blocks_declare_cart_checkout_blocks_compatibility(): void
     {
         if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            $client_id = CountryConfig::CLIENT_ID;
+            $plugin_file = plugin_dir_path(__FILE__) . 'woocommerce-gateway-' . $client_id . '.php';
             \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
                 'cart_checkout_blocks',
-                plugin_dir_path(__FILE__) . 'woocommerce-gateway-placetopay.php',
+                $plugin_file,
             );
         }
     }
@@ -237,13 +280,8 @@ class WC_Gateway_PlacetoPay
             return;
         }
 
-        require_once plugin_dir_path(__FILE__) . 'GatewayMethodBlocks.php';
-    }
-
-    public function blocks_placetopay_enqueue_checkout_script(): void
-    {
-        if (is_checkout() && !is_wc_endpoint_url()) {
-            wp_enqueue_script('checkout-js', plugin_dir_path(__FILE__) . 'block/checkout.js', array('wc-checkout'), '1.0.0', true);
-        }
+        $client_id = CountryConfig::CLIENT_ID;
+        $gateway_blocks_class_name = 'GatewayMethodBlocks' . ucfirst($client_id);
+        require_once plugin_dir_path(__FILE__) . $gateway_blocks_class_name . '.php';
     }
 }
