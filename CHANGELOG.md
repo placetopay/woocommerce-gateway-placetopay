@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.0.0] - 2025-12-20
+- Generate zips by tenant config
+
 ## [2.24.7] - 2025-03-29
 - Update branding for clients
 
