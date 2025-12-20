@@ -211,17 +211,11 @@ get_client_id() {
 }
 
 # Función para obtener nombre del proyecto
+# Ahora usa el formato "cliente-país" (CLIENT_ID)
 get_project_name() {
-    local client="$1"
-    local country_name="$2"
-
-    if [[ "$client" == "Placetopay" ]]; then
-        # Convertir nombre del país a minúsculas y sin espacios
-        echo "woocommerce-gateway-$(echo "$country_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')"
-    else
-        # Usar nombre del cliente en minúsculas
-        echo "woocommerce-gateway-$(echo "$client" | tr '[:upper:]' '[:lower:]')"
-    fi
+    local client_id="$1"
+    # Usar CLIENT_ID directamente en formato "cliente-país"
+    echo "woocommerce-gateway-${client_id}"
 }
 
 # Función para convertir CLIENT_ID a formato válido para nombres de funciones PHP
@@ -1097,9 +1091,9 @@ create_white_label_version_with_php() {
     # Esto sobrescribe el CLIENT_ID del template si existe
     CLIENT_ID=$(get_client_id "$CLIENT" "$COUNTRY_NAME")
 
-    # Determinar nombre del proyecto
+    # Determinar nombre del proyecto usando CLIENT_ID en formato "cliente-país"
     local project_name_base
-    project_name_base=$(get_project_name "$CLIENT" "$COUNTRY_NAME")
+    project_name_base=$(get_project_name "$CLIENT_ID")
     local project_name="${project_name_base}-${php_label}"
 
     print_status "Creando versión de marca blanca: $project_name"
