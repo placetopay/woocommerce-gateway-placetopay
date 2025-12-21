@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.0.1] - 2025-12-21
+- Change custom url only with the bug for chile clients
+
 ## [3.0.0] - 2025-12-20
 - Generate zips by tenant config
 
