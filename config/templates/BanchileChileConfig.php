@@ -106,11 +106,6 @@ abstract class CountryConfig
                 'description' => sprintf(__('Enable the environment %s for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
                     'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
             ],
-            'custom_connection_url' => [
-                'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
-                'type' => 'text',
-                'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
-            ],
             'redirect_page_id' => [
                 'title' => __('Return Page', 'woocommerce-gateway-placetopay'),
                 'type' => 'select',
@@ -191,6 +186,13 @@ abstract class CountryConfig
                 ],
                 'default' => $gatewayMethod->getScheduleTaskPath(),
                 'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
+            ];
+
+
+            $fields['custom_connection_url'] = [
+                'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
+                'type' => 'text',
+                'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
             ];
         }
 
