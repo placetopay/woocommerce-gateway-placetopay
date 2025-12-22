@@ -7,7 +7,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'banchile-chile';
-    public const CLIENT = 'Banchile';
+    public const CLIENT = 'Banchile pagos';
     public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/banchile/logos/Logotipo_superior.png';
     public const COUNTRY_CODE = 'CL';
     public const COUNTRY_NAME = 'Chile';
@@ -136,7 +136,7 @@ abstract class CountryConfig
                 'title' => __('Expiration time session', 'woocommerce-gateway-placetopay'),
                 'type' => 'select',
                 'class' => 'wc-enhanced-select',
-                'default' => 2880,
+                'default' => 10,
                 'options' => $gatewayMethod->getListOptionExpirationMinutes(),
                 'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
                 'desc_tip' => true
