@@ -43,7 +43,7 @@ print_error() {
 # Formato esperado: "cliente-país" (ej: "getnet-chile", "placetopay-colombia")
 get_config_class_name() {
     local client_key="$1"
-    
+
     # Convertir clave del cliente (formato "cliente-país") al nombre de la clase de template
     # Ejemplo: "getnet-chile" -> "GetnetChileConfig"
     case "$client_key" in
@@ -77,49 +77,49 @@ get_config_class_name() {
 # Función para obtener configuración de cliente desde el template
 get_client_config() {
     local client_key="$1"
-    
+
     # Obtener nombre de la clase de configuración
     local config_class_name
     config_class_name=$(get_config_class_name "$client_key")
-    
+
     # Determinar qué template usar
     local template_file=""
-    
+
     # Si tenemos un template específico, usarlo
     if [[ -n "$config_class_name" ]]; then
         template_file="${BASE_DIR}/config/templates/${config_class_name}.php"
     fi
-    
+
     # Verificar que el archivo existe
     if [[ -z "$template_file" || ! -f "$template_file" ]]; then
         return 1
     fi
-    
+
     # Usar PHP para extraer la configuración del template
     php -r "
         // Leer el contenido del archivo template
         \$content = file_get_contents('$template_file');
-        
+
         // Extraer constante CLIENT_ID
         if (preg_match(\"/public const CLIENT_ID = ['\\\"]([^'\\\"]+)['\\\"]/\", \$content, \$matches)) {
             echo 'CLIENT_ID=' . \$matches[1] . '|';
         }
-        
+
         // Extraer constante CLIENT
         if (preg_match(\"/public const CLIENT = ['\\\"]([^'\\\"]+)['\\\"]/\", \$content, \$matches)) {
             echo 'CLIENT=' . \$matches[1] . '|';
         }
-        
+
         // Extraer constante COUNTRY_CODE
         if (preg_match(\"/public const COUNTRY_CODE = ['\\\"]([^'\\\"]+)['\\\"]/\", \$content, \$matches)) {
             echo 'COUNTRY_CODE=' . \$matches[1] . '|';
         }
-        
+
         // Extraer constante COUNTRY_NAME
         if (preg_match(\"/public const COUNTRY_NAME = ['\\\"]([^'\\\"]+)['\\\"]/\", \$content, \$matches)) {
             echo 'COUNTRY_NAME=' . \$matches[1] . '|';
         }
-        
+
         // Agregar nombre del template si existe
         if ('$config_class_name' !== '') {
             echo 'TEMPLATE_FILE=' . '$config_class_name' . '|';
@@ -142,7 +142,7 @@ get_all_clients() {
             }
         " 2>/dev/null && return
     fi
-    
+
     # Fallback: listar archivos de templates y construir claves en formato cliente-país
     local templates_dir="${BASE_DIR}/config/templates"
     if [[ -d "$templates_dir" ]]; then
@@ -202,11 +202,11 @@ parse_config() {
 get_client_id() {
     local client="$1"
     local country_name="$2"
-    
-    # Convertir cliente y país a minúsculas y combinarlos con guión
-    local client_lower=$(echo "$client" | tr '[:upper:]' '[:lower:]')
+
+    # Convertir cliente y país a minúsculas, normalizar espacios a guiones y combinarlos con guión
+    local client_lower=$(echo "$client" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
     local country_lower=$(echo "$country_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
-    
+
     echo "${client_lower}-${country_lower}"
 }
 
@@ -230,7 +230,7 @@ get_php_function_id() {
 # Convierte "getnet-chile" -> "GetnetChile" (capitaliza cada palabra después del guión)
 get_namespace_name() {
     local client_id="$1"
-    
+
     # Convertir formato "cliente-país" a "ClientePais" (PascalCase)
     # Dividir por guiones, capitalizar primera letra de cada palabra, unir sin espacios
     echo "$client_id" | awk -F'-' '{
@@ -251,7 +251,7 @@ get_namespace_name() {
 # Convierte "getnet-chile" -> "getnetChile" (primera palabra minúscula, resto en PascalCase)
 get_camel_case_name() {
     local client_id="$1"
-    
+
     # Convertir formato "cliente-país" a "clientePais" (camelCase)
     # Primera palabra en minúsculas, resto en PascalCase
     echo "$client_id" | awk -F'-' '{
@@ -279,38 +279,43 @@ replace_namespaces() {
     local work_dir="$1"
     local old_namespace="PlacetoPay\\PaymentMethod"
     local new_namespace="$2\\PaymentMethod"
-    
+
     print_status "Reemplazando namespaces: $old_namespace -> $new_namespace"
-    
+
     # Buscar y reemplazar en todos los archivos PHP
     # Escapar correctamente para sed
     local old_ns_escaped="PlacetoPay\\\\PaymentMethod"
     local new_ns_escaped="$2\\\\PaymentMethod"
-    
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s|namespace PlacetoPay\\\\PaymentMethod|namespace $2\\\\PaymentMethod|g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s|use PlacetoPay\\\\PaymentMethod|use $2\\\\PaymentMethod|g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s|\\\\PlacetoPay\\\\PaymentMethod|\\\\$2\\\\PaymentMethod|g" {} \;
-    
+
+    for dir in src woocommerce; do
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s|namespace $old_ns_escaped|namespace $new_ns_escaped|g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s|use $old_ns_escaped|use $new_ns_escaped|g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s|\\\\$old_ns_escaped|\\\\$new_ns_escaped|g" {} \;
+
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s|'$old_ns_escaped|'$new_ns_escaped|g" {} \;
+    done
+
     # También actualizar el namespace en CountryConfig.php (ya copiado)
     if [[ -f "$work_dir/src/CountryConfig.php" ]]; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s|namespace PlacetoPay\\\\PaymentMethod|namespace $2\\\\PaymentMethod|g" "$work_dir/src/CountryConfig.php"
+            sed -i '' "s|namespace $old_ns_escaped|namespace $new_ns_escaped|g" "$work_dir/src/CountryConfig.php"
         else
-            sed -i "s|namespace PlacetoPay\\\\PaymentMethod|namespace $2\\\\PaymentMethod|g" "$work_dir/src/CountryConfig.php"
+            sed -i "s|namespace $old_ns_escaped|namespace $new_ns_escaped|g" "$work_dir/src/CountryConfig.php"
         fi
     fi
-    
+
     # Limpiar archivos .bak
     find "$work_dir/src" -type f -name "*.bak" -delete
-    
+
     # También reemplazar en el archivo principal del plugin
     if [[ -f "$work_dir"/*.php ]]; then
         local main_file=$(find "$work_dir" -maxdepth 1 -name "*.php" -type f | head -1)
+
         if [[ -n "$main_file" ]]; then
             if [[ "$OSTYPE" == "darwin"* ]]; then
-                sed -i '' "s|\\\\PlacetoPay\\\\PaymentMethod|\\\\$2\\\\PaymentMethod|g" "$main_file"
+                sed -i '' "s|\\\\$old_ns_escaped|\\\\$new_ns_escaped|g" "$main_file"
             else
-                sed -i "s|\\\\PlacetoPay\\\\PaymentMethod|\\\\$2\\\\PaymentMethod|g" "$main_file"
+                sed -i "s|\\\\$old_ns_escaped|\\\\$new_ns_escaped|g" "$main_file"
             fi
         fi
     fi
@@ -322,7 +327,7 @@ replace_class_names() {
     local client_id="$2"
     local namespace_name
     namespace_name=$(get_namespace_name "$client_id")
-    
+
     # Debug: Verificar que namespace_name esté limpio
     if [[ "$DEBUG" == "1" ]]; then
         echo "DEBUG INFO:"
@@ -331,95 +336,102 @@ replace_class_names() {
         echo "Namespace (raw):"
         echo "$namespace_name" | cat -v
     fi
-    
+
     print_status "Reemplazando nombres de clases para cliente: $client_id"
-    
+
     # Reemplazar GatewayMethod -> GatewayMethod{Client}
     # Usar namespace_name directamente como suffix (ya viene con primera letra mayúscula)
     # Limpiar cualquier carácter oculto o espacios
     local class_suffix=$(echo "$namespace_name" | tr -d '[:space:]' | sed 's/[^a-zA-Z0-9]//g')
-    
+
     # Verificar que class_suffix no esté vacío
     if [[ -z "$class_suffix" ]]; then
         print_error "class_suffix está vacío después de la limpieza. client_id: '$client_id', namespace_name: '$namespace_name'"
         return 1
     fi
-    
+
     # Primero renombrar el archivo GatewayMethod.php -> GatewayMethod{Client}.php
     if [[ -f "$work_dir/src/GatewayMethod.php" ]]; then
         mv "$work_dir/src/GatewayMethod.php" "$work_dir/src/GatewayMethod${class_suffix}.php"
     fi
 
-    # Reemplazar declaración de clase
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethod /class GatewayMethod${class_suffix} /g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethod$/class GatewayMethod${class_suffix}/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethod extends/class GatewayMethod${class_suffix} extends/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::/GatewayMethod${class_suffix}::/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethod()/new GatewayMethod${class_suffix}()/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethod(/new GatewayMethod${class_suffix}(/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod /GatewayMethod${class_suffix} /g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\[GatewayMethod()\]/[GatewayMethod${class_suffix}()]/g" {} \;
-    
-    # Reemplazar referencias al archivo en require/include/require_once para GatewayMethod
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod\.php'/'GatewayMethod${class_suffix}.php'/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\.php\"/\"GatewayMethod${class_suffix}.php\"/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\. 'GatewayMethod\.php'/\. 'GatewayMethod${class_suffix}.php'/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\. \"GatewayMethod\.php\"/\. \"GatewayMethod${class_suffix}.php\"/g" {} \;
-    
-    # Reemplazar WC_Gateway_PlacetoPay -> WC_Gateway_{Client}
-    # Primero renombrar el archivo
-    if [[ -f "$work_dir/src/WC_Gateway_PlacetoPay.php" ]]; then
-        mv "$work_dir/src/WC_Gateway_PlacetoPay.php" "$work_dir/src/WC_Gateway_${class_suffix}.php"
-    fi
-    
-    # Reemplazar declaración de clase y referencias (usar patrones más específicos)
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class WC_Gateway_PlacetoPay$/class WC_Gateway_${class_suffix}/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class WC_Gateway_PlacetoPay /class WC_Gateway_${class_suffix} /g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/WC_Gateway_PlacetoPay::/WC_Gateway_${class_suffix}::/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/new WC_Gateway_PlacetoPay(/new WC_Gateway_${class_suffix}(/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/WC_Gateway_PlacetoPay /WC_Gateway_${class_suffix} /g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/@var WC_Gateway_PlacetoPay/@var WC_Gateway_${class_suffix}/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/return WC_Gateway_PlacetoPay/return WC_Gateway_${class_suffix}/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/instanceof WC_Gateway_PlacetoPay/instanceof WC_Gateway_${class_suffix}/g" {} \;
-    
-    # Reemplazar GatewayMethodBlocks -> GatewayMethodBlocks{Client}
-    # Primero renombrar el archivo
-    if [[ -f "$work_dir/src/GatewayMethodBlocks.php" ]]; then
-        mv "$work_dir/src/GatewayMethodBlocks.php" "$work_dir/src/GatewayMethodBlocks${class_suffix}.php"
-    fi
+    for dir in src woocommerce; do
+        # Reemplazar declaración de clase
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethod /class GatewayMethod${class_suffix} /g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethod$/class GatewayMethod${class_suffix}/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethod extends/class GatewayMethod${class_suffix} extends/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::/GatewayMethod${class_suffix}::/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethod()/new GatewayMethod${class_suffix}()/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethod(/new GatewayMethod${class_suffix}(/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod /GatewayMethod${class_suffix} /g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\[GatewayMethod()\]/[GatewayMethod${class_suffix}()]/g" {} \;
 
-    # Reemplazar declaración de clase
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethodBlocks /class GatewayMethodBlocks${class_suffix} /g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethodBlocks$/class GatewayMethodBlocks${class_suffix}/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethodBlocks extends/class GatewayMethodBlocks${class_suffix} extends/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethodBlocks()/new GatewayMethodBlocks${class_suffix}()/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethodBlocks(/new GatewayMethodBlocks${class_suffix}(/g" {} \;
-    
-    # Reemplazar referencias al archivo en require/include/require_once
-    # Manejar diferentes formatos: 'GatewayMethodBlocks.php', "GatewayMethodBlocks.php", . 'GatewayMethodBlocks.php', etc.
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethodBlocks\.php'/'GatewayMethodBlocks${class_suffix}.php'/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethodBlocks\.php\"/\"GatewayMethodBlocks${class_suffix}.php\"/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\. 'GatewayMethodBlocks\.php'/\. 'GatewayMethodBlocks${class_suffix}.php'/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\. \"GatewayMethodBlocks\.php\"/\. \"GatewayMethodBlocks${class_suffix}.php\"/g" {} \;
-    # También manejar concatenación sin comillas (caso especial)
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ GatewayMethodBlocks\.php/ GatewayMethodBlocks${class_suffix}.php/g" {} \;
-    
-    # Reemplazar nombres de métodos en WC_Gateway_PlacetoPay
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/addPlacetoPayGatewayMethod/add${class_suffix}GatewayMethod/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/actionLinksPlacetopay/actionLinks${class_suffix}/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/->addPlacetoPayGatewayMethod/->add${class_suffix}GatewayMethod/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/->actionLinksPlacetopay/->actionLinks${class_suffix}/g" {} \;
-    
-    # Reemplazar referencias a métodos estáticos y constantes
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\[GatewayMethod::class\]/[GatewayMethod${class_suffix}::class]/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\[GatewayMethodBlocks::class\]/[GatewayMethodBlocks${class_suffix}::class]/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::class/GatewayMethod${class_suffix}::class/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::NOTIFICATION_RETURN_PAGE/GatewayMethod${class_suffix}::NOTIFICATION_RETURN_PAGE/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::validateVersionSupportBlocks/GatewayMethod${class_suffix}::validateVersionSupportBlocks/g" {} \;
-    find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::VERSION/GatewayMethod${class_suffix}::VERSION/g" {} \;
-    
-    # Limpiar archivos .bak
-    find "$work_dir/src" -type f -name "*.bak" -delete
+        # Reemplazar referencias al archivo en require/include/require_once para GatewayMethod
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethod\.php'/'GatewayMethod${class_suffix}.php'/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethod\.php\"/\"GatewayMethod${class_suffix}.php\"/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\. 'GatewayMethod\.php'/\. 'GatewayMethod${class_suffix}.php'/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\. \"GatewayMethod\.php\"/\. \"GatewayMethod${class_suffix}.php\"/g" {} \;
+
+        # Reemplazar WC_Gateway_PlacetoPay -> WC_Gateway_{Client}
+        # Primero renombrar el archivo
+        if [[ -f "$work_dir/$dir/WC_Gateway_PlacetoPay.php" ]]; then
+            mv "$work_dir/$dir/WC_Gateway_PlacetoPay.php" "$work_dir/$dir/WC_Gateway_${class_suffix}.php"
+        fi
+
+        # Reemplazar declaración de clase y referencias (usar patrones más específicos)
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class WC_Gateway_PlacetoPay$/class WC_Gateway_${class_suffix}/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class WC_Gateway_PlacetoPay /class WC_Gateway_${class_suffix} /g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/WC_Gateway_PlacetoPay::/WC_Gateway_${class_suffix}::/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/new WC_Gateway_PlacetoPay(/new WC_Gateway_${class_suffix}(/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/WC_Gateway_PlacetoPay /WC_Gateway_${class_suffix} /g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/@var WC_Gateway_PlacetoPay/@var WC_Gateway_${class_suffix}/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/return WC_Gateway_PlacetoPay/return WC_Gateway_${class_suffix}/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/instanceof WC_Gateway_PlacetoPay/instanceof WC_Gateway_${class_suffix}/g" {} \;
+
+        # Reemplazar GatewayMethodBlocks -> GatewayMethodBlocks{Client}
+        # Primero renombrar el archivo
+        if [[ -f "$work_dir/$dir/GatewayMethodBlocks.php" ]]; then
+            mv "$work_dir/$dir/GatewayMethodBlocks.php" "$work_dir/$dir/GatewayMethodBlocks${class_suffix}.php"
+        fi
+
+        # Reemplazar declaración de clase
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethodBlocks /class GatewayMethodBlocks${class_suffix} /g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethodBlocks$/class GatewayMethodBlocks${class_suffix}/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/^class GatewayMethodBlocks extends/class GatewayMethodBlocks${class_suffix} extends/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethodBlocks()/new GatewayMethodBlocks${class_suffix}()/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/new GatewayMethodBlocks(/new GatewayMethodBlocks${class_suffix}(/g" {} \;
+
+        # Reemplazar referencias al archivo en require/include/require_once
+        # Manejar diferentes formatos: 'GatewayMethodBlocks.php', "GatewayMethodBlocks.php", . 'GatewayMethodBlocks.php', etc.
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/'GatewayMethodBlocks\.php'/'GatewayMethodBlocks${class_suffix}.php'/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\"GatewayMethodBlocks\.php\"/\"GatewayMethodBlocks${class_suffix}.php\"/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\. 'GatewayMethodBlocks\.php'/\. 'GatewayMethodBlocks${class_suffix}.php'/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\. \"GatewayMethodBlocks\.php\"/\. \"GatewayMethodBlocks${class_suffix}.php\"/g" {} \;
+        # También manejar concatenación sin comillas (caso especial)
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/ GatewayMethodBlocks\.php/ GatewayMethodBlocks${class_suffix}.php/g" {} \;
+
+        # Reemplazar nombres de métodos en WC_Gateway_PlacetoPay
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/addPlacetoPayGatewayMethod/add${class_suffix}GatewayMethod/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/actionLinksPlacetopay/actionLinks${class_suffix}/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/->addPlacetoPayGatewayMethod/->add${class_suffix}GatewayMethod/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/->actionLinksPlacetopay/->actionLinks${class_suffix}/g" {} \;
+
+        # Reemplazar referencias a métodos estáticos y constantes
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\[GatewayMethod::class\]/[GatewayMethod${class_suffix}::class]/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\[GatewayMethodBlocks::class\]/[GatewayMethodBlocks${class_suffix}::class]/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::class/GatewayMethod${class_suffix}::class/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::NOTIFICATION_RETURN_PAGE/GatewayMethod${class_suffix}::NOTIFICATION_RETURN_PAGE/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::validateVersionSupportBlocks/GatewayMethod${class_suffix}::validateVersionSupportBlocks/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/GatewayMethod::VERSION/GatewayMethod${class_suffix}::VERSION/g" {} \;
+
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\\\\GatewayMethod\\\\/\\\\GatewayMethod${class_suffix}\\\\/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\\\\GatewayMethod::/\\\\GatewayMethod${class_suffix}::/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/\\\\GatewayMethod;/\\\\GatewayMethod${class_suffix};/g" {} \;
+        find "$work_dir/$dir" -type f -name "*.php" -exec sed -i.bak "s/ GatewayMethod::/ GatewayMethod${class_suffix}::/g" {} \;
+
+        # Limpiar archivos .bak
+        find "$work_dir/$dir" -type f -name "*.bak" -delete
+    done
 }
 
 # Función para reemplazar payment method IDs y endpoints
@@ -428,14 +440,14 @@ replace_payment_method_ids() {
     local client_id="$2"
     local namespace_name
     namespace_name=$(get_namespace_name "$client_id")
-    
+
     print_status "Reemplazando payment method IDs y endpoints para: $client_id"
-    
+
     # Reemplazar payment method ID: 'placetopay' -> '{client_id}'
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\\\$this->id = 'placetopay'/\\\$this->id = '${client_id}'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'placetopay'/'${client_id}'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"placetopay\"/\"${client_id}\"/g" {} \;
-    
+
     # Reemplazar ucfirst($client_id) y ucfirst(CountryConfig::CLIENT_ID) con el namespace_name correcto
     # Esto corrige el problema donde ucfirst('banchile-chile') genera 'Banchile-chile' en lugar de 'BanchileChile'
     # Reemplazar en concatenaciones de strings: 'GatewayMethod' . ucfirst(...) -> 'GatewayMethod${namespace_name}'
@@ -470,14 +482,14 @@ replace_payment_method_ids() {
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ucfirst(\\\$client_id)/'${namespace_name}'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ucfirst(CountryConfig::CLIENT_ID)/'${namespace_name}'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/ucfirst(\\\\PlacetoPay\\\\PaymentMethod\\\\CountryConfig::CLIENT_ID)/'${namespace_name}'/g" {} \;
-    
+
     # Reemplazar endpoints REST: 'placetopay-payment/v2' -> '{client_id}-payment/v2'
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'placetopay-payment\/v2'/'${client_id}-payment\/v2'/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/\"placetopay-payment\/v2\"/\"${client_id}-payment\/v2\"/g" {} \;
-    
+
     # Reemplazar NOTIFICATION_RETURN_PAGE específicamente primero (antes de reemplazos genéricos)
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/const NOTIFICATION_RETURN_PAGE = 'placetopay_notification_return_page'/const NOTIFICATION_RETURN_PAGE = '${client_id}_notification_return_page'/g" {} \;
-    
+
     # Reemplazar hooks y acciones específicos ANTES del reemplazo genérico de 'placetopay_'
     # Esto evita que se reemplacen strings que ya tienen el client_id
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/'placetopay_init'/'${client_id}_init'/g" {} \;
@@ -490,13 +502,13 @@ replace_payment_method_ids() {
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/placetopay_init/${client_id}_init/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/placetopay_response/${client_id}_response/g" {} \;
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/placetopay_notification/${client_id}_notification/g" {} \;
-    
+
     # NO hacer reemplazo genérico de 'placetopay_' porque ya reemplazamos todos los casos específicos arriba
     # Si hay otros casos de 'placetopay_' que necesiten reemplazo, deben agregarse específicamente arriba
-    
+
     # Reemplazar sección de configuración en URLs: section=placetopay -> section={client_id}
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/section=placetopay/section=${client_id}/g" {} \;
-    
+
     # Reemplazar en archivo principal (solo settings, NO el dominio de texto)
     if [[ -f "$work_dir"/*.php ]]; then
         local main_file=$(find "$work_dir" -maxdepth 1 -name "*.php" -type f | head -1)
@@ -512,11 +524,11 @@ replace_payment_method_ids() {
             fi
         fi
     fi
-    
+
     # Reemplazar también en archivos PHP de src (solo settings, NO el dominio de texto)
     find "$work_dir/src" -type f -name "*.php" -exec sed -i.bak "s/woocommerce_placetopay_settings/woocommerce_${client_id}_settings/g" {} \;
     find "$work_dir/src" -type f -name "*.bak" -delete
-    
+
     # Limpiar archivos .bak
     find "$work_dir/src" -type f -name "*.bak" -delete
 }
@@ -527,13 +539,13 @@ rename_cron_files() {
     local client_id="$2"
     local namespace_name
     namespace_name=$(get_namespace_name "$client_id")
-    
+
     print_status "Renombrando archivos de cron para: $client_id"
-    
+
     # Renombrar ProcessPendingOrderCron.php
     if [[ -f "$work_dir/cron/ProcessPendingOrderCron.php" ]]; then
         mv "$work_dir/cron/ProcessPendingOrderCron.php" "$work_dir/cron/ProcessPendingOrderCron${namespace_name}.php"
-        
+
         # Actualizar referencias en el archivo renombrado
         if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' "s/use PlacetoPay\\\\PaymentMethod\\\\GatewayMethod;/use ${namespace_name}\\\\PaymentMethod\\\\GatewayMethod${namespace_name};/g" "$work_dir/cron/ProcessPendingOrderCron${namespace_name}.php"
@@ -543,7 +555,7 @@ rename_cron_files() {
             sed -i "s/GatewayMethod::/GatewayMethod${namespace_name}::/g" "$work_dir/cron/ProcessPendingOrderCron${namespace_name}.php"
         fi
     fi
-    
+
     # Actualizar referencia en GatewayMethod.php
     if [[ -f "$work_dir/src/GatewayMethod${namespace_name}.php" ]]; then
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -561,19 +573,19 @@ rename_cron_files() {
 # Solo compilamos los .po a .mo sin renombrar nada
 ensure_translation_files() {
     local work_dir="$1"
-    
+
     print_status "Compilando archivos de traducciones..."
-    
+
     # Asegurar que el directorio languages existe
     mkdir -p "${work_dir}/languages"
-    
+
     # Buscar y compilar todos los archivos .po (usando el nuevo dominio general)
     local found_po=0
     for po_file in "${work_dir}"/languages/woocommerce-gateway-translations-*.po "${work_dir}"/languages/woocommerce-gateway-translations-*.po; do
         if [[ -f "$po_file" ]]; then
             found_po=1
             local mo_file="${po_file%.po}.mo"
-            
+
             # Compilar .po a .mo si msgfmt está disponible
             if command -v msgfmt >/dev/null 2>&1; then
                 print_status "Compilando: $(basename "$po_file") -> $(basename "$mo_file")"
@@ -593,7 +605,7 @@ ensure_translation_files() {
             fi
         fi
     done
-    
+
     if [[ "$found_po" -eq 0 ]]; then
         print_warning "No se encontraron archivos .po en languages/"
         # Copiar archivos de traducciones desde el directorio base si no existen
@@ -610,28 +622,28 @@ rename_translation_files() {
     local work_dir="$1"
     local client_id="$2"
     local text_domain="woocommerce-gateway-${client_id}"
-    
+
     # 1. Detectar si el país destino habla español
     # Usamos COUNTRY_CODE que ya está disponible desde parse_config
     local target_locale=""
     if [[ -n "$COUNTRY_CODE" ]]; then
         target_locale="es_${COUNTRY_CODE}" # Ej: es_CL, es_CO, es_UY
     fi
-    
+
     print_status "Procesando traducciones para: $client_id (Locale objetivo: $target_locale)"
-    
+
     # 2. Encontrar el archivo maestro de español (es_ES)
     local base_po="${work_dir}/languages/woocommerce-gateway-translations-es_ES.po"
-    
+
     # Si no existe exactamente ese, buscamos cualquiera que empiece por es_
     if [[ ! -f "$base_po" ]]; then
         base_po=$(find "${work_dir}/languages" -name "woocommerce-gateway-translations-es_*.po" | head -n 1)
     fi
-    
+
     # 3. La Magia: Duplicación Automática ("Usa el general")
     if [[ -f "$base_po" && -n "$target_locale" ]]; then
         local target_po_legacy="${work_dir}/languages/woocommerce-gateway-translations-${target_locale}.po"
-        
+
         # Si NO existe el archivo específico (ej: es_CL), creamos una copia del es_ES
         if [[ ! -f "$target_po_legacy" ]]; then
             print_status "Generando traducción para $target_locale basada en el Español General..."
@@ -644,7 +656,7 @@ rename_translation_files() {
             fi
         fi
     fi
-    
+
     # 4. Renombrado y Compilación Masiva
     # Ahora procesamos todos los archivos .po que existan (originales + el que acabamos de clonar)
     local found_files=0
@@ -653,20 +665,20 @@ rename_translation_files() {
             found_files=1
             # Extraer el locale del nombre actual (ej: es_CL, es_ES, en_US)
             local locale=$(basename "$po_file" | sed 's/woocommerce-gateway-translations-\(.*\)\.po/\1/')
-            
+
             local new_po="${work_dir}/languages/${text_domain}-${locale}.po"
             local new_mo="${work_dir}/languages/${text_domain}-${locale}.mo"
-            
+
             # A. Mover archivo al nuevo nombre (con el nuevo text-domain)
             mv "$po_file" "$new_po"
-            
+
             # B. Actualizar el Text Domain dentro del archivo .po (Header)
             if [[ "$OSTYPE" == "darwin"* ]]; then
                 sed -i '' "s/woocommerce-gateway-translations/${text_domain}/g" "$new_po"
             else
                 sed -i "s/woocommerce-gateway-translations/${text_domain}/g" "$new_po"
             fi
-            
+
             # C. Compilar a binario .mo (Vital para WordPress)
             if command -v msgfmt >/dev/null 2>&1; then
                 print_status "Compilando traducciones: ${new_po} -> ${new_mo}"
@@ -683,11 +695,11 @@ rename_translation_files() {
             fi
         fi
     done
-    
+
     # Limpieza final de archivos viejos
     rm -f "${work_dir}"/languages/woocommerce-gateway-translations-*.mo
     rm -f "${work_dir}"/languages/woocommerce-gateway-translations-*.po
-    
+
     if [[ "$found_files" -eq 0 ]]; then
         print_warning "No se encontraron archivos de traducción base (.po)"
         # Crear directorio si no existe
@@ -711,9 +723,9 @@ replace_text_domain() {
     local client_id="$2"
     local old_domain="woocommerce-gateway-translations"
     local new_domain="woocommerce-gateway-${client_id}"
-    
+
     print_status "Reemplazando dominio de texto: $old_domain -> $new_domain"
-    
+
     # Usar un enfoque más simple y robusto: reemplazar todas las ocurrencias del dominio
     # en contextos donde sabemos que es seguro (dentro de comillas)
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -727,7 +739,7 @@ replace_text_domain() {
         # Reemplazar "woocommerce-gateway-translations" con comillas dobles
         find "$work_dir" -type f -name "*.php" -exec sed -i "s/\"${old_domain}\"/\"${new_domain}\"/g" {} \;
     fi
-    
+
     # Verificar que el reemplazo funcionó (solo para debug)
     if [[ "$DEBUG" == "1" ]]; then
         local remaining=$(grep -r "'${old_domain}'" "$work_dir" --include="*.php" 2>/dev/null | wc -l | tr -d ' ')
@@ -745,16 +757,16 @@ rename_checkout_js() {
     local client_id="$2"
     local namespace_name
     namespace_name=$(get_namespace_name "$client_id")
-    
+
     print_status "Renombrando archivo checkout.js para cliente: $client_id"
-    
+
     # Renombrar checkout.js a checkout_{client_id}.js
     if [[ -f "$work_dir/block/checkout.js" ]]; then
         # Primero inyectar el client_id en el código JavaScript para identificación única
         # Esto asegura que cada script se identifique correctamente incluso si WordPress los deduplica
         local js_file="$work_dir/block/checkout_${client_id}.js"
         cp "$work_dir/block/checkout.js" "$js_file"
-        
+
         # Agregar un comentario único al inicio del archivo con el client_id
         # Esto hace que cada archivo tenga contenido único y evita deduplicación
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -767,10 +779,10 @@ rename_checkout_js() {
             sed -i "1s|^|// CLIENT_ID: ${client_id}\n|" "$js_file"
             sed -i "s|Script iniciado - buscando datos del gateway|Script iniciado para ${client_id} - buscando datos del gateway|g" "$js_file"
         fi
-        
+
         # Eliminar el archivo original
         rm -f "$work_dir/block/checkout.js"
-        
+
         # Actualizar referencias en GatewayMethodBlocks.php
         if [[ -f "$work_dir/src/GatewayMethodBlocks${namespace_name}.php" ]]; then
             if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -788,28 +800,28 @@ rename_checkout_js() {
 create_country_config() {
     local target_file="$1"
     local client_key="$2"
-    
+
     # Obtener nombre de la clase de configuración
     local config_class_name
     config_class_name=$(get_config_class_name "$client_key")
-    
+
     # Determinar qué template usar
     local template_file=""
-    
+
     # Si tenemos un template específico, usarlo
     if [[ -n "$config_class_name" ]]; then
         template_file="${BASE_DIR}/config/templates/${config_class_name}.php"
     fi
-    
+
     # Verificar que el archivo existe
     if [[ -z "$template_file" || ! -f "$template_file" ]]; then
         print_error "Template no encontrado para cliente: $client_key"
         print_error "Archivo esperado: ${BASE_DIR}/config/templates/${config_class_name}.php"
         return 1
     fi
-    
+
     print_status "Copiando template: $config_class_name"
-    
+
     # Copiar el template
     cp "$template_file" "$target_file"
 }
@@ -882,12 +894,15 @@ cleanup_build_files() {
     rm -rf "$work_dir/temp_builds"
     rm -rf "$work_dir/config"*
     rm -rf "$work_dir"/*.sh
-    
+
     # Limpiar archivos de desarrollo adicionales
     rm -Rf "$work_dir/.phpactor.json"
     rm -Rf "$work_dir/.php-cs-fixer.cache"
     rm -Rf "$work_dir/.vimrc.setup"
-    rm -Rf "$work_dir"/*.log
+    rm -Rf "$work_dir/.hasts"
+    rm -Rf "$work_dir/.hasaia"
+    rm -Rf "$work_dir/"*.sql
+    rm -Rf "$work_dir/"*.log
 
     # Limpiar vendor según el Makefile de WooCommerce (líneas 34-42)
     if [[ -d "$work_dir/vendor" ]]; then
@@ -1016,7 +1031,7 @@ function wc_gateway_CLIENTID()
     }
 
     require_once(__DIR__ . '/src/helpers.php');
-    
+
     // Cargar el autoloader de Composer solo si no está ya cargado
     // Esto evita conflictos cuando múltiples plugins de la misma familia están instalados
     $autoload_file = __DIR__ . '/vendor/autoload.php';
@@ -1025,7 +1040,7 @@ function wc_gateway_CLIENTID()
         // Cada plugin tiene su propio vendor/autoload.php con hash único
         require_once($autoload_file);
     }
-    
+
     // Incluir directamente el archivo de la clase principal para asegurar que se carga
     // El autoloader puede no encontrarlo si el namespace cambió
     require_once(__DIR__ . '/src/WC_Gateway_CLIENTCLASSNAME.php');
@@ -1041,7 +1056,7 @@ EOF
 
     # El namespace_name es el mismo que el nombre de clase
     local class_name="$5"
-    
+
     # Reemplazar placeholders (compatible con macOS y Linux)
     # IMPORTANTE: Reemplazar CLIENTNAMESPACE antes que CLIENTNAME para evitar conflictos
     if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -1088,8 +1103,15 @@ create_white_label_version_with_php() {
     parse_config "$config"
 
     # Generar CLIENT_ID en formato "cliente-país" (con guión)
-    # Esto sobrescribe el CLIENT_ID del template si existe
-    CLIENT_ID=$(get_client_id "$CLIENT" "$COUNTRY_NAME")
+    # Si CLIENT_ID ya existe en el template, normalizarlo (eliminar espacios)
+    # Si no existe o está vacío, generarlo desde CLIENT y COUNTRY_NAME
+    if [[ -n "$CLIENT_ID" ]]; then
+        # Normalizar CLIENT_ID existente: convertir espacios a guiones y a minúsculas
+        CLIENT_ID=$(echo "$CLIENT_ID" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    else
+        # Generar CLIENT_ID desde CLIENT y COUNTRY_NAME
+        CLIENT_ID=$(get_client_id "$CLIENT" "$COUNTRY_NAME")
+    fi
 
     # Determinar nombre del proyecto usando CLIENT_ID en formato "cliente-país"
     local project_name_base
@@ -1143,7 +1165,7 @@ create_white_label_version_with_php() {
 
     # Renombrar archivos de cron
     rename_cron_files "$work_dir" "$CLIENT_ID"
-    
+
     # Renombrar archivo JavaScript del checkout (debe hacerse después de renombrar clases)
     rename_checkout_js "$work_dir" "$CLIENT_ID"
 
@@ -1189,7 +1211,7 @@ create_white_label_version_with_php() {
             # Usar un patrón más específico para asegurar que coincida
             sed -i "s|\"name\": \"placetopay/gateway-method\",|\"name\": \"placetopay/gateway-method-${CLIENT_ID}\",|g" "$composer_file"
         fi
-        
+
         # Verificar que el cambio se aplicó correctamente
         if grep -q "\"name\": \"placetopay/gateway-method-${CLIENT_ID}\"" "$composer_file"; then
             print_status "✓ composer.json actualizado correctamente con nombre único: placetopay/gateway-method-${CLIENT_ID}"
@@ -1200,10 +1222,10 @@ create_white_label_version_with_php() {
             fi
         fi
     fi
-    
+
     # Instalar dependencias de Composer con la versión específica de PHP
     install_composer_dependencies "$work_dir" "$php_version"
-    
+
     # Regenerar autoloader después de renombrar archivos para que encuentre las clases con nuevos namespaces
     print_status "Regenerando autoloader de Composer..."
     cd "$work_dir"

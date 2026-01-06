@@ -41,13 +41,13 @@ class GatewayMethod extends WC_Payment_Gateway
     const META_PROCESS_URL = '_p2p_process_url';
 
     /**
-     * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
+     * URI endpoint namespace via wordpress for the notification of the service
      * @var array
      */
     const PAYMENT_ENDPOINT_NAMESPACE = 'placetopay-payment/v2';
 
     /**
-     * PlacetoPay uri endpoint namespace via wordpress for the notification of the service
+     * URI endpoint namespace via wordpress for the notification of the service
      * @var array
      */
     const PAYMENT_ENDPOINT_CALLBACK = '/callback/';
@@ -238,7 +238,7 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * Endpoint for the notification of PlacetoPay
+     * Endpoint for the notification
      *
      * @param \WP_REST_Request $req
      * @return mixed
@@ -578,7 +578,7 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * After of process_payment, generate the PlacetoPay block modal with form datas to sending
+     * After of process_payment, generate the payment block modal with form datas to sending
      *
      * @param $orderId
      */
@@ -602,7 +602,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 }
             }
 
-            // Add information to the order to notify that exit to PlacetoPay
+            // Add information to the order to notify that exit to payment
             // and invalidates the shopping cart
             $order = new WC_Order($orderId);
             $order->update_status('on-hold', sprintf(__('Redirecting to %s', 'woocommerce-gateway-translations'), $this->getClient()));
@@ -633,7 +633,7 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * After checkResponse, Process PlacetoPay response and update order information
+     * After checkResponse, Process response and update order information
      *
      * @param array $req Response data in array format
      * @return void
@@ -681,7 +681,7 @@ class GatewayMethod extends WC_Payment_Gateway
             return;
         }
 
-        // Register status PlacetoPay for the order
+        // Register status payment for the order
         update_post_meta($order->get_id(), self::META_STATUS, $status);
 
         $this->logger([
@@ -1624,10 +1624,6 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getLightboxScriptSource(): string
     {
-        if ($this->settings['country'] === Country::EC) {
-            return 'https://checkout.placetopay.ec/lightbox.min.js';
-        }
-
         return 'https://checkout.placetopay.com/lightbox.min.js';
     }
 

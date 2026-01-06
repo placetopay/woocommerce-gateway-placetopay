@@ -7,7 +7,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'banchile-chile';
-    public const CLIENT = 'Banchile';
+    public const CLIENT = 'Banchile pagos';
     public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/banchile/logos/Logotipo_superior.png';
     public const COUNTRY_CODE = 'CL';
     public const COUNTRY_NAME = 'Chile';
@@ -106,11 +106,6 @@ abstract class CountryConfig
                 'description' => sprintf(__('Enable the environment %s for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
                     'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
             ],
-            'custom_connection_url' => [
-                'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
-                'type' => 'text',
-                'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
-            ],
             'redirect_page_id' => [
                 'title' => __('Return Page', 'woocommerce-gateway-placetopay'),
                 'type' => 'select',
@@ -141,7 +136,7 @@ abstract class CountryConfig
                 'title' => __('Expiration time session', 'woocommerce-gateway-placetopay'),
                 'type' => 'select',
                 'class' => 'wc-enhanced-select',
-                'default' => 2880,
+                'default' => 10,
                 'options' => $gatewayMethod->getListOptionExpirationMinutes(),
                 'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
                 'desc_tip' => true
@@ -191,6 +186,13 @@ abstract class CountryConfig
                 ],
                 'default' => $gatewayMethod->getScheduleTaskPath(),
                 'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
+            ];
+
+
+            $fields['custom_connection_url'] = [
+                'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
+                'type' => 'text',
+                'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
             ];
         }
 
