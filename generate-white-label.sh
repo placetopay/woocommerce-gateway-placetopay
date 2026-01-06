@@ -203,8 +203,8 @@ get_client_id() {
     local client="$1"
     local country_name="$2"
     
-    # Convertir cliente y país a minúsculas y combinarlos con guión
-    local client_lower=$(echo "$client" | tr '[:upper:]' '[:lower:]')
+    # Convertir cliente y país a minúsculas, normalizar espacios a guiones y combinarlos con guión
+    local client_lower=$(echo "$client" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
     local country_lower=$(echo "$country_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
     
     echo "${client_lower}-${country_lower}"
@@ -1088,8 +1088,15 @@ create_white_label_version_with_php() {
     parse_config "$config"
 
     # Generar CLIENT_ID en formato "cliente-país" (con guión)
-    # Esto sobrescribe el CLIENT_ID del template si existe
-    CLIENT_ID=$(get_client_id "$CLIENT" "$COUNTRY_NAME")
+    # Si CLIENT_ID ya existe en el template, normalizarlo (eliminar espacios)
+    # Si no existe o está vacío, generarlo desde CLIENT y COUNTRY_NAME
+    if [[ -n "$CLIENT_ID" ]]; then
+        # Normalizar CLIENT_ID existente: convertir espacios a guiones y a minúsculas
+        CLIENT_ID=$(echo "$CLIENT_ID" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+    else
+        # Generar CLIENT_ID desde CLIENT y COUNTRY_NAME
+        CLIENT_ID=$(get_client_id "$CLIENT" "$COUNTRY_NAME")
+    fi
 
     # Determinar nombre del proyecto usando CLIENT_ID en formato "cliente-país"
     local project_name_base
