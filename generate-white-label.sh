@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Generar versiones de marca blanca del plugin WooCommerce PlacetoPay
 # Este script crea versiones personalizadas para diferentes clientes
@@ -903,6 +903,7 @@ cleanup_build_files() {
     rm -Rf "$work_dir/.hasaia"
     rm -Rf "$work_dir/"*.sql
     rm -Rf "$work_dir/"*.log
+    rm -Rf "$work_dir/"*.diff
 
     # Limpiar vendor según el Makefile de WooCommerce (líneas 34-42)
     if [[ -d "$work_dir/vendor" ]]; then
@@ -1091,6 +1092,7 @@ create_white_label_version_with_php() {
     local client_key="$1"
     local php_version="$2"
     local php_label="$3"
+    local plugin_version="$4"
     local config
     config=$(get_client_config "$client_key")
 
@@ -1116,7 +1118,7 @@ create_white_label_version_with_php() {
     # Determinar nombre del proyecto usando CLIENT_ID en formato "cliente-país"
     local project_name_base
     project_name_base=$(get_project_name "$CLIENT_ID")
-    local project_name="${project_name_base}-${php_label}"
+    local project_name="${project_name_base}-${plugin_version}-${php_label}"
 
     print_status "Creando versión de marca blanca: $project_name"
     print_status "Cliente: $CLIENT, País: $COUNTRY_NAME ($COUNTRY_CODE), PHP: $php_version"
@@ -1255,6 +1257,7 @@ create_white_label_version_with_php() {
 # Función para crear todas las versiones de marca blanca para un cliente
 create_white_label_version() {
     local client_key="$1"
+    local plugin_version="$2"
 
     print_status "========================================="
     print_status "Procesando cliente: $client_key"
@@ -1265,7 +1268,7 @@ create_white_label_version() {
     local i=0
     for php_version in "${PHP_VERSIONS[@]}"; do
         local php_label="${PHP_VERSION_LABELS[$i]}"
-        create_white_label_version_with_php "$client_key" "$php_version" "$php_label"
+        create_white_label_version_with_php "$client_key" "$php_version" "$php_label" "$plugin_version"
         echo
         i=$((i + 1))
     done
@@ -1274,6 +1277,7 @@ create_white_label_version() {
 
 # Función principal
 main() {
+    local plugin_version="$1"
     print_status "Iniciando proceso de generación de marca blanca..."
 
     # Verificar que existe el archivo de configuración
@@ -1290,7 +1294,8 @@ main() {
 
     # Procesar cada configuración de cliente
     for client_key in $(get_all_clients); do
-        create_white_label_version "$client_key"
+        create_white_label_version "$client_key" "$plugin_version"
+
         echo
     done
 
@@ -1306,12 +1311,12 @@ main() {
     print_status "Versiones de marca blanca generadas:"
     ls -la "$OUTPUT_DIR"/*.zip 2>/dev/null | while read -r line; do
         echo "  $line"
-    done || print_warning "No se encontraron archivos ZIP en el directorio de salida"
+    done || print_warning "No se encontraron archivos ZIP en el directorio de salida: $OUTPUT_DIR"
 }
 
 # Mostrar información de uso
 usage() {
-    echo "Uso: $0 [OPCIONES] [CLIENTE]"
+    echo "Uso: $0 [OPCIONES] [CLIENTE] [VERSION]"
     echo ""
     echo "Generar versiones de marca blanca del plugin WooCommerce PlacetoPay"
     echo ""
@@ -1319,10 +1324,12 @@ usage() {
     echo "  -h, --help    Mostrar este mensaje de ayuda"
     echo "  -l, --list    Listar configuraciones de clientes disponibles"
     echo "  CLIENTE       Generar solo para un cliente específico (opcional)"
+    echo "  VERSION       Generar .zip para cargar en GitHub tag (opcional)"
     echo ""
     echo "Clientes disponibles:"
     for client in $(get_all_clients); do
         config=$(get_client_config "$client")
+
         if [[ -n "$config" ]]; then
             parse_config "$config"
             echo "  - $client: $CLIENT ($COUNTRY_NAME - $COUNTRY_CODE)"
@@ -1351,21 +1358,28 @@ case "${1:-}" in
         main
         ;;
     *)
-        # Verificar si es un cliente válido
-        config=$(get_client_config "$1")
-        if [[ -n "$config" ]]; then
-            print_status "Generando versión de marca blanca para: $1"
-            rm -rf "$TEMP_DIR" "$OUTPUT_DIR"
-            mkdir -p "$TEMP_DIR" "$OUTPUT_DIR"
-
-            create_white_label_version "$1"
-            rm -rf "$TEMP_DIR"
-            print_success "¡Generación de marca blanca completada para $1!"
+        if [[ "$1" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            main "$1"
         else
-            print_error "Opción desconocida: $1"
-            echo ""
-            usage
-            exit 1
+            # Verificar si es un cliente válido
+            config=$(get_client_config "$1")
+
+            if [[ -n "$config" ]]; then
+                print_status "Generando versión de marca blanca para: $1"
+                rm -rf "$TEMP_DIR" "$OUTPUT_DIR"
+                mkdir -p "$TEMP_DIR" "$OUTPUT_DIR"
+
+                create_white_label_version "$1" "${2-untagged}"
+
+                rm -rf "$TEMP_DIR"
+                print_success "¡Generación de marca blanca completada para $1!"
+            else
+                print_error "Opción desconocida: $1"
+                echo ""
+                usage
+
+                exit 1
+            fi
         fi
         ;;
 esac
