@@ -23,7 +23,9 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-do_action(\PlacetoPay\PaymentMethod\GatewayMethod::NOTIFICATION_RETURN_PAGE);
+use PlacetoPay\PaymentMethod\GatewayMethod;
+
+do_action(GatewayMethod::NOTIFICATION_RETURN_PAGE);
 do_action('woocommerce_before_account_orders', $has_orders);
 
 if ($has_orders) : ?>
@@ -52,14 +54,14 @@ if ($has_orders) : ?>
         <tbody>
             <?php
 
-            $statuses = \PlacetoPay\PaymentMethod\GatewayMethod::getOrderStatusLabels();
+            $statuses = GatewayMethod::getOrderStatusLabels();
 
             foreach ($customer_orders->orders as $customer_order) {
                 $order = wc_get_order($customer_order);
                 $item_count = $order->get_item_count();
                 $status = $statuses[$order->get_status()];
-                $authorizationCodes = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_AUTHORIZATION_CUS, true);
-                $metaStatus = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true);
+                $authorizationCodes = get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS, true);
+                $metaStatus = get_post_meta($order->get_id(), GatewayMethod::META_STATUS, true);
 
                 if (!$metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
                     $authorizationCodes = explode(',', $authorizationCodes);
@@ -74,7 +76,7 @@ if ($has_orders) : ?>
                                     '#',
                                     'hash before order number',
                                     'woocommerce-gateway-placetopay'
-                                ) . \PlacetoPay\PaymentMethod\GatewayMethod::getOrderNumber($order); ?>
+                                ) . GatewayMethod::getOrderNumber($order); ?>
                             </a>
                         </td>
 
