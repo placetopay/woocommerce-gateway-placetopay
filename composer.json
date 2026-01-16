@@ -16,7 +16,7 @@
   },
   "require": {
     "php": "^7.4",
-    "dnetix/redirection": "^2.0"
+    "alejociro/redirection": "^1.0.16"
   },
   "require-dev": {
     "larapack/dd": "1.*"

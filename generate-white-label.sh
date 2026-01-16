@@ -939,13 +939,13 @@ update_main_plugin_file() {
  * Author: CLIENTNAME
  * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
  * Developer: CLIENTNAME
- * Version: 3.0.0
+ * Version: 3.1.0
  *
  * @package PlacetoPay/WC_Gateway_PlacetoPay
  *
  * @author Soporte <soporte@placetopay.com>
  * @copyright (c) 2013-2024 Evertec PlacetoPay S.A.S.
- * @version 3.0.0
+ * @version 3.1.0
  */
 
 if (!defined('ABSPATH')) {
