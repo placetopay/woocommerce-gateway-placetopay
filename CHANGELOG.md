@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.1.0] - 2026-01-15
+- Use sha256 as default hash algorithm in notifications.
+
 ## [3.0.0] - 2025-12-20
 - Generate zips by tenant config
 
