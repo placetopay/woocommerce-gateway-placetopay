@@ -253,11 +253,25 @@ class GatewayMethod extends WC_Payment_Gateway
         $data = $req->get_params();
 
         if (!empty($data['signature']) && !empty($data['requestId'])) {
-            $notification = new Notification($data, $this->tran_key);
+            $expectedSignature = sprintf(
+                '%s%s%s%s',
+                $data['requestId'],
+                $data['status']['status'],
+                $data['status']['date'],
+                $this->tran_key,
+            );
 
-            if (!$notification->isValidNotification()) {
+            if (strpos($data['signature'], ':') === false) {
+                $data['signature'] = 'sha1:' . $data['signature'];
+            }
+
+            [$algo, $signature] = explode(':', $data['signature'], 2);
+
+            $this->logger('signature alghorithm: ' . $algo, 'endpointPlacetoPay');
+
+            if (hash($algo, $expectedSignature) !== $signature) {
                 if ($this->testmode === 'yes') {
-                    return $notification->makeSignature();
+                    return hash($algo, $expectedSignature);
                 }
 
                 return [
@@ -266,7 +280,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 ];
             }
 
-            $transactionInfo = $this->placetopay->query($notification->requestId());
+            $transactionInfo = $this->placetopay->query($data['requestId']);
 
             switch ($transactionInfo->status()->status()) {
                 case Status::ST_FAILED:
