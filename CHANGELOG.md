@@ -2,6 +2,10 @@
 
 [Unreleased]
 
+## [3.1.1] - 2026-01-23
+- Get personalized image correctly.
+- Always parse requestId to integer
+
 ## [3.1.0] - 2026-01-15
 - Use sha256 as default hash algorithm in notifications.
 
