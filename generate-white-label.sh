@@ -956,6 +956,7 @@ update_main_plugin_file() {
     local client_id="${4:-}"
     local namespace_name="${5:-}"
     local client_uri="${6:-}"
+    local plugin_version="${7:-}"
 
     # El namespace_name es el mismo que el nombre de clase
     local class_name="$namespace_name"
@@ -977,6 +978,7 @@ update_main_plugin_file() {
         sed -i '' "s/CLIENTNAME/$client/g" "$target_file"
         sed -i '' "s/CLIENTID/$client_id/g" "$target_file"
         sed -i '' "s|CLIENTURI|$client_uri|g" "$target_file"
+        sed -i '' "s/PLUGINVERSION/$plugin_version/g" "$target_file"
         sed -i '' "s/CLIENTCLASSNAME/$class_name/g" "$target_file"
     else
         # Linux usa -i sin argumento
@@ -990,6 +992,7 @@ update_main_plugin_file() {
         sed -i "s/CLIENTNAME/$client/g" "$target_file"
         sed -i "s/CLIENTID/$client_id/g" "$target_file"
         sed -i "s|CLIENTURI|$client_uri|g" "$target_file"
+        sed -i "s/PLUGINVERSION/$plugin_version/g" "$target_file"
         sed -i "s/CLIENTCLASSNAME/$class_name/g" "$target_file"
     fi
 }
@@ -1088,7 +1091,7 @@ create_white_label_version_with_php() {
     # Convertir CLIENT_ID a formato válido para nombres de funciones PHP (reemplazar guiones con guiones bajos)
     local php_function_id=$(get_php_function_id "$CLIENT_ID")
 
-    update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$php_function_id" "$namespace_name" "$CLIENT_URI"
+    update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$php_function_id" "$namespace_name" "$CLIENT_URI" "$plugin_version"
 
     # Eliminar archivos originales que no corresponden a este cliente
     # Eliminar woocommerce-gateway-placetopay.php (archivo original del template)
