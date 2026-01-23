@@ -7,16 +7,16 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'placetopay-honduras';
+    public const CLIENT_URI = 'https://www.bancatlan.hn/banca-de-personas/pago-link/';
     public const CLIENT = 'Placetopay';
-    public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
+    public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/bancatlan-hn/header.svg';
     public const COUNTRY_CODE = 'HN';
     public const COUNTRY_NAME = 'Honduras';
 
     public static function getEndpoints(): array
     {
         return [
-            Environment::DEV => 'https://checkout-co.placetopay.dev',
-            Environment::TEST => 'https://checkout-test.placetopay.ec',
+            Environment::TEST => 'https://checkout-test.placetopay.com',
             Environment::PROD => 'https://pagoenlinea.bancatlan.hn',
         ];
     }

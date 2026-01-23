@@ -9,12 +9,12 @@
  */
 
 return [
-    'placetopay-colombia',
-    'placetopay-ecuador',
-    'placetopay-belice',
-    'getnet-chile',
-    'placetopay-honduras',
-    'placetopay-uruguay',
     'avalpay-colombia',
     'banchile-chile',
+    'getnet-chile',
+    'placetopay-belice',
+    'placetopay-colombia',
+    'placetopay-ecuador',
+    'placetopay-honduras',
+    'placetopay-uruguay',
 ];

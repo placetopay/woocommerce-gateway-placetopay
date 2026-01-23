@@ -1,18 +1,19 @@
 <?php
 /**
- * Plugin Name: WooCommerce Placetopay Gateway
- * Plugin URI: https://docs-gateway.placetopay.com/docs/webcheckout-docs/9016e976d1ea0-plugins-y-componentes
- * Description: Adds Placetopay Payment Gateway to WooCommerce e-commerce plugin
- * Author: Placetopay
- * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
- * Developer: PlacetoPay
- * Version: 3.1.0
+ * Plugin Name: WooCommerce CLIENTNAME Gateway
+ * Plugin URI: CLIENTURI
+ * Description: Adds CLIENTNAME Payment Gateway to WooCommerce e-commerce plugin
  *
- * @package PlacetoPay/WC_Gateway_PlacetoPay
+ * Author: CLIENTNAME
+ * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
+ * Developer: CLIENTNAME
+ * Version: PLUGINVERSION
+ *
+ * @package \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME
  *
  * @author Soporte <soporte@placetopay.com>
- * @copyright (c) 2013-2024 Evertec PlacetoPay S.A.S.
- * @version 3.1.0
+ * @copyright (c) 2013-2026 Evertec PlacetoPay S.A.S.
+ * @version PLUGINVERSION
  */
 
 if (!defined('ABSPATH')) {
@@ -20,20 +21,18 @@ if (!defined('ABSPATH')) {
 }
 
 if ( is_admin() ) {
-    add_filter( 'all_plugins', 'dynamic_plugin_name' );
+    add_filter( 'all_plugins', 'dynamic_plugin_name_CLIENTID' );
 }
 
 /**
  * @param array $plugins
  * @return array
  */
-function dynamic_plugin_name( $plugins ) {
+function dynamic_plugin_name_CLIENTID( $plugins ) {
     $plugin_file = plugin_basename( __FILE__ );
 
     if ( isset( $plugins[ $plugin_file ] ) ) {
-        $settings = get_option( 'woocommerce_placetopay_settings', false );
-
-        $client = \PlacetoPay\PaymentMethod\CountryConfig::CLIENT;
+        $client = \CLIENTNAMESPACE\PaymentMethod\CountryConfig::CLIENT;
 
         $plugins[ $plugin_file ]['Name'] = 'WooCommerce '. $client . ' Gateway';
         $plugins[ $plugin_file ]['Description'] = 'Adds ' . $client  . ' Payment Gateway to WooCommerce e-commerce plugin';
@@ -44,12 +43,20 @@ function dynamic_plugin_name( $plugins ) {
 }
 
 /**
- * @return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay
+ * IMPORTANTE: WordPress 6.7+ requiere que se cargue en 'init' o después
  */
-function wc_gateway_placetopay()
+function load_CLIENTID_textdomain() {
+    load_plugin_textdomain('woocommerce-gateway-translations', false, dirname(plugin_basename(__FILE__)) . '/languages/');
+}
+
+add_action('init', 'load_CLIENTID_textdomain', 1);
+
+/**
+ * @return \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME
+ */
+function wc_gateway_CLIENTID()
 {
-    load_plugin_textdomain('woocommerce-gateway-placetopay', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate', 201, 3);
+    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate_CLIENTID', 201, 3);
 
     /**
      * @param $template
@@ -57,7 +64,7 @@ function wc_gateway_placetopay()
      * @param $templatePath
      * @return string
      */
-    function wooAddonPluginTemplate($template, $templateName, $templatePath)
+    function wooAddonPluginTemplate_CLIENTID($template, $templateName, $templatePath)
     {
         global $woocommerce;
 
@@ -87,10 +94,11 @@ function wc_gateway_placetopay()
 
     require_once(__DIR__ . '/src/helpers.php');
     require_once(__DIR__ . '/vendor/autoload.php');
-    return \PlacetoPay\PaymentMethod\WC_Gateway_PlacetoPay::getInstance(
-        \PlacetoPay\PaymentMethod\GatewayMethod::VERSION,
+
+    return \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME::getInstance(
+        \CLIENTNAMESPACE\PaymentMethod\GatewayMethodCLIENTCLASSNAME::VERSION,
         __FILE__
     );
 }
 
-add_action('plugins_loaded', 'wc_gateway_placetopay', 0);
+add_action('plugins_loaded', 'wc_gateway_CLIENTID', 0);
