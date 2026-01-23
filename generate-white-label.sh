@@ -105,6 +105,11 @@ get_client_config() {
             echo 'CLIENT_ID=' . \$matches[1] . '|';
         }
 
+        // Extraer constante CLIENT_URI
+        if (preg_match(\"/public const CLIENT_URI = ['\\\"]([^'\\\"]+)['\\\"]/\", \$content, \$matches)) {
+            echo 'CLIENT_URI=' . \$matches[1] . '|';
+        }
+
         // Extraer constante CLIENT
         if (preg_match(\"/public const CLIENT = ['\\\"]([^'\\\"]+)['\\\"]/\", \$content, \$matches)) {
             echo 'CLIENT=' . \$matches[1] . '|';
@@ -177,6 +182,7 @@ parse_config() {
 
     # Reset variables
     CLIENT_ID=""
+    CLIENT_URI=""
     CLIENT=""
     COUNTRY_CODE=""
     COUNTRY_NAME=""
@@ -191,6 +197,7 @@ parse_config() {
 
         case "$key" in
             "CLIENT_ID") CLIENT_ID="$value" ;;
+            "CLIENT_URI") CLIENT_URI="$value" ;;
             "CLIENT") CLIENT="$value" ;;
             "COUNTRY_CODE") COUNTRY_CODE="$value" ;;
             "COUNTRY_NAME") COUNTRY_NAME="$value" ;;
@@ -948,6 +955,7 @@ update_main_plugin_file() {
     local project_name="$3"
     local client_id="${4:-}"
     local namespace_name="${5:-}"
+    local client_uri="${6:-}"
 
     # El namespace_name es el mismo que el nombre de clase
     local class_name="$namespace_name"
@@ -961,25 +969,27 @@ update_main_plugin_file() {
         # macOS usa -i '' para sed
         # Reemplazar CLIENTNAMESPACE con patrón específico para evitar reemplazos parciales
         # Primero reemplazar en contextos de namespace (con backslashes)
-        sed -i '' "s|\\\\CLIENTNAMESPACE\\\\|\\\\$5\\\\|g" "$target_file"
-        sed -i '' "s|CLIENTNAMESPACE\\\\|$5\\\\|g" "$target_file"
+        sed -i '' "s|\\\\CLIENTNAMESPACE\\\\|\\\\$namespace_name\\\\|g" "$target_file"
+        sed -i '' "s|CLIENTNAMESPACE\\\\|$namespace_name\\\\|g" "$target_file"
         # Luego reemplazar cualquier ocurrencia restante de CLIENTNAMESPACE (sin backslashes)
-        sed -i '' "s/CLIENTNAMESPACE/$5/g" "$target_file"
+        sed -i '' "s/CLIENTNAMESPACE/$namespace_name/g" "$target_file"
         # Ahora reemplazar los demás placeholders
         sed -i '' "s/CLIENTNAME/$client/g" "$target_file"
-        sed -i '' "s/CLIENTID/$4/g" "$target_file"
+        sed -i '' "s/CLIENTID/$client_id/g" "$target_file"
+        sed -i '' "s|CLIENTURI|$client_uri|g" "$target_file"
         sed -i '' "s/CLIENTCLASSNAME/$class_name/g" "$target_file"
     else
         # Linux usa -i sin argumento
         # Reemplazar CLIENTNAMESPACE con patrón específico para evitar reemplazos parciales
         # Primero reemplazar en contextos de namespace (con backslashes)
-        sed -i "s|\\\\CLIENTNAMESPACE\\\\|\\\\$5\\\\|g" "$target_file"
-        sed -i "s|CLIENTNAMESPACE\\\\|$5\\\\|g" "$target_file"
+        sed -i "s|\\\\CLIENTNAMESPACE\\\\|\\\\$namespace_name\\\\|g" "$target_file"
+        sed -i "s|CLIENTNAMESPACE\\\\|$namespace_name\\\\|g" "$target_file"
         # Luego reemplazar cualquier ocurrencia restante de CLIENTNAMESPACE (sin backslashes)
-        sed -i "s/CLIENTNAMESPACE/$5/g" "$target_file"
+        sed -i "s/CLIENTNAMESPACE/$namespace_name/g" "$target_file"
         # Ahora reemplazar los demás placeholders
         sed -i "s/CLIENTNAME/$client/g" "$target_file"
-        sed -i "s/CLIENTID/$4/g" "$target_file"
+        sed -i "s/CLIENTID/$client_id/g" "$target_file"
+        sed -i "s|CLIENTURI|$client_uri|g" "$target_file"
         sed -i "s/CLIENTCLASSNAME/$class_name/g" "$target_file"
     fi
 }
@@ -1076,9 +1086,9 @@ create_white_label_version_with_php() {
     print_status "Actualizando archivo principal del plugin..."
 
     # Convertir CLIENT_ID a formato válido para nombres de funciones PHP (reemplazar guiones con guiones bajos)
-    local php_function_id
-    php_function_id=$(get_php_function_id "$CLIENT_ID")
-    update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$php_function_id" "$namespace_name"
+    local php_function_id=$(get_php_function_id "$CLIENT_ID")
+
+    update_main_plugin_file "$work_dir/${project_name_base}.php" "$CLIENT" "$project_name_base" "$php_function_id" "$namespace_name" "$CLIENT_URI"
 
     # Eliminar archivos originales que no corresponden a este cliente
     # Eliminar woocommerce-gateway-placetopay.php (archivo original del template)
