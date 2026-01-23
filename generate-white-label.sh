@@ -28,11 +28,11 @@ print_status() {
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
+    echo -e "${GREEN}[SUCCE]${NC} $1"
 }
 
 print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
+    echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 print_error() {
@@ -183,6 +183,7 @@ parse_config() {
     TEMPLATE_FILE=""
 
     IFS='|' read -ra PARTS <<< "$config"
+
     for part in "${PARTS[@]}"; do
         IFS='=' read -ra KV <<< "$part"
         local key="${KV[0]}"
@@ -853,6 +854,15 @@ install_composer_dependencies() {
     # Instalar dependencias con la versión específica de PHP (línea 21 del Makefile)
     cd "$work_dir"
 
+    hash=`head -c 32 /dev/urandom | md5sum | awk '{print $1}'`
+
+    # Actualizar el nombre del paquete en composer.json para evitar conflictos de autoloader
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s/prestashop-gateway/prestashop-gateway-$hash/g" "$work_dir/composer.json"
+    else
+        sed -i "s/prestashop-gateway/prestashop-gateway-$hash/g" "$work_dir/composer.json"
+    fi
+
     # Verificar si existe el comando php con la versión específica
     if command -v "php${php_version}" >/dev/null 2>&1; then
         print_status "Usando php${php_version} para instalar dependencias..."
@@ -861,6 +871,16 @@ install_composer_dependencies() {
         print_warning "php${php_version} no encontrado, usando php por defecto..."
         php "$(which composer)" install --no-dev 2>&1 | grep -v "^$" || true
     fi
+
+    # Evitar conflictos de spl_autoload
+    sed -i -E "s/ComposerAutoloaderInit([a-zA-Z0-9])/ComposerAutoloaderInit$hash/g" $work_dir/vendor/composer/autoload_real.php
+    sed -i -E "s/ComposerStaticInit([a-zA-Z0-9])/ComposerStaticInit$hash/g" $work_dir/vendor/composer/autoload_real.php
+    sed -i -E "s/'ComposerStaticInit([a-zA-Z0-9])'/'ComposerStaticInit$hash'/g" $work_dir/vendor/composer/autoload_real.php
+
+    sed -i -E "s/ComposerAutoloaderInit([a-zA-Z0-9])/ComposerAutoloaderInit$hash/g" $work_dir/vendor/composer/autoload_static.php
+    sed -i -E "s/ComposerStaticInit([a-zA-Z0-9])/ComposerStaticInit$hash/g" $work_dir/vendor/composer/autoload_static.php
+
+    sed -i -E "s/ComposerAutoloaderInit([a-zA-Z0-9])/ComposerAutoloaderInit$hash/g" $work_dir/vendor/autoload.php
 
     cd "$BASE_DIR"
 }
@@ -929,134 +949,11 @@ update_main_plugin_file() {
     local client_id="${4:-}"
     local namespace_name="${5:-}"
 
-    # Crear archivo principal del plugin actualizado
-    cat > "$target_file" << 'EOF'
-<?php
-/**
- * Plugin Name: WooCommerce CLIENTNAME Gateway
- * Plugin URI: https://docs-gateway.placetopay.com/docs/webcheckout-docs/9016e976d1ea0-plugins-y-componentes
- * Description: Adds CLIENTNAME Payment Gateway to WooCommerce e-commerce plugin
- * Author: CLIENTNAME
- * Author URI: https://www.evertecinc.com/pasarela-de-pagos-e-commerce/
- * Developer: CLIENTNAME
- * Version: 3.1.1
- *
- * @package PlacetoPay/WC_Gateway_PlacetoPay
- *
- * @author Soporte <soporte@placetopay.com>
- * @copyright (c) 2013-2026 Evertec PlacetoPay S.A.S.
- * @version 3.1.1
- */
-
-if (!defined('ABSPATH')) {
-    exit; // Exit if accessed directly
-}
-
-if ( is_admin() ) {
-    add_filter( 'all_plugins', 'dynamic_plugin_name_CLIENTID' );
-}
-
-/**
- * @param array $plugins
- * @return array
- */
-if ( ! function_exists( 'dynamic_plugin_name_CLIENTID' ) ) {
-function dynamic_plugin_name_CLIENTID( $plugins ) {
-    $plugin_file = plugin_basename( __FILE__ );
-    if ( isset( $plugins[ $plugin_file ] ) ) {
-        $settings = get_option( 'woocommerce_CLIENTID_settings', false );
-        $client = \CLIENTNAMESPACE\PaymentMethod\CountryConfig::CLIENT;
-        $plugins[ $plugin_file ]['Name'] = 'WooCommerce '. $client . ' Gateway';
-        $plugins[ $plugin_file ]['Description'] = 'Adds ' . $client  . ' Payment Gateway to WooCommerce e-commerce plugin';
-        $plugins[ $plugin_file ]['Author'] = $client;
-    }
-    return $plugins;
-}
-}
-
-/**
- * @return \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME
- */
-/**
- * Cargar traducciones del plugin
- * IMPORTANTE: WordPress 6.7+ requiere que se cargue en 'init' o después
- */
-if ( ! function_exists( 'load_CLIENTID_textdomain' ) ) {
-function load_CLIENTID_textdomain() {
-    load_plugin_textdomain('woocommerce-gateway-translations', false, dirname(plugin_basename(__FILE__)) . '/languages/');
-}
-}
-add_action('init', 'load_CLIENTID_textdomain', 1);
-
-/**
- * @return \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME
- */
-function wc_gateway_CLIENTID()
-{
-    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate_CLIENTID', 201, 3);
-
-    /**
-     * @param $template
-     * @param $templateName
-     * @param $templatePath
-     * @return string
-     */
-    if ( ! function_exists( 'wooAddonPluginTemplate_CLIENTID' ) ) {
-    function wooAddonPluginTemplate_CLIENTID($template, $templateName, $templatePath)
-    {
-        global $woocommerce;
-
-        $_template = $template;
-
-        if (!$templatePath) {
-            $templatePath = $woocommerce->template_url;
-        }
-
-        $pluginPath = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/';
-
-        $template = locate_template([
-            $templatePath . $templateName,
-            $templateName
-        ]);
-
-        if (!$template && file_exists($pluginPath . $templateName)) {
-            $template = $pluginPath . $templateName;
-        }
-
-        if (!$template) {
-            $template = $_template;
-        }
-
-        return $template;
-    }
-    }
-
-    require_once(__DIR__ . '/src/helpers.php');
-
-    // Cargar el autoloader de Composer solo si no está ya cargado
-    // Esto evita conflictos cuando múltiples plugins de la misma familia están instalados
-    $autoload_file = __DIR__ . '/vendor/autoload.php';
-    if (file_exists($autoload_file)) {
-        // Verificar si el autoloader ya fue incluido por otro plugin
-        // Cada plugin tiene su propio vendor/autoload.php con hash único
-        require_once($autoload_file);
-    }
-
-    // Incluir directamente el archivo de la clase principal para asegurar que se carga
-    // El autoloader puede no encontrarlo si el namespace cambió
-    require_once(__DIR__ . '/src/WC_Gateway_CLIENTCLASSNAME.php');
-
-    return \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME::getInstance(
-        \CLIENTNAMESPACE\PaymentMethod\GatewayMethodCLIENTCLASSNAME::VERSION,
-        __FILE__
-    );
-}
-
-add_action('plugins_loaded', 'wc_gateway_CLIENTID', 0);
-EOF
-
     # El namespace_name es el mismo que el nombre de clase
-    local class_name="$5"
+    local class_name="$namespace_name"
+
+    # Crear archivo principal del plugin actualizado
+    cat > "$target_file" < woocommerce-gateway-placetopay.php
 
     # Reemplazar placeholders (compatible con macOS y Linux)
     # IMPORTANTE: Reemplazar CLIENTNAMESPACE antes que CLIENTNAME para evitar conflictos
@@ -1093,8 +990,7 @@ create_white_label_version_with_php() {
     local php_version="$2"
     local php_label="$3"
     local plugin_version="$4"
-    local config
-    config=$(get_client_config "$client_key")
+    local config=$(get_client_config "$client_key")
 
     if [[ -z "$config" ]]; then
         print_error "Cliente desconocido: $client_key"
@@ -1116,8 +1012,7 @@ create_white_label_version_with_php() {
     fi
 
     # Determinar nombre del proyecto usando CLIENT_ID en formato "cliente-país"
-    local project_name_base
-    project_name_base=$(get_project_name "$CLIENT_ID")
+    local project_name_base=$(get_project_name "$CLIENT_ID")
     local project_name="${project_name_base}-${plugin_version}-${php_label}"
 
     print_status "Creando versión de marca blanca: $project_name"
@@ -1125,6 +1020,7 @@ create_white_label_version_with_php() {
 
     # Crear directorio de trabajo temporal
     local work_dir="$TEMP_DIR/$project_name_base"
+
     mkdir -p "$work_dir"
 
     # Copiar todos los archivos excepto builds, temp directories, config y vendor
@@ -1149,12 +1045,12 @@ create_white_label_version_with_php() {
     # Verificar que tenemos CLIENT_ID
     if [[ -z "$CLIENT_ID" ]]; then
         print_error "CLIENT_ID no encontrado en la configuración del cliente"
+
         return 1
     fi
 
     # Obtener nombre del namespace
-    local namespace_name
-    namespace_name=$(get_namespace_name "$CLIENT_ID")
+    local namespace_name=$(get_namespace_name "$CLIENT_ID")
 
     # Reemplazar namespaces en todos los archivos
     replace_namespaces "$work_dir" "$namespace_name"
@@ -1178,6 +1074,7 @@ create_white_label_version_with_php() {
 
     # Actualizar archivo principal del plugin
     print_status "Actualizando archivo principal del plugin..."
+
     # Convertir CLIENT_ID a formato válido para nombres de funciones PHP (reemplazar guiones con guiones bajos)
     local php_function_id
     php_function_id=$(get_php_function_id "$CLIENT_ID")
@@ -1186,8 +1083,10 @@ create_white_label_version_with_php() {
     # Eliminar archivos originales que no corresponden a este cliente
     # Eliminar woocommerce-gateway-placetopay.php (archivo original del template)
     rm -f "$work_dir/woocommerce-gateway-placetopay.php"
+
     # Eliminar woocommerce-gateway-translations.php si existe (nombre temporal)
     rm -f "$work_dir/woocommerce-gateway-translations.php"
+
     # Asegurarse de que solo quede el archivo con el nombre correcto del cliente
     if [[ -f "$work_dir/${project_name_base}.php" ]] && [[ "$project_name_base.php" != "woocommerce-gateway-placetopay.php" ]]; then
         # Verificar que el archivo nuevo existe antes de eliminar otros posibles archivos
@@ -1200,6 +1099,7 @@ create_white_label_version_with_php() {
     print_status "Actualizando composer.json con namespace y nombre único del cliente..."
     if [[ -f "$work_dir/composer.json" ]]; then
         local composer_file="$work_dir/composer.json"
+
         if [[ "$OSTYPE" == "darwin"* ]]; then
             # Actualizar el namespace en composer.json (necesario para PSR-4)
             sed -i '' "s|\"PlacetoPay\\\\\\\\PaymentMethod\\\\\\\\\":|\"${namespace_name}\\\\\\\\PaymentMethod\\\\\\\\\":|g" "$composer_file"
@@ -1219,6 +1119,7 @@ create_white_label_version_with_php() {
             print_status "✓ composer.json actualizado correctamente con nombre único: placetopay/gateway-method-${CLIENT_ID}"
         else
             print_warning "⚠ No se pudo verificar el cambio en composer.json. Verificando contenido..."
+
             if [[ "$DEBUG" == "1" ]]; then
                 grep "\"name\":" "$composer_file" | head -1
             fi
