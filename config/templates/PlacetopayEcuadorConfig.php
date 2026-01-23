@@ -7,6 +7,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'placetopay-ecuador';
+    public const CLIENT_URI = 'https://placetopay.dev/plugins';
     public const CLIENT = 'Placetopay';
     public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
     public const COUNTRY_CODE = 'EC';
@@ -15,7 +16,6 @@ abstract class CountryConfig
     public static function getEndpoints(): array
     {
         return [
-            Environment::DEV => 'https://checkout-co.placetopay.dev',
             Environment::TEST => 'https://checkout-test.placetopay.ec',
             Environment::PROD => 'https://checkout.placetopay.ec',
         ];

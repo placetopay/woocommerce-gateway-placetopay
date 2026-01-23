@@ -7,6 +7,7 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'banchile-chile';
+    public const CLIENT_URI = 'https://www.banchilepagos.cl';
     public const CLIENT = 'Banchile Pagos';
     public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/banchile/logos/Logotipo_superior.png';
     public const COUNTRY_CODE = 'CL';
@@ -15,7 +16,6 @@ abstract class CountryConfig
     public static function getEndpoints(): array
     {
         return [
-            Environment::DEV => 'https://checkout-co.placetopay.dev',
             Environment::TEST => 'https://checkout.test.banchilepagos.cl',
             Environment::PROD => 'https://checkout.banchilepagos.cl',
         ];
