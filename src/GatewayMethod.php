@@ -144,6 +144,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->currency = $this->currency ?? 'COP';
 
         $configurations = CountryConfig::getConfiguration($this);
+
         foreach ($configurations as $key => $value) {
             $this->$key = $value;
         }
@@ -1269,12 +1270,25 @@ class GatewayMethod extends WC_Payment_Gateway
 
     public function getEnvironments(): array
     {
-        return [
+        $options = [
             Environment::DEV => __('Development', 'woocommerce-gateway-translations'),
             Environment::TEST => __('Test', 'woocommerce-gateway-translations'),
             Environment::PROD => __('Production', 'woocommerce-gateway-translations'),
-            Environment::CUSTOM => __('Custom', 'woocommerce-gateway-translations'),
         ];
+
+        $endpoints = CountryConfig::getEndpoints();
+
+        foreach (array_keys($options) as $key) {
+            if (!array_key_exists($key, $endpoints)) {
+                unset($options[$key]);
+            }
+        }
+
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            $options[Environment::CUSTOM] = __('Custom', 'woocommerce-gateway-translations');
+        }
+
+        return $options;
     }
 
     public function getListOptionExpirationMinutes(): array
@@ -1458,7 +1472,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $environments = CountryConfig::getEndpoints();
 
-        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || defined('WP_DEBUG') && WP_DEBUG
+        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || (defined('WP_DEBUG') && WP_DEBUG)
             ? 'yes'
             : 'no';
 

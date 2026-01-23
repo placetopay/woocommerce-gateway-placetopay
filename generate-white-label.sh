@@ -28,7 +28,7 @@ print_status() {
 }
 
 print_success() {
-    echo -e "${GREEN}[SUCCE]${NC} $1"
+    echo -e "${GREEN}[SUCC]${NC} $1"
 }
 
 print_warning() {
