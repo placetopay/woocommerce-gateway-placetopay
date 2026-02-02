@@ -28,7 +28,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '3.1.1';
+    const VERSION = '3.1.2';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -1284,7 +1284,7 @@ class GatewayMethod extends WC_Payment_Gateway
             }
         }
 
-        if (defined('WP_DEBUG') && WP_DEBUG) {
+        if ((defined('WP_DEBUG') && WP_DEBUG) || CountryConfig::COUNTRY_CODE === Country::CO) {
             $options[Environment::CUSTOM] = __('Custom', 'woocommerce-gateway-translations');
         }
 
