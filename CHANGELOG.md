@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.1.2] - 2026-02-02
+- Enable custom endpoint in default client(colombia).
+
 ## [3.1.1] - 2026-01-23
 - Get personalized image correctly.
 - Always parse requestId to integer
