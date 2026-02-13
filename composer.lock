@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "alejociro/redirection",
-            "version": "1.0.16",
+            "version": "1.0.17",
             "source": {
                 "type": "git",
                 "url": "https://github.com/alejociro/redirection.git",
-                "reference": "1f52b3240d71ed37fb6e81bdd4c41a4beb430600"
+                "reference": "45dbd364a9229e3360aa5281d3acb4792db39505"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/alejociro/redirection/zipball/1f52b3240d71ed37fb6e81bdd4c41a4beb430600",
-                "reference": "1f52b3240d71ed37fb6e81bdd4c41a4beb430600",
+                "url": "https://api.github.com/repos/alejociro/redirection/zipball/45dbd364a9229e3360aa5281d3acb4792db39505",
+                "reference": "45dbd364a9229e3360aa5281d3acb4792db39505",
                 "shasum": ""
             },
             "require": {
@@ -50,9 +50,9 @@
             ],
             "description": "Library to connect with PlacetoPay Checkout service",
             "support": {
-                "source": "https://github.com/alejociro/redirection/tree/1.0.16"
+                "source": "https://github.com/alejociro/redirection/tree/1.0.17"
             },
-            "time": "2026-01-15T21:11:41+00:00"
+            "time": "2026-02-05T16:31:05+00:00"
         },
         {
             "name": "guzzlehttp/guzzle",

@@ -601,7 +601,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public function receiptPage($orderId): void
     {
         try {
-            $requestId = (int)get_post_meta($orderId, self::META_REQUEST_ID, true);
+            $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
             if (!is_null($transactionInfo->payment())) {
@@ -658,7 +658,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         // When the user is returned to the page specified by redirectUrl
         if (!empty($req['key']) && !empty($req['wc-api'])) {
-            $requestId = (int)get_post_meta($req['order_id'], self::META_REQUEST_ID, true);
+            $requestId = get_post_meta($req['order_id'], self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
             $this->returnProcess($req, $transactionInfo);
@@ -1211,7 +1211,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $gatewayMethod = new self();
         $gatewayMethod->initPlacetoPay();
-        $transactionInfo = $gatewayMethod->placetopay->query((int)$requestId);
+        $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
     }
@@ -1487,7 +1487,7 @@ class GatewayMethod extends WC_Payment_Gateway
         } elseif ($this->enviroment_mode === Environment::PROD) {
             $this->uri_service = $environments[Environment::PROD];
         } else {
-            $this->uri_service = $this->enviroment_mode === Environment::DEV
+            $this->uri_service = $this->enviroment_mode === Environment::DEV && isset($environments[Environment::DEV])
                 ? $environments[Environment::DEV]
                 : $environments[Environment::TEST];
         }
