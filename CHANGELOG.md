@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.1.3] - 2026-02-13
+- Fix warning message when DEV endpoint not is defined on tenant config.
+
 ## [3.1.2] - 2026-02-02
 - Enable custom endpoint in default client(colombia).
 
