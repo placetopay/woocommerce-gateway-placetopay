@@ -19,8 +19,8 @@ OUTPUT_DIR="${BASE_DIR}/builds"
 CONFIG_FILE="${BASE_DIR}/config/clients.php"
 
 # Versiones de PHP para generar
-PHP_VERSIONS=("8.0")
-PHP_VERSION_LABELS=("php-8.x")
+PHP_VERSIONS=("7.4" "8.0")
+PHP_VERSION_LABELS=("php-7.4.x" "php-8.x")
 
 # Funciones para imprimir con colores
 print_status() {
