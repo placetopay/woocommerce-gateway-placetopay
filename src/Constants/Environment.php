@@ -15,4 +15,8 @@ interface Environment
     const TEST = 'test';
 
     const CUSTOM = 'custom';
+
+    const UAT = 'uat';
+
+
 }

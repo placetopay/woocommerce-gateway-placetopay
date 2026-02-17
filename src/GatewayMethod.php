@@ -1273,6 +1273,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $options = [
             Environment::DEV => __('Development', 'woocommerce-gateway-translations'),
             Environment::TEST => __('Test', 'woocommerce-gateway-translations'),
+            Environment::UAT => __('UAT', 'woocommerce-gateway-translations'),
             Environment::PROD => __('Production', 'woocommerce-gateway-translations'),
         ];
 
@@ -1472,7 +1473,8 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $environments = CountryConfig::getEndpoints();
 
-        $this->testmode = in_array($this->enviroment_mode, [Environment::TEST, Environment::DEV], true) || (defined('WP_DEBUG') && WP_DEBUG)
+        $nonProductionModes = [Environment::TEST, Environment::DEV, Environment::UAT];
+        $this->testmode = in_array($this->enviroment_mode, $nonProductionModes, true) || (defined('WP_DEBUG') && WP_DEBUG)
             ? 'yes'
             : 'no';
 
@@ -1484,12 +1486,9 @@ class GatewayMethod extends WC_Payment_Gateway
 
         if ($this->enviroment_mode === Environment::CUSTOM) {
             $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
-        } elseif ($this->enviroment_mode === Environment::PROD) {
-            $this->uri_service = $environments[Environment::PROD];
         } else {
-            $this->uri_service = $this->enviroment_mode === Environment::DEV && isset($environments[Environment::DEV])
-                ? $environments[Environment::DEV]
-                : $environments[Environment::TEST];
+            $mode = $this->enviroment_mode;
+            $this->uri_service = $environments[$mode] ?? $environments[Environment::TEST] ?? null;
         }
     }
 
