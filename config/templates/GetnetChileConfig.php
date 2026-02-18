@@ -17,6 +17,7 @@ abstract class CountryConfig
     {
         return [
             Environment::TEST => 'https://checkout.test.getnet.cl',
+            Environment::UAT => 'https://checkout.uat.getnet.cl',
             Environment::PROD => 'https://checkout.getnet.cl',
         ];
     }
@@ -43,91 +44,91 @@ abstract class CountryConfig
     {
         $fields = [
             'enabled' => [
-                'title' => __('Enable/Disable', 'woocommerce-gateway-placetopay'),
+                'title' => __('Enable/Disable', 'woocommerce-gateway-translations'),
                 'type' => 'checkbox',
-                'label' => sprintf(__('Enable %s payment method.', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'label' => sprintf(__('Enable %s payment method.', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'default' => 'no',
-                'description' => sprintf(__('Show %s in the Payment List as a payment option', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
+                'description' => sprintf(__('Show %s in the Payment List as a payment option', 'woocommerce-gateway-translations'), $gatewayMethod->getClient())
             ],
             'skip_result' => [
-                'title' => __('Skip result?', 'woocommerce-gateway-placetopay'),
+                'title' => __('Skip result?', 'woocommerce-gateway-translations'),
                 'type' => 'checkbox',
-                'label' => sprintf(__('Allow to skip the %s result screen.', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'label' => sprintf(__('Allow to skip the %s result screen.', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'default' => 'no',
             ],
             'use_lightbox' => [
-                'title' => __('Redirection using Lightbox', 'woocommerce-gateway-placetopay'),
+                'title' => __('Redirection using Lightbox', 'woocommerce-gateway-translations'),
                 'type' => 'checkbox',
-                'label' => __('Enable Lightbox Redirection', 'woocommerce-gateway-placetopay'),
-                'description' => __('It should only be used for payment methods without redirection', 'woocommerce-gateway-placetopay'),
+                'label' => __('Enable Lightbox Redirection', 'woocommerce-gateway-translations'),
+                'description' => __('It should only be used for payment methods without redirection', 'woocommerce-gateway-translations'),
                 'default' => 'no',
             ],
             'login' => [
-                'title' => __('Login site', 'woocommerce-gateway-placetopay'),
+                'title' => __('Login site', 'woocommerce-gateway-translations'),
                 'type' => 'text',
-                'description' => sprintf(__('Given to login by %s', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'description' => sprintf(__('Given to login by %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'desc_tip' => true
             ],
             'tran_key' => [
-                'title' => __('Transactional Key', 'woocommerce-gateway-placetopay'),
+                'title' => __('Transactional Key', 'woocommerce-gateway-translations'),
                 'type' => 'password',
-                'description' => sprintf(__('Given to transactional key by %s', 'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                'description' => sprintf(__('Given to transactional key by %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'desc_tip' => true
             ],
             'enviroment_mode' => [
-                'title' => __('Mode', 'woocommerce-gateway-placetopay'),
+                'title' => __('Mode', 'woocommerce-gateway-translations'),
                 'type' => 'select',
                 'class' => 'wc-enhanced-select',
                 'default' => 'dev',
                 'options' => $gatewayMethod->getEnvironments(),
                 'description' => sprintf(__('Enable the environment %s for testing or production transactions.<br />Note: <b>By default is "Development Test", if WP_DEBUG is activated</b>',
-                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
+                    'woocommerce-gateway-translations'), $gatewayMethod->getClient())
             ],
             'redirect_page_id' => [
-                'title' => __('Return Page', 'woocommerce-gateway-placetopay'),
+                'title' => __('Return Page', 'woocommerce-gateway-translations'),
                 'type' => 'select',
                 'class' => 'wc-enhanced-select',
                 'options' => $gatewayMethod->getPages(),
-                'description' => __('URL of success page', 'woocommerce-gateway-placetopay'),
+                'description' => __('URL of success page', 'woocommerce-gateway-translations'),
                 'desc_tip' => true
             ],
             'payment_button_image' => [
-                'title' => __('Payment button image', 'woocommerce-gateway-placetopay'),
+                'title' => __('Payment button image', 'woocommerce-gateway-translations'),
                 'type' => 'text',
                 'custom_attributes' => [
                     'readonly' => 'readonly'
                 ],
                 'description' => sprintf(__('It can be a URL, an image name (provide the image to the %s team as svg format for this to work) or a local path (save the image to the wp-content/uploads folder',
-                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient()),
+                    'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'default' => 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg',
             ],
         ];
 
         if (WP_DEBUG) {
             $fields['endpoint'] = [
-                'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-placetopay'),
+                'title' => __('Notification url. EndPoint (WP >= 4.6)', 'woocommerce-gateway-translations'),
                 'type' => 'text',
                 'custom_attributes' => [
                     'readonly' => 'readonly'
                 ],
                 'description' => sprintf(__('Url of notification where %s will send a notification of a transaction for Woocommerce.<br />If your Wordpress not support REST-API, please visit: https://wordpress.org/plugins/rest-api/',
-                    'woocommerce-gateway-placetopay'), $gatewayMethod->getClient())
+                    'woocommerce-gateway-translations'), $gatewayMethod->getClient())
             ];
 
             $fields['schedule_task_path'] = [
-                'title' => __('Scheduler task path', 'woocommerce-gateway-placetopay'),
+                'title' => __('Scheduler task path', 'woocommerce-gateway-translations'),
                 'type' => 'text',
                 'custom_attributes' => [
                     'readonly' => 'readonly'
                 ],
                 'default' => $gatewayMethod->getScheduleTaskPath(),
-                'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-placetopay')
+                'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-translations')
             ];
 
             $fields['custom_connection_url'] = [
-                'title' => __('Custom connection URL', 'woocommerce-gateway-placetopay'),
+                'title' => __('Custom connection URL', 'woocommerce-gateway-translations'),
                 'type' => 'text',
-                'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-placetopay'),
+                'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-translations'),
             ];
         }
 

@@ -577,19 +577,27 @@ rename_cron_files() {
 }
 
 # Función para asegurar que los archivos de traducciones estén compilados
+# WordPress solo carga archivos .mo (binarios); los .po son solo fuente.
 # Todos los plugins usan el mismo dominio 'woocommerce-gateway-translations'
-# Solo compilamos los .po a .mo sin renombrar nada
 ensure_translation_files() {
     local work_dir="$1"
 
     print_status "Compilando archivos de traducciones..."
 
-    # Asegurar que el directorio languages existe
     mkdir -p "${work_dir}/languages"
 
-    # Buscar y compilar todos los archivos .po (usando el nuevo dominio general)
+    # Copiar .mo existentes del repo al work_dir (por si no hay msgfmt o faltan .po)
+    if [[ -d "${BASE_DIR}/languages" ]]; then
+        for base_mo in "${BASE_DIR}"/languages/woocommerce-gateway-translations-*.mo; do
+            if [[ -f "$base_mo" ]]; then
+                cp "$base_mo" "${work_dir}/languages/$(basename "$base_mo")" 2>/dev/null || true
+            fi
+        done
+    fi
+
+    # Compilar cada .po a .mo (sobrescribe .mo si msgfmt está disponible)
     local found_po=0
-    for po_file in "${work_dir}"/languages/woocommerce-gateway-translations-*.po "${work_dir}"/languages/woocommerce-gateway-translations-*.po; do
+    for po_file in "${work_dir}"/languages/woocommerce-gateway-translations-*.po; do
         if [[ -f "$po_file" ]]; then
             found_po=1
             local mo_file="${po_file%.po}.mo"
