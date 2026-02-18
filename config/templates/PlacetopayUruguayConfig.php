@@ -17,6 +17,7 @@ abstract class CountryConfig
     {
         return [
             Environment::TEST => 'https://uy-uat-checkout.placetopay.com',
+            Environment::UAT => 'https://uy-uat.checkout.placetopay.com',
             Environment::PROD => 'https://checkout.placetopay.uy',
         ];
     }
