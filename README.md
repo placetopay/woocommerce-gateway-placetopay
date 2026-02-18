@@ -143,9 +143,15 @@ make compile PLUGIN_VERSION=-X.Y.Z
 
 ## Translations
 
-You should add/chage translations in .po files from *languages* directory
-after, you need covert this in .mo files to replace current files (languages(*.mo)
-> If don't convertion, cannot see any changes
+WordPress only loads **.mo** (compiled) files; .po files are source only. For translations to work when installing the plugin from a zip, the zip must include the `.mo` files in `languages/`.
+
+- Edit translations in the `.po` files in the *languages* directory.
+- Compile to `.mo` before distributing (e.g. when building the zip):
+  ```bash
+  for f in languages/woocommerce-gateway-translations-*.po; do msgfmt -o "${f%.po}.mo" "$f"; done
+  ```
+- Commit the updated `.mo` files so that zip builds (manual or via `generate-white-label.sh`) include them.
+> If the zip does not contain `.mo` files, no translations will be applied.
 
 ## WP_DEBUG
 
