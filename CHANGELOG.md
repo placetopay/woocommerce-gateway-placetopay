@@ -2,9 +2,9 @@
 
 [Unreleased]
 
-## [3.1.4] - 2026-02-17
+## [3.1.4] - 2026-02-18
 - Fix resolve translation.
-- Add UAT Environment
+- Add UAT Environment (when it applies).
 
 ## [3.1.3] - 2026-02-13
 - Fix warning message when DEV endpoint not is defined on tenant config.
