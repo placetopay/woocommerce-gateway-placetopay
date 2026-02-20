@@ -137,15 +137,6 @@ abstract class CountryConfig
                 'default' => '',
                 'description' => __('Select a maximum amount per transaction', 'woocommerce-gateway-translations')
             ],
-            'expiration_time_minutes' => [
-                'title' => __('Expiration time session', 'woocommerce-gateway-translations'),
-                'type' => 'select',
-                'class' => 'wc-enhanced-select',
-                'default' => 2880,
-                'options' => $gatewayMethod->getListOptionExpirationMinutes(),
-                'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
-                'desc_tip' => true
-            ],
             'taxes_others' => [
                 'title' => __('Select taxes to include', 'woocommerce-gateway-translations'),
                 'type' => 'multiselect',
@@ -204,6 +195,16 @@ abstract class CountryConfig
                 ],
                 'default' => $gatewayMethod->getScheduleTaskPath(),
                 'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-translations')
+            ];
+
+            $fields['expiration_time_minutes'] = [
+                'title' => __('Expiration time session', 'woocommerce-gateway-translations'),
+                'type' => 'select',
+                'class' => 'wc-enhanced-select',
+                'default' => 30,
+                'options' => $gatewayMethod->getListOptionExpirationMinutes(),
+                'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
+                'desc_tip' => true
             ];
         }
 
