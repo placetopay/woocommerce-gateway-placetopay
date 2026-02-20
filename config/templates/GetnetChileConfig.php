@@ -31,7 +31,9 @@ abstract class CountryConfig
             'minimum_amount' => '',
             'maximum_amount' => '',
             'payment_button_image' => 'https://banco.santander.cl/uploads/000/029/870/0620f532-9fc9-4248-b99e-78bae9f13e1d/original/Logo_WebCheckout_Getnet.svg',
-            'expiration_time_minutes' => 10,
+            'expiration_time_minutes' => (defined('WP_DEBUG') && WP_DEBUG && $gatewayMethod->get_option('expiration_time_minutes'))
+                ? (int) $gatewayMethod->get_option('expiration_time_minutes')
+                : 10,
             'taxes' => [
                 'taxes_others' => '',
                 'taxes_ico' => '',
@@ -129,6 +131,16 @@ abstract class CountryConfig
                 'title' => __('Custom connection URL', 'woocommerce-gateway-translations'),
                 'type' => 'text',
                 'description' => __('By example: "https://gateway.com/redirection". This value only is required when you select custom environment', 'woocommerce-gateway-translations'),
+            ];
+
+            $fields['expiration_time_minutes'] = [
+                'title' => __('Expiration time session', 'woocommerce-gateway-translations'),
+                'type' => 'select',
+                'class' => 'wc-enhanced-select',
+                'default' => 10,
+                'options' => $gatewayMethod->getListOptionExpirationMinutes(),
+                'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
+                'desc_tip' => true
             ];
         }
 
