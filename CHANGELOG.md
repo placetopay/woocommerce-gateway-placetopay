@@ -2,8 +2,8 @@
 
 [Unreleased]
 
-## [3.1.5] - 2026-02-20
-- Set expiration minutes in 30 minutes by default.
+## [3.1.5] - 2026-02-23
+- Set expiration time to 30 minutes by default.
 
 ## [3.1.4] - 2026-02-18
 - Fix resolve translation.
