@@ -57,7 +57,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     const NOTIFICATION_RETURN_PAGE = 'placetopay_notification_return_page';
 
-    const EXPIRATION_TIME_MINUTES_LIMIT = 8640;
+    const EXPIRATION_TIME_MINUTES_LIMIT = 2880;
 
 
     /**
@@ -423,7 +423,7 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $timeExpiration = $this->expiration_time_minutes
             ? $this->expiration_time_minutes . ' minutes'
-            : '+2 days';
+            : '30 minutes';
 
         $orderNumber = self::getOrderNumber($order);
 

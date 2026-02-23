@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.1.5] - 2026-02-20
+- Set expiration minutes in 30 minutes by default.
+
 ## [3.1.4] - 2026-02-18
 - Fix resolve translation.
 - Add UAT Environment (when it applies).
