@@ -7,10 +7,15 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'placetopay-honduras';
+
     public const CLIENT_URI = 'https://www.bancatlan.hn/banca-de-personas/pago-link/';
+
     public const CLIENT = 'Placetopay';
+
     public const IMAGE = 'https://placetopay-static-prod-bucket.s3.us-east-2.amazonaws.com/bancatlan-hn/header.svg';
+
     public const COUNTRY_CODE = 'HN';
+
     public const COUNTRY_NAME = 'Honduras';
 
     public static function getEndpoints(): array
@@ -50,9 +55,9 @@ abstract class CountryConfig
                 'description' => sprintf(__('Show %s in the Payment List as a payment option', 'woocommerce-gateway-translations'), $gatewayMethod->getClient())
             ],
             'fill_buyer_information' => [
-                'title' => __('Predicting the buyer\'s information?', 'woocommerce-gateway-translations'),
+                'title' => __("Predicting the buyer's information?", 'woocommerce-gateway-translations'),
                 'type' => 'checkbox',
-                'label' => sprintf(__('Enable to preload the buyer\'s information on the %s platform.',
+                'label' => sprintf(__("Enable to preload the buyer's information on the %s platform.",
                     'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'default' => 'yes',
             ],

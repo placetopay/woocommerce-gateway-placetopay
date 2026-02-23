@@ -7,10 +7,15 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'placetopay-ecuador';
+
     public const CLIENT_URI = 'https://placetopay.dev/plugins';
+
     public const CLIENT = 'Placetopay';
+
     public const IMAGE = 'https://static.placetopay.com/placetopay-logo.svg';
+
     public const COUNTRY_CODE = 'EC';
+
     public const COUNTRY_NAME = 'Ecuador';
 
     public static function getEndpoints(): array
@@ -50,9 +55,9 @@ abstract class CountryConfig
                 'description' => sprintf(__('Show %s in the Payment List as a payment option', 'woocommerce-gateway-translations'), $gatewayMethod->getClient())
             ],
             'fill_buyer_information' => [
-                'title' => __('Predicting the buyer\'s information?', 'woocommerce-gateway-translations'),
+                'title' => __("Predicting the buyer's information?", 'woocommerce-gateway-translations'),
                 'type' => 'checkbox',
-                'label' => sprintf(__('Enable to preload the buyer\'s information on the %s platform.',
+                'label' => sprintf(__("Enable to preload the buyer's information on the %s platform.",
                     'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'default' => 'yes',
             ],

@@ -78,33 +78,52 @@ class GatewayMethod extends WC_Payment_Gateway
     private $log;
 
     private $expiration_time_minutes;
+
     private $currency;
+
     private $enviroment_mode;
+
     private $fill_buyer_information;
+
     private $login;
+
     private $redirect_page_id;
+
     private $testmode;
+
     private $merchant_email;
+
     private $uri_service;
+
     private $taxes;
+
     private $minimum_amount;
+
     private $maximum_amount;
+
     private $allow_to_pay_with_pending_orders;
+
     private $allow_partial_payments;
+
     private $skip_result;
+
     private $custom_connection_url;
+
     private $payment_button_image;
-    private $version;
+
+    private $version = self::VERSION;
+
     private $use_lightbox;
+
     private $endpoint;
+
     private $form_method;
 
     /**
      * GatewayMethod constructor.
      */
-    function __construct()
+    public function __construct()
     {
-        $this->version = self::VERSION;
         $this->configPaymentMethod();
         $this->init();
         $this->initPlacetoPay();
@@ -141,7 +160,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->merchant_email = get_option('woocommerce_email_from_address');
         $this->icon = $this->getImageUrl();
         $this->currency = get_woocommerce_currency();
-        $this->currency = $this->currency ?? 'COP';
+        $this->currency ??= 'COP';
 
         $configurations = CountryConfig::getConfiguration($this);
 
@@ -217,7 +236,6 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * @param null $status
      * @return array|mixed
      */
     public static function getOrderStatusLabels($status = null)
@@ -242,7 +260,6 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * Endpoint for the notification
      *
-     * @param \WP_REST_Request $req
      * @return mixed
      */
     public function endpointPlacetoPay(\WP_REST_Request $req)
@@ -500,7 +517,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 $processUrl = urlencode($res->processUrl());
                 update_post_meta($order->get_id(), self::META_PROCESS_URL, $processUrl);
 
-                if (!$requestId || !$this->isPendingStatusOrder($order->get_id())) {
+                if (!$requestId || !static::isPendingStatusOrder($order->get_id())) {
                     // Reduce stock levels tempory
                     wc_reduce_stock_levels($order->get_id());
                 }
@@ -546,10 +563,6 @@ class GatewayMethod extends WC_Payment_Gateway
         return $subtotal;
     }
 
-    /**
-     * @param WC_Order $order
-     * @return array
-     */
     public function getOrderTaxes(WC_Order $order): array
     {
         $subTotal = $this->calculateSubtotalTax($order->get_items());
@@ -612,8 +625,9 @@ class GatewayMethod extends WC_Payment_Gateway
                     : [];
 
                 // Payment Details
-                if (count($authorizationCode) > 0) {
+                if ($authorizationCode !== []) {
                     $this->logger('Adding authorization code $auth = ' . $authorizationCode, 'receiptPage');
+
                     update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(',', $authorizationCode));
                 }
             }
@@ -652,7 +666,6 @@ class GatewayMethod extends WC_Payment_Gateway
      * After checkResponse, Process response and update order information
      *
      * @param array $req Response data in array format
-     * @return void
      */
     public function successfulRequest(array $req): void
     {
@@ -722,7 +735,7 @@ class GatewayMethod extends WC_Payment_Gateway
             );
         }
 
-        $paymentFirstStatus = count($transactionInfo->payment()) > 0
+        $paymentFirstStatus = $transactionInfo->payment() !== []
             ? $transactionInfo->payment()[0]->status()
             : null;
 
@@ -759,7 +772,7 @@ class GatewayMethod extends WC_Payment_Gateway
                         }
                     }
 
-                    $totalAmount = $totalAmount - $pendingAmount;
+                    $totalAmount -= $pendingAmount;
 
                     update_post_meta($order->get_id(), '_order_total_partial', $totalAmount);
                 }
@@ -769,13 +782,13 @@ class GatewayMethod extends WC_Payment_Gateway
                     : null;
 
                 if (!is_null($transactionInfo->payment())) {
-                    $paymentMethodName = count($transactionInfo->payment()) > 0
+                    $paymentMethodName = $transactionInfo->payment() !== []
                         ? array_map(function (Transaction $trans) {
                             return $trans->paymentMethodName();
                         }, $transactionInfo->payment())
                         : [];
 
-                    if (count($paymentMethodName) > 0) {
+                    if ($paymentMethodName !== []) {
                         update_post_meta(
                             $order->get_id(),
                             __('Payment type', 'woocommerce-gateway-translations'),
@@ -970,7 +983,6 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * @param RedirectInformation $transaction
      * @return array|string
      */
     private function getAuthorizationCode(RedirectInformation $transaction)
@@ -979,13 +991,9 @@ class GatewayMethod extends WC_Payment_Gateway
             return $transaction->payment()[0]->authorization();
         }
 
-        $transactions = [];
+        $transactions = $transaction->payment();
 
-        foreach ($transaction->payment() as $transaction) {
-            $transactions[] = $transaction;
-        }
-
-        return !empty($transactions)
+        return $transactions !== []
             ? array_map(function (Transaction $trans) {
                 return $trans->authorization();
             }, $transactions)
@@ -996,7 +1004,6 @@ class GatewayMethod extends WC_Payment_Gateway
      *  Get order instance with a given order key
      *
      * @param mixed $request
-     * @return WC_Order
      */
     public function getOrder($request): WC_Order
     {
@@ -1077,7 +1084,6 @@ class GatewayMethod extends WC_Payment_Gateway
      * Manage the log instance if the debug is actived else nothing happen baby
      *
      * @param $message
-     * @param null $type
      */
     public function logger($message, $type = null): void
     {
@@ -1106,7 +1112,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $order = new WC_Order($orderId);
 
-        if (!get_option('woocommerce_manage_stock') == 'yes' && !sizeof($order->get_items()) > 0) {
+        if (!get_option('woocommerce_manage_stock') == 'yes' && !count($order->get_items()) > 0) {
             return;
         }
 
@@ -1211,6 +1217,7 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $gatewayMethod = new self();
         $gatewayMethod->initPlacetoPay();
+
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
         $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');

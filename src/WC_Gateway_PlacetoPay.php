@@ -36,7 +36,7 @@ class WC_Gateway_PlacetoPay
      * Unique instance of self
      * @var WC_Gateway_PlacetoPay
      */
-    private static $instance = null;
+    private static $instance;
 
 
     /**
@@ -49,7 +49,7 @@ class WC_Gateway_PlacetoPay
     private function __construct($version, $file)
     {
         if (!$this->checkDependencies()) {
-            return null;
+            return;
         }
 
         $this->migrateSettings();
@@ -110,8 +110,6 @@ class WC_Gateway_PlacetoPay
     /**
      * Method to implement a singleton pattern
      *
-     * @param null $version
-     * @param null $file
      * @return WC_Gateway_PlacetoPay
      */
     public static function getInstance($version = null, $file = null)
@@ -249,7 +247,7 @@ class WC_Gateway_PlacetoPay
             $orderId = wc_get_order_id_by_order_key($_REQUEST['order_key']);
             $order = new \WC_Order($orderId);
 
-            wc_get_template('checkout/thankyou.php', array('order' => $order, 'name'));
+            wc_get_template('checkout/thankyou.php', ['order' => $order, 'name']);
         }
     }
 
@@ -258,6 +256,7 @@ class WC_Gateway_PlacetoPay
         if (!class_exists('WC_Payment_Gateway')){
             return;
         }
+
         $client_class_name = 'GatewayMethod' . ucfirst(\PlacetoPay\PaymentMethod\CountryConfig::CLIENT_ID);
         include(plugin_dir_path(__FILE__) . $client_class_name . '.php');
     }
