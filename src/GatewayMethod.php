@@ -762,14 +762,14 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * After checkResponse, Process response and update order information
      */
-    public function successfulRequest(array $req): void
+    public function successfulRequest(array $params): void
     {
         // When the user is returned to the page specified by redirectUrl
-        if (!empty($req['key']) && !empty($req['wc-api'])) {
-            $requestId = get_post_meta($req['order_id'], self::META_REQUEST_ID, true);
+        if (!empty($params['key']) && !empty($params['wc-api']) && !empty($params['order_key'])) {
+            $requestId = get_post_meta($params['order_id'], self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
-            $this->returnProcess($req, $transactionInfo);
+            $this->returnProcess($params, $transactionInfo);
         }
 
         // For WooCommerce 2.0
@@ -788,20 +788,16 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * Process page of response
-     *
-     * @param $request
-     * @param RedirectInformation $transactionInfo Information of transaction in placetopay
-     * @param bool $isCallback Define if is notification or return request
      */
-    public function returnProcess($request, RedirectInformation $transactionInfo, $isNotificationRequest = false)
+    public function returnProcess(array $params, RedirectInformation $transactionInfo, $isNotificationRequest = false)
     {
-        $order = $this->getOrder($request);
+        $order = $this->getOrder($params);
         $sessionStatusInstance = $transactionInfo->status();
         $status = $sessionStatusInstance->status();
         $authorizationCode = [];
         $currentPaymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
 
-        if ($isCallback && $currentPaymentStatus === Status::ST_APPROVED) {
+        if ($isNotificationRequest && $currentPaymentStatus === Status::ST_APPROVED) {
             $this->logger(
                 'Return already processed for order',
                 'response',
@@ -870,7 +866,7 @@ class GatewayMethod extends WC_Payment_Gateway
                         ]
                     );
 
-                    if ($isCallback) {
+                    if ($isNotificationRequest) {
                         return;
                     }
 
@@ -1267,9 +1263,8 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * @param $orderId
-     * @param bool $logger
      */
-    public function restoreOrderStock($orderId, $logger = true)
+    public function restoreOrderStock($orderId)
     {
         $order = new WC_Order($orderId);
 
@@ -1300,20 +1295,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 continue;
             }
 
-            $oldStock = $product->get_stock_quantity();
-            $qty = apply_filters('woocommerce_order_item_quantity', $item['qty'], $this, $item);
-
-            $newQuantity = wc_update_product_stock($product, $qty, 'increase');
             do_action('woocommerce_auto_stock_restored', $product, $item);
-
-            if ($logger) {
-                $order->add_order_note(sprintf(
-                    __('Item #%s stock incremented from %s to %s.', 'woocommerce'),
-                    $item['product_id'],
-                    $oldStock,
-                    $newQuantity
-                ));
-            }
         }
 
         update_post_meta($orderId, self::META_STOCK_RESTORED . $requestId, 'yes');
@@ -1772,7 +1754,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return $payment->refunded();
     }
 
-    private function resolveRefundedPayment($order): void
+    private function resolveRefundedPayment(WC_Order $order): void
     {
         $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-translations'));
 
