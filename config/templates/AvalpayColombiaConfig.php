@@ -7,10 +7,15 @@ use PlacetoPay\PaymentMethod\Constants\Environment;
 abstract class CountryConfig
 {
     public const CLIENT_ID = 'avalpay-colombia';
+
     public const CLIENT_URI = 'https://www.avalpaycenter.com';
+
     public const CLIENT = 'AvalPay';
+
     public const IMAGE = 'https://placetopay-static-uat-bucket.s3.us-east-2.amazonaws.com/avalpaycenter-com/logos/Header+Correo+-+Logo+Avalpay.svg';
+
     public const COUNTRY_CODE = 'CO';
+
     public const COUNTRY_NAME = 'Colombia';
 
     public static function getEndpoints(): array
@@ -51,9 +56,9 @@ abstract class CountryConfig
                 'description' => sprintf(__('Show %s in the Payment List as a payment option', 'woocommerce-gateway-translations'), $gatewayMethod->getClient())
             ],
             'fill_buyer_information' => [
-                'title' => __('Predicting the buyer\'s information?', 'woocommerce-gateway-translations'),
+                'title' => __("Predicting the buyer's information?", 'woocommerce-gateway-translations'),
                 'type' => 'checkbox',
-                'label' => sprintf(__('Enable to preload the buyer\'s information on the %s platform.',
+                'label' => sprintf(__("Enable to preload the buyer's information on the %s platform.",
                     'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
                 'default' => 'yes',
             ],
@@ -138,15 +143,6 @@ abstract class CountryConfig
                 'default' => '',
                 'description' => __('Select a maximum amount per transaction', 'woocommerce-gateway-translations')
             ],
-            'expiration_time_minutes' => [
-                'title' => __('Expiration time session', 'woocommerce-gateway-translations'),
-                'type' => 'select',
-                'class' => 'wc-enhanced-select',
-                'default' => 2880,
-                'options' => $gatewayMethod->getListOptionExpirationMinutes(),
-                'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
-                'desc_tip' => true
-            ],
             'taxes_others' => [
                 'title' => __('Select taxes to include', 'woocommerce-gateway-translations'),
                 'type' => 'multiselect',
@@ -192,6 +188,16 @@ abstract class CountryConfig
                 ],
                 'default' => $gatewayMethod->getScheduleTaskPath(),
                 'description' => __('Set this task to validate payments with pending status in your site.', 'woocommerce-gateway-translations')
+            ];
+
+            $fields['expiration_time_minutes'] = [
+                'title' => __('Expiration time session', 'woocommerce-gateway-translations'),
+                'type' => 'select',
+                'class' => 'wc-enhanced-select',
+                'default' => 30,
+                'options' => $gatewayMethod->getListOptionExpirationMinutes(),
+                'description' => sprintf(__('Expiration of the session for payment in %s', 'woocommerce-gateway-translations'), $gatewayMethod->getClient()),
+                'desc_tip' => true
             ];
         }
 

@@ -13,6 +13,8 @@ use PlacetoPay\PaymentMethod\CountryConfig;
 interface Country
 {
     const EC = 'EC';
+
     const UY = 'UY';
+
     const CO = 'CO';
 }

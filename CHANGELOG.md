@@ -2,6 +2,10 @@
 
 [Unreleased]
 
+## [3.2.0] - 2026-02-24
+- Set expiration time to 30 minutes by default.
+- Update tracing information in logs (level and context).
+
 ## [3.1.4] - 2026-02-18
 - Fix resolve translation.
 - Add UAT Environment (when it applies).

@@ -13,7 +13,7 @@ class ResolveTranslations
         'es_UY'
     ];
 
-    function __construct()
+    public function __construct()
     {
         $this->execute();
     }

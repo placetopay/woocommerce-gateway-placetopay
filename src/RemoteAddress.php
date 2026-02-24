@@ -71,7 +71,6 @@ class RemoteAddress
     /**
      * Set list of trusted proxy addresses
      *
-     * @param  array $trustedProxies
      * @return RemoteAddress
      */
     public function setTrustedProxies(array $trustedProxies)
@@ -107,12 +106,7 @@ class RemoteAddress
             return $ip;
         }
 
-        // direct IP address
-        if (isset($_SERVER['REMOTE_ADDR'])) {
-            return $_SERVER['REMOTE_ADDR'];
-        }
-
-        return '';
+        return $_SERVER['REMOTE_ADDR'] ?? '';
     }
 
     /**
@@ -143,7 +137,7 @@ class RemoteAddress
         $ips = array_diff($ips, $this->trustedProxies);
 
         // Any left?
-        if (empty($ips)) {
+        if ($ips === []) {
             return false;
         }
 
