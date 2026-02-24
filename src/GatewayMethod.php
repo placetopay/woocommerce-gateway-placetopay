@@ -266,15 +266,24 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $message = null;
         $success = false;
-
-        $this->logger('starting request api', 'endpointPlacetoPay');
-
         $data = $req->get_params();
+        $requestId = $data['requestId'] ?? null;
 
-        if (!empty($data['signature']) && !empty($data['requestId'])) {
+        $this->logger(
+            'Received notification',
+            'notification',
+            'info',
+            [
+                'event' => 'notification.received',
+                'params' => $data,
+                'request_id' => $requestId,
+            ]
+        );
+
+        if (!empty($data['signature']) && !empty($requestId)) {
             $expectedSignature = sprintf(
                 '%s%s%s%s',
-                $data['requestId'],
+                $requestId,
                 $data['status']['status'],
                 $data['status']['date'],
                 $this->tran_key,
@@ -286,9 +295,29 @@ class GatewayMethod extends WC_Payment_Gateway
 
             [$algo, $signature] = explode(':', $data['signature'], 2);
 
-            $this->logger('signature alghorithm: ' . $algo, 'endpointPlacetoPay');
+            $this->logger(
+                'Signature algorithm parsed',
+                'notification',
+                'info',
+                [
+                    'event' => 'notification.signature_algorithm',
+                    'algorithm' => $algo,
+                    'request_id' => $requestId,
+                ]
+            );
 
             if (hash($algo, $expectedSignature) !== $signature) {
+                $this->logger(
+                    'Invalid notification signature',
+                    'notification',
+                    'warning',
+                    [
+                        'event' => 'notification.invalid_signature',
+                        'request_id' => $requestId,
+                        'status' => $data['status']['status'] ?? null,
+                    ]
+                );
+
                 if ($this->testmode === 'yes') {
                     return hash($algo, $expectedSignature);
                 }
@@ -299,7 +328,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 ];
             }
 
-            $transactionInfo = $this->placetopay->query((int)$data['requestId']);
+            $transactionInfo = $this->placetopay->query($requestId);
 
             switch ($transactionInfo->status()->status()) {
                 case Status::ST_FAILED:
@@ -307,8 +336,15 @@ class GatewayMethod extends WC_Payment_Gateway
                     $message = $transactionInfo->status()->message();
 
                     $this->logger(
-                        "status: {$transactionInfo->status()->status()}, message: {$transactionInfo->status()->message()}",
-                        'endpointPlacetoPay'
+                        'Notification status failed',
+                        'notification',
+                        'warning',
+                        [
+                            'event' => 'notification.status_failed',
+                            'status' => $transactionInfo->status()->status(),
+                            'message' => $transactionInfo->status()->message(),
+                            'request_id' => $requestId,
+                        ]
                     );
 
                     break;
@@ -318,14 +354,30 @@ class GatewayMethod extends WC_Payment_Gateway
                     if (!isset($fields['orderKey'])) {
                         $message = 'Not orderKey in response for notificationUrl';
 
-                        $this->logger('Not orderKey in response for notificationUrl', 'endpointPlacetoPay');
+                        $this->logger(
+                            'Missing orderKey in notification response',
+                            'notification',
+                            'warning',
+                            [
+                                'event' => 'notification.missing_order_key',
+                                'request_id' => $requestId,
+                            ]
+                        );
                     } else {
                         $this->returnProcess(['key' => $fields['orderKey']], $transactionInfo, true);
 
                         $message = $transactionInfo->status()->message();
                         $success = true;
 
-                        $this->logger('Response successfully', 'endpointPlacetoPay');
+                        $this->logger(
+                            'Notification processed successfully',
+                            'notification',
+                            'info',
+                            [
+                                'event' => 'notification.processed',
+                                'request_id' => $requestId,
+                            ]
+                        );
                     }
 
                     break;
@@ -505,16 +557,24 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         try {
-            $this->logger('Payment URI: ' . $this->uri_service, __METHOD__);
+            $this->logger(
+                'Sending payment request to: ' . $this->uri_service,
+                'request',
+                'info',
+                [
+                    'event' => 'payment.request_start',
+                    'order_id' => $order->get_id(),
+                ]
+            );
 
-            $res = $this->placetopay->request($req);
+            $response = $this->placetopay->request($req);
 
-            if ($res->isSuccessful()) {
-                update_post_meta($order->get_id(), self::META_REQUEST_ID, $res->requestId());
-                update_post_meta($order->get_id(), self::META_STATUS, $res->status()->status());
+            if ($response->isSuccessful()) {
+                update_post_meta($order->get_id(), self::META_REQUEST_ID, $response->requestId());
+                update_post_meta($order->get_id(), self::META_STATUS, $response->status()->status());
 
                 // Redirect the client to the processUrl or display it on the JS extension
-                $processUrl = urlencode($res->processUrl());
+                $processUrl = urlencode($response->processUrl());
                 update_post_meta($order->get_id(), self::META_PROCESS_URL, $processUrl);
 
                 if (!$requestId || !static::isPendingStatusOrder($order->get_id())) {
@@ -531,13 +591,33 @@ class GatewayMethod extends WC_Payment_Gateway
                 ];
             }
 
-            $this->logger('Payment error: ' . $res->status()->message(), 'error');
+            $this->logger(
+                'Payment request failed',
+                'request',
+                'error',
+                [
+                    'event' => 'payment.request_failed',
+                    'order_id' => $order->get_id(),
+                    'status' => $response->status()->status(),
+                    'message' => $response->status()->message(),
+                ]
+            );
 
-            throw new PlacetoPayServiceException($res->status()->message());
+            throw new PlacetoPayServiceException($response->status()->message());
         } catch (PlacetoPayServiceException $exception) {
             throw new Exception(__('Payment error: ', 'woocommerce-gateway-translations'). $exception->getMessage());
         } catch (Exception $ex) {
-            $this->logger($ex->getMessage(), 'error');
+            $this->logger(
+                'Unhandled payment exception',
+                'request',
+                'error',
+                [
+                    'event' => 'payment.request_exception',
+                    'order_id' => $order->get_id(),
+                    'message' => $ex->getMessage(),
+                ]
+            );
+
             wc_add_notice(__('Payment error: Server error internal.', 'woocommerce-gateway-translations'), 'error');
         }
 
@@ -626,7 +706,15 @@ class GatewayMethod extends WC_Payment_Gateway
 
                 // Payment Details
                 if ($authorizationCode !== []) {
-                    $this->logger('Adding authorization code $auth = ' . $authorizationCode, 'receiptPage');
+                    $this->logger(
+                        'Authorization codes captured',
+                        'receipt',
+                        'info',
+                        [
+                            'event' => 'payment.authorization_saved',
+                            'order_id' => $orderId,
+                        ]
+                    );
 
                     update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(',', $authorizationCode));
                 }
@@ -640,7 +728,16 @@ class GatewayMethod extends WC_Payment_Gateway
             $this->resolveWebCheckout($order);
 
         } catch (Exception $ex) {
-            $this->logger($ex->getMessage(), 'error');
+            $this->logger(
+                'Receipt page exception',
+                'receipt',
+                'error',
+                [
+                    'event' => 'payment.authorization_exception',
+                    'order_id' => $orderId,
+                    'message' => $ex->getMessage(),
+                ]
+            );
         }
     }
 
@@ -664,8 +761,6 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * After checkResponse, Process response and update order information
-     *
-     * @param array $req Response data in array format
      */
     public function successfulRequest(array $req): void
     {
@@ -687,6 +782,7 @@ class GatewayMethod extends WC_Payment_Gateway
         ], wc_get_checkout_url());
 
         wp_redirect($redirectUrl);
+
         exit;
     }
 
@@ -697,7 +793,7 @@ class GatewayMethod extends WC_Payment_Gateway
      * @param RedirectInformation $transactionInfo Information of transaction in placetopay
      * @param bool $isCallback Define if is notification or return request
      */
-    public function returnProcess($request, RedirectInformation $transactionInfo, $isCallback = false)
+    public function returnProcess($request, RedirectInformation $transactionInfo, $isNotificationRequest = false)
     {
         $order = $this->getOrder($request);
         $sessionStatusInstance = $transactionInfo->status();
@@ -706,18 +802,33 @@ class GatewayMethod extends WC_Payment_Gateway
         $currentPaymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
 
         if ($isCallback && $currentPaymentStatus === Status::ST_APPROVED) {
-            $this->logger('Returning method is already ' . $currentPaymentStatus, __METHOD__);
+            $this->logger(
+                'Return already processed for order',
+                'response',
+                'info',
+                [
+                    'event' => 'order.already_processed',
+                    'order_id' => $order->get_id(),
+                    'payment_status' => $currentPaymentStatus,
+                ]
+            );
+
             return;
         }
 
         // Register status payment for the order
         update_post_meta($order->get_id(), self::META_STATUS, $status);
 
-        $this->logger([
-            'Processing order #%s with status %s',
-            $order->get_id(),
-            $status
-        ], __METHOD__);
+        $this->logger(
+            'Processing order status update',
+            'response',
+            'info',
+            [
+                'event' => 'order.processing',
+                'order_id' => $order->get_id(),
+                'status' => $status,
+            ]
+        );
 
         if ($sessionStatusInstance->status() !== $sessionStatusInstance::ST_PENDING) {
             $authorizationCode = $this->getAuthorizationCode($transactionInfo);
@@ -749,7 +860,15 @@ class GatewayMethod extends WC_Payment_Gateway
             case $sessionStatusInstance::ST_PENDING:
                 // Check order not already completed
                 if ($order->get_status() == 'completed') {
-                    $this->logger('Aborting, Order #' . $order->get_id() . ' is already complete.');
+                    $this->logger(
+                        'Order already complete, aborting return',
+                        'response',
+                        'info',
+                        [
+                            'event' => 'order.abort_complete',
+                            'order_id' => $order->get_id(),
+                        ]
+                    );
 
                     if ($isCallback) {
                         return;
@@ -827,7 +946,17 @@ class GatewayMethod extends WC_Payment_Gateway
                             $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
                             $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
                             $order->payment_complete();
-                            $this->logger('Payment approved for order # ' . $order->get_id(), __METHOD__);
+
+                            $this->logger(
+                                'Payment approved',
+                                'response',
+                                'info',
+                                [
+                                    'event' => 'order.payment_approved',
+                                    'order_id' => $order->get_id(),
+                                    'status' => $status,
+                                ]
+                            );
                         }
                     }
                 } else {
@@ -862,7 +991,17 @@ class GatewayMethod extends WC_Payment_Gateway
                 );
 
                 if ($paymentFirstStatus) {
-                    $this->logger($paymentFirstStatus->message(), $status);
+                    $this->logger(
+                        'Payment rejected',
+                        'response',
+                        'warning',
+                        [
+                            'event' => 'order.payment_rejected',
+                            'order_id' => $order->get_id(),
+                            'status' => $status,
+                            'message' => $paymentFirstStatus->message(),
+                        ]
+                    );
                 }
 
                 if (!self::versionCheck()) {
@@ -873,7 +1012,16 @@ class GatewayMethod extends WC_Payment_Gateway
             case $sessionStatusInstance::ST_FAILED:
                 update_post_meta($order->get_id(), self::META_STATUS, $sessionStatusInstance::ST_PENDING);
 
-                $this->logger('Payment failed for order # ' . $order->get_id(), __METHOD__);
+                $this->logger(
+                    'Payment failed set as pending to allow retry',
+                    'response',
+                    'warning',
+                    [
+                        'event' => 'order.payment_failed',
+                        'order_id' => $order->get_id(),
+                        'status' => $status,
+                    ]
+                );
 
                 break;
             case $sessionStatusInstance::ST_ERROR:
@@ -891,8 +1039,17 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         // Is notification request
-        if ($isCallback) {
-            $this->logger('Returning method with status ' . $status, __METHOD__);
+        if ($isNotificationRequest) {
+            $this->logger(
+                'Return completed for notification',
+                'response',
+                'info',
+                [
+                    'event' => 'return.completed',
+                    'order_id' => $order->get_id(),
+                    'status' => $status,
+                ]
+            );
             return;
         }
 
@@ -1021,7 +1178,16 @@ class GatewayMethod extends WC_Payment_Gateway
 
         // Validate key
         if ($key && $order->get_order_key() !== $orderKey) {
-            $this->logger(__('Error: Order Key does not match invoice.', 'woocommerce-gateway-translations'), 'getOrder');
+            $this->logger(
+                'Order Key does not match invoice.',
+                'response',
+                'error',
+                [
+                    'event' => 'order.key_mismatch',
+                    'order_id' => $order->get_id(),
+                ]
+            );
+
             exit;
         }
 
@@ -1082,25 +1248,20 @@ class GatewayMethod extends WC_Payment_Gateway
 
     /**
      * Manage the log instance if the debug is actived else nothing happen baby
-     *
-     * @param $message
      */
-    public function logger($message, $type = null): void
+    public function logger(string $message, string $type, string $level = 'info', array $context = []): void
     {
-        if ($this->testmode !== 'yes') {
+        if ($this->testmode !== 'yes' && !in_array($level, ['warning', 'error'], true)) {
             return;
         }
 
-        if (is_array($message) && count($message) > 1) {
-            $format = $message[0];
-            array_shift($message);
-
-            $message = vsprintf($format, $message);
+        if (!empty($context)) {
+            $message .= ' | Context: ' . json_encode($context, JSON_UNESCAPED_UNICODE);
         }
 
         $this->log->add(
             CountryConfig::CLIENT_ID,
-            ($type ? "($type): " : '') . $message
+            strtoupper($level) . ($type ? " ($type): " : ': ') . $message
         );
     }
 
@@ -1220,7 +1381,16 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $transactionInfo = $gatewayMethod->placetopay->query($requestId);
         $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
-        $gatewayMethod->logger('Processed order with ID = ' . $orderId, 'cron');
+        $gatewayMethod->logger(
+            'Processed pending order',
+            'cron',
+            'info',
+            [
+                'event' => 'cron.processed_pending_order',
+                'order_id' => $orderId,
+                'request_id' => $requestId,
+            ]
+        );
     }
 
     /**
@@ -1376,7 +1546,15 @@ class GatewayMethod extends WC_Payment_Gateway
         try {
             $this->placetopay = new PlacetoPay($settings);
         } catch (Exception $ex) {
-            $this->logger($ex->getMessage());
+            $this->logger(
+                'PlacetoPay initialization failed',
+                'init',
+                'error',
+                [
+                    'event' => 'placetopay.init_failed',
+                    'message' => $ex->getMessage(),
+                ]
+            );
         }
     }
 
@@ -1597,7 +1775,16 @@ class GatewayMethod extends WC_Payment_Gateway
     private function resolveRefundedPayment($order): void
     {
         $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-translations'));
-        $this->logger('Payment refunded for order # ' . $order->get_id(), __METHOD__);
+
+        $this->logger(
+            'Payment refunded',
+            'response',
+            'info',
+            [
+                'event' => 'payment.refunded',
+                'order_id' => $order->get_id(),
+            ]
+        );
     }
 
     private function resolveWebCheckout(WC_Order $order)

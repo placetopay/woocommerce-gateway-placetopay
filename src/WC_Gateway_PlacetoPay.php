@@ -64,7 +64,7 @@ class WC_Gateway_PlacetoPay
         $gateway_blocks_full_class = __NAMESPACE__ . '\\' . $gateway_blocks_class_name;
 
         $gateway_instance = new $gateway_full_class();
-        
+
         add_action('woocommerce_before_checkout_form', [$gateway_instance, 'checkoutMessage']);
         add_action('woocommerce_before_account_orders', [$gateway_instance, 'checkoutMessage']);
         add_action('woocommerce_checkout_process', [$gateway_instance, 'checkoutFieldProcess']);
@@ -80,18 +80,17 @@ class WC_Gateway_PlacetoPay
                 'woocommerce_blocks_payment_method_type_registration',
                 function( PaymentMethodRegistry $payment_method_registry ) use ($gateway_blocks_full_class, $client_id) {
                     $instance = new $gateway_blocks_full_class();
-                    
+
                     if (defined('WP_DEBUG') && WP_DEBUG) {
                         error_log(sprintf('[Gateway Blocks] Registrando método de pago en registry para %s: %s', $client_id, $gateway_blocks_full_class));
                     }
-                    
+
                     $payment_method_registry->register( $instance );
                 });
         }
 
         add_action('rest_api_init', function () use ($gateway_full_class) {
             $self = new $gateway_full_class();
-            $self->logger('register rest route', 'rest_api_init');
 
             register_rest_route($self::PAYMENT_ENDPOINT_NAMESPACE, $self::PAYMENT_ENDPOINT_CALLBACK, [
                 'methods' => 'POST',
@@ -153,7 +152,7 @@ class WC_Gateway_PlacetoPay
         if (class_exists('PlacetoPay\PaymentMethod\DataMigration')) {
             $client_id = DataMigration::getCurrentClientId();
             $client_name = DataMigration::getCurrentClientName();
-            
+
             if ($client_id && $client_name) {
                 DataMigration::migrateIfNeeded($client_id, $client_name);
             }
@@ -187,11 +186,11 @@ class WC_Gateway_PlacetoPay
         $client_id = CountryConfig::CLIENT_ID;
         $gateway_class_name = 'GatewayMethod' . ucfirst($client_id);
         $gateway_full_class = __NAMESPACE__ . '\\' . $gateway_class_name;
-        
+
         if (defined('WP_DEBUG') && WP_DEBUG) {
             error_log(sprintf('[Gateway] Registrando método de pago: %s (ID: %s)', $gateway_full_class, $client_id));
         }
-        
+
         $methods[] = $gateway_full_class;
         return $methods;
     }
