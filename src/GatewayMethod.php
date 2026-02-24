@@ -765,7 +765,7 @@ class GatewayMethod extends WC_Payment_Gateway
     public function successfulRequest(array $params): void
     {
         // When the user is returned to the page specified by redirectUrl
-        if (!empty($params['key']) && !empty($params['wc-api']) && !empty($params['order_key'])) {
+        if (!empty($params['key']) && !empty($params['wc-api']) && !empty($params['order_id'])) {
             $requestId = get_post_meta($params['order_id'], self::META_REQUEST_ID, true);
             $transactionInfo = $this->placetopay->query($requestId);
 
