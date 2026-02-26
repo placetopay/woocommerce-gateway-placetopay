@@ -18,6 +18,7 @@ use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Discount;
 use PlacetoPay\PaymentMethod\Constants\Environment;
 use PlacetoPay\PaymentMethod\Constants\Rules;
+use PlacetoPay\PaymentMethod\Logger\WCLoggerAdapter;
 use stdClass;
 use WC_HTTPS;
 use WC_Order;
@@ -28,7 +29,7 @@ use WC_Payment_Gateway;
  */
 class GatewayMethod extends WC_Payment_Gateway
 {
-    const VERSION = '3.2.0';
+    const VERSION = '3.2.1';
 
     const META_AUTHORIZATION_CUS = '_p2p_authorization';
 
@@ -75,7 +76,12 @@ class GatewayMethod extends WC_Payment_Gateway
     /**
      * @var \WC_Logger
      */
-    private $log;
+    private $logger;
+
+    /**
+     * @var ?Psr\Log\LoggerInterface
+     */
+    private $loggerAdapter;
 
     private $expiration_time_minutes;
 
@@ -1255,7 +1261,7 @@ class GatewayMethod extends WC_Payment_Gateway
             $message .= ' | Context: ' . json_encode($context, JSON_UNESCAPED_UNICODE);
         }
 
-        $this->log->add(
+        $this->logger->add(
             CountryConfig::CLIENT_ID,
             strtoupper($level) . ($type ? " ($type): " : ': ') . $message
         );
@@ -1507,7 +1513,7 @@ class GatewayMethod extends WC_Payment_Gateway
         $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
 
         return [
-            'User-Agent' => "woocommerce-gateway-translations/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION . ')',
+            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION . ')',
             'X-Source-Platform' => 'woocommerce',
         ];
     }
@@ -1523,6 +1529,7 @@ class GatewayMethod extends WC_Payment_Gateway
             'tranKey' => $this->tran_key,
             'baseUrl' => $this->uri_service,
             'headers' => $this->getHeaders(),
+            'logger' => $this->loggerAdapter,
         ];
 
         try {
@@ -1646,9 +1653,11 @@ class GatewayMethod extends WC_Payment_Gateway
             : 'no';
 
         if ($this->testmode === 'yes') {
-            $this->log = self::wooCommerceVersionCompare('2.1')
+            $this->logger = self::wooCommerceVersionCompare('2.1')
                 ? new \WC_Logger()
                 : WC()->logger();
+
+            $this->loggerAdapter = new WCLoggerAdapter($this->logger, CountryConfig::CLIENT_ID);
         }
 
         if ($this->enviroment_mode === Environment::CUSTOM) {
