@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.2.1] - 2026-02-26
+- Add logger adapter to use in gateway logs.
+
 ## [3.2.0] - 2026-02-24
 - Set expiration time to 30 minutes by default.
 - Update tracing information in logs (level and context).
