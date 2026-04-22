@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.2.2] - 2026-04-21
+- Validate the taxes value to build the information. [#PT-19783](https://app.clickup.com/t/31051369/PT-19783)
+
 ## [3.2.1] - 2026-02-26
 - Add logger adapter to use in gateway logs.
 
