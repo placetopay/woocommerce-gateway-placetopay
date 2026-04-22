@@ -559,7 +559,11 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         if (count($order->get_taxes()) > 0) {
-            $req['payment']['amount']['taxes'] = $this->getOrderTaxes($order);
+            $taxes = $this->getOrderTaxes($order);
+
+            if (!empty($taxes)) {
+                $req['payment']['amount']['taxes'] = $taxes;
+            }
         }
 
         try {
@@ -649,12 +653,26 @@ class GatewayMethod extends WC_Payment_Gateway
         return $subtotal;
     }
 
+    private function normalizeTaxRateIds($value): array
+    {
+        if (!is_array($value)) {
+            return [];
+        }
+
+        return array_values(array_filter(array_map('intval', $value)));
+    }
+
     public function getOrderTaxes(WC_Order $order): array
     {
+        $valueAddedTaxType = $this->normalizeTaxRateIds($this->taxes['taxes_others'] ?? null);
+        $exciseDutyType = $this->normalizeTaxRateIds($this->taxes['taxes_ico'] ?? null);
+        $iceType = $this->normalizeTaxRateIds($this->taxes['taxes_ice'] ?? null);
+
+        if (!$valueAddedTaxType && !$exciseDutyType && !$iceType) {
+            return [];
+        }
+
         $subTotal = $this->calculateSubtotalTax($order->get_items());
-        $valueAddedTaxType = array_map('intval', $this->taxes['taxes_others']);
-        $exciseDutyType = array_map('intval', $this->taxes['taxes_ico']);
-        $iceType = array_map('intval', $this->taxes['taxes_ice']);
         $taxForP2P = [];
 
         foreach ($order->get_taxes() as $tax) {
