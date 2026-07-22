@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.2.3] - 2026-07-23
+- Fix reflected XSS on the receipt page: the process url is now read from the order meta and encoded before being inlined. [CVE-2026-11324]
+
 ## [3.2.2] - 2026-04-21
 - Validate the taxes value to build the information. [#PT-19783](https://app.clickup.com/t/31051369/PT-19783)
 
