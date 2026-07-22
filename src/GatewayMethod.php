@@ -1806,6 +1806,10 @@ class GatewayMethod extends WC_Payment_Gateway
 
         $code = $this->getWebCheckoutScript($order);
 
+        if ($code === '') {
+            return;
+        }
+
         if (self::wooCommerceVersionCompare('2.1')) {
             wc_enqueue_js($code);
         } else {
@@ -1817,14 +1821,30 @@ class GatewayMethod extends WC_Payment_Gateway
 
     private function getWebCheckoutScript(WC_Order $order): string
     {
+        $processUrl = $this->getProcessUrl($order);
+
+        if ($processUrl === '') {
+            $this->logger(
+                'Process url not available to build the web checkout script',
+                'receipt',
+                'error',
+                [
+                    'event' => 'payment.process_url_missing',
+                    'order_id' => $order->get_id(),
+                ]
+            );
+
+            return '';
+        }
+
         if ($this->use_lightbox) {
             wp_enqueue_script('lightbox-script', $this->getLightboxScriptSource(), [], null);
 
             return '
-                P.init("' . $_REQUEST['redirect-url'] . '", { opacity: 0.4 });
+                P.init(' . self::toJs($processUrl) . ', { opacity: 0.4 });
 
                 P.on(\'response\', function() {
-                    window.location = "' . $this->getPaymentReturnUrl($order) . '"
+                    window.location = ' . self::toJs($this->getPaymentReturnUrl($order)) . '
                 });';
         }
 
@@ -1849,8 +1869,33 @@ class GatewayMethod extends WC_Payment_Gateway
             });
 
             setTimeout( function() {
-                window.location.href = "' . $_REQUEST['redirect-url'] . '";
+                window.location.href = ' . self::toJs($processUrl) . ';
             }, 1000 );';
+    }
+
+    private function getProcessUrl(WC_Order $order): string
+    {
+        $processUrl = urldecode((string) get_post_meta($order->get_id(), self::META_PROCESS_URL, true));
+
+        if ($processUrl === '' || !filter_var($processUrl, FILTER_VALIDATE_URL)) {
+            return '';
+        }
+
+        $scheme = strtolower((string) parse_url($processUrl, PHP_URL_SCHEME));
+
+        if (!in_array($scheme, ['http', 'https'], true)) {
+            return '';
+        }
+
+        return esc_url_raw($processUrl);
+    }
+
+    private static function toJs(string $value): string
+    {
+        return wp_json_encode(
+            $value,
+            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES
+        );
     }
 
     private function getLightboxScriptSource(): string
