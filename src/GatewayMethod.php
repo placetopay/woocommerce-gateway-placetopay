@@ -1841,10 +1841,10 @@ class GatewayMethod extends WC_Payment_Gateway
             wp_enqueue_script('lightbox-script', $this->getLightboxScriptSource(), [], null);
 
             return '
-                P.init(' . self::toJs($processUrl) . ', { opacity: 0.4 });
+                P.init("' . $processUrl . '", { opacity: 0.4 });
 
                 P.on(\'response\', function() {
-                    window.location = ' . self::toJs($this->getPaymentReturnUrl($order)) . '
+                    window.location = "' . esc_url_raw($this->getPaymentReturnUrl($order)) . '"
                 });';
         }
 
@@ -1869,7 +1869,7 @@ class GatewayMethod extends WC_Payment_Gateway
             });
 
             setTimeout( function() {
-                window.location.href = ' . self::toJs($processUrl) . ';
+                window.location.href = "' . $processUrl . '";
             }, 1000 );';
     }
 
@@ -1888,14 +1888,6 @@ class GatewayMethod extends WC_Payment_Gateway
         }
 
         return esc_url_raw($processUrl);
-    }
-
-    private static function toJs(string $value): string
-    {
-        return wp_json_encode(
-            $value,
-            JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_SLASHES
-        );
     }
 
     private function getLightboxScriptSource(): string
