@@ -2,6 +2,9 @@
 
 [Unreleased]
 
+## [3.2.4] - 2026-07-23
+- Fix generate white label, keep polyfill file.
+
 ## [3.2.3] - 2026-07-23
 - Fix reflected XSS on the receipt page: the process url is now read from the order meta and encoded before being inlined. [CVE-2026-11324]
 
