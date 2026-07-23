@@ -951,7 +951,6 @@ cleanup_build_files() {
         rm -rf "$work_dir/vendor/guzzlehttp/guzzle/tests"
         rm -rf "$work_dir/vendor/guzzlehttp/streams/tests"
         rm -rf "$work_dir/vendor/symfony/var-dumper"
-        rm -rf "$work_dir/vendor/symfony/polyfill-"*
         rm -rf "$work_dir/vendor/larapack/dd"
     fi
 }
