@@ -69,8 +69,7 @@ class WC_Gateway_PlacetoPay
         add_action('woocommerce_before_account_orders', [$gateway_instance, 'checkoutMessage']);
         add_action('woocommerce_checkout_process', [$gateway_instance, 'checkoutFieldProcess']);
 
-        $notification_hook = $gateway_full_class::NOTIFICATION_RETURN_PAGE;
-        add_action($notification_hook, [$this, 'notificationReturnPage']);
+        add_action('woocommerce_before_account_orders', [$this, 'notificationReturnPage']);
 
         if ($gateway_full_class::validateVersionSupportBlocks()) {
             add_action('plugins_loaded', [$this, 'blocks_woocommerce_my_gateway'], 0);
@@ -238,16 +237,34 @@ class WC_Gateway_PlacetoPay
 
     public function notificationReturnPage()
     {
-        $client_id = CountryConfig::CLIENT_ID;
-        if (isset($_REQUEST['order_key'])
-            && isset($_REQUEST['payment_method'])
-            && $_REQUEST['payment_method'] === $client_id
-        ) {
-            $orderId = wc_get_order_id_by_order_key($_REQUEST['order_key']);
-            $order = new \WC_Order($orderId);
-
-            wc_get_template('checkout/thankyou.php', ['order' => $order, 'name']);
+        if (empty($_REQUEST['order_key']) || empty($_REQUEST['payment_method'])) {
+            return;
         }
+
+        if (wc_clean(wp_unslash($_REQUEST['payment_method'])) !== CountryConfig::CLIENT_ID) {
+            return;
+        }
+
+        $orderKey = wc_clean(wp_unslash($_REQUEST['order_key']));
+        $orderId = wc_get_order_id_by_order_key($orderKey);
+
+        if (!$orderId) {
+            return;
+        }
+
+        $order = wc_get_order($orderId);
+
+        if (!$order instanceof \WC_Order) {
+            return;
+        }
+
+        $customerId = $order->get_customer_id();
+
+        if ($customerId && $customerId !== get_current_user_id()) {
+            return;
+        }
+
+        wc_get_template('checkout/thankyou.php', ['order' => $order]);
     }
 
     public function blocks_woocommerce_my_gateway(): void

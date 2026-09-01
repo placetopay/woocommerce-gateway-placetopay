@@ -1918,6 +1918,7 @@ class GatewayMethod extends WC_Payment_Gateway
         return add_query_arg([
             'wc-api' => $this->getClassName(),
             'order_id' => $order->get_id(),
+            'key' => $order->get_order_key(),
         ], $redirectUrl);
     }
 }

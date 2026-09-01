@@ -25,7 +25,6 @@ if (!defined('ABSPATH')) {
 
 use PlacetoPay\PaymentMethod\GatewayMethod;
 
-do_action(GatewayMethod::NOTIFICATION_RETURN_PAGE);
 do_action('woocommerce_before_account_orders', $has_orders);
 
 if ($has_orders) : ?>
@@ -59,7 +58,7 @@ if ($has_orders) : ?>
             foreach ($customer_orders->orders as $customer_order) {
                 $order = wc_get_order($customer_order);
                 $item_count = $order->get_item_count();
-                $status = $statuses[$order->get_status()];
+                $status = $statuses[$order->get_status()] ?? wc_get_order_status_name($order->get_status());
                 $authorizationCodes = get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS, true);
                 $metaStatus = get_post_meta($order->get_id(), GatewayMethod::META_STATUS, true);
 
@@ -91,11 +90,11 @@ if ($has_orders) : ?>
                         </td>
 
                         <td class="order-status" data-title="<?php _e('Status', 'woocommerce-gateway-placetopay'); ?>" style="text-align:left; white-space:nowrap;">
-                            <?php echo (!empty($status)) ? $status : __('Rejected', 'woocommerce-gateway-placetopay'); ?>
+                            <?php echo esc_html($status); ?>
                         </td>
 
                         <td class="order-status" data-title="<?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>">
-                            <?php echo $code; ?>
+                            <?php echo esc_html($code); ?>
                         </td>
 
                         <?php if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') { ?>

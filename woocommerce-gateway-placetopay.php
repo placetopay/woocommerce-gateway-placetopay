@@ -52,45 +52,114 @@ function load_CLIENTID_textdomain() {
 add_action('init', 'load_CLIENTID_textdomain', 1);
 
 /**
+ * @param string $template
+ * @param string $templateName
+ * @param string $templatePath
+ * @param string $defaultPath
+ * @param array $args
+ * @return string
+ */
+function wooAddonResolveTemplate_CLIENTID($template, $templateName, $templatePath, $defaultPath, $args = [])
+{
+    if (!function_exists('WC')) {
+        return $template;
+    }
+
+    $pluginTemplate = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/' . $templateName;
+
+    if (!file_exists($pluginTemplate)) {
+        return $template;
+    }
+
+    if (!$templatePath) {
+        $templatePath = WC()->template_path();
+    }
+
+    if (!$defaultPath) {
+        $defaultPath = WC()->plugin_path() . '/templates/';
+    }
+
+    if (locate_template([trailingslashit($templatePath) . $templateName, $templateName])) {
+        return $template;
+    }
+
+    $defaultTemplate = trailingslashit($defaultPath) . $templateName;
+    $order = wooAddonOrderInContext_CLIENTID($args);
+
+    if ($order instanceof WC_Order) {
+        if ($order->get_payment_method() === \CLIENTNAMESPACE\PaymentMethod\CountryConfig::CLIENT_ID) {
+            return $pluginTemplate;
+        }
+
+        return $template === $pluginTemplate && file_exists($defaultTemplate)
+            ? $defaultTemplate
+            : $template;
+    }
+
+    return $template === $defaultTemplate ? $pluginTemplate : $template;
+}
+
+/**
+ *
+ * @param array $args
+ * @return WC_Order|null
+ */
+function wooAddonOrderInContext_CLIENTID($args)
+{
+    if (isset($args['order']) && $args['order'] instanceof WC_Order) {
+        return $args['order'];
+    }
+
+    $orderId = absint(get_query_var('order-received')) ?: absint(get_query_var('view-order'));
+
+    if (!$orderId) {
+        return null;
+    }
+
+    $order = wc_get_order($orderId);
+
+    return $order instanceof WC_Order ? $order : null;
+}
+
+/**
+ * @param string $template
+ * @param string $templateName
+ * @param string $templatePath
+ * @param string $defaultPath
+ * @return string
+ */
+function wooAddonPluginTemplate_CLIENTID($template, $templateName, $templatePath, $defaultPath = '')
+{
+    return wooAddonResolveTemplate_CLIENTID($template, $templateName, $templatePath, $defaultPath);
+}
+
+/**
+ *
+ * @param string $template
+ * @param string $templateName
+ * @param array $args
+ * @param string $templatePath
+ * @param string $defaultPath
+ * @return string
+ */
+function wooAddonPluginTemplateArgs_CLIENTID($template, $templateName, $args, $templatePath, $defaultPath)
+{
+    return wooAddonResolveTemplate_CLIENTID(
+        $template,
+        $templateName,
+        $templatePath,
+        $defaultPath,
+        is_array($args) ? $args : []
+    );
+}
+
+/**
  * @return \CLIENTNAMESPACE\PaymentMethod\WC_Gateway_CLIENTCLASSNAME
  */
 function wc_gateway_CLIENTID()
 {
-    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate_CLIENTID', 201, 3);
-
-    /**
-     * @param $template
-     * @param $templateName
-     * @param $templatePath
-     * @return string
-     */
-    function wooAddonPluginTemplate_CLIENTID($template, $templateName, $templatePath)
-    {
-        global $woocommerce;
-
-        $_template = $template;
-
-        if (!$templatePath) {
-            $templatePath = $woocommerce->template_url;
-        }
-
-        $pluginPath = untrailingslashit(plugin_dir_path(__FILE__)) . '/woocommerce/';
-
-        $template = locate_template([
-            $templatePath . $templateName,
-            $templateName
-        ]);
-
-        if (!$template && file_exists($pluginPath . $templateName)) {
-            $template = $pluginPath . $templateName;
-        }
-
-        if (!$template) {
-            $template = $_template;
-        }
-
-        return $template;
-    }
+    add_filter('woocommerce_locate_template', 'wooAddonPluginTemplate_CLIENTID', 201, 4);
+    add_filter('wc_get_template', 'wooAddonPluginTemplateArgs_CLIENTID', 201, 5);
 
     require_once(__DIR__ . '/src/helpers.php');
     require_once(__DIR__ . '/vendor/autoload.php');
