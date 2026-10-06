@@ -1,0 +1,3 @@
+Prueba de concepto: pipeline que publica en otro repositorio.
+La pipeline reemplaza la línea de abajo en cada ejecución.
+Última ejecución: (pendiente)
