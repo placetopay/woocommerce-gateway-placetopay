@@ -31,6 +31,12 @@ Log for the plugin in development or testing environment
 Path to the cron file is:
 > wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php
 
+If the cron does not process orders on your server, pass the site URL as an argument:
+
+```bash
+php wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php https://my-store.com
+```
+
 
 ## Request example for the notification url:
 
