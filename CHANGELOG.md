@@ -2,6 +2,12 @@
 
 [Unreleased]
 
+## [3.2.7] - 2026-10-07
+- Support host in cron process pending orders.
+
+## [3.2.6] - 2026-09-01
+- Resolve current component.
+
 ## [3.2.5] - 2026-08-24
 - Resolve vulnerabilities.
 
