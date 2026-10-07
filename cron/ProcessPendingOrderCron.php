@@ -14,10 +14,20 @@ if (!$isCli) {
     exit('Forbidden: this task can only be executed from the command line.');
 }
 
-$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$siteUrl = $argv[1] ?? null;
+$siteHost = $siteUrl ? parse_url($siteUrl, PHP_URL_HOST) : null;
+$siteScheme = $siteUrl ? parse_url($siteUrl, PHP_URL_SCHEME) : null;
+
+$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? ($siteHost ?: 'localhost');
+$_SERVER['SERVER_NAME'] = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'];
+$_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '/';
 $_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
-require_once(dirname(__FILE__) . '/../../../../wp-blog-header.php');
+if ($siteScheme === 'https') {
+    $_SERVER['HTTPS'] = 'on';
+}
+
+require_once(dirname(__FILE__) . '/../../../../wp-load.php');
 
 $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
     'limit' => -1,
