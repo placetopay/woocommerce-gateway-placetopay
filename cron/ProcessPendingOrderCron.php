@@ -15,10 +15,13 @@ if (!$isCli) {
 }
 
 $siteUrl = $argv[1] ?? null;
-$siteHost = $siteUrl ? parse_url($siteUrl, PHP_URL_HOST) : null;
 $siteScheme = $siteUrl ? parse_url($siteUrl, PHP_URL_SCHEME) : null;
 
-$_SERVER['HTTP_HOST'] = $_SERVER['HTTP_HOST'] ?? ($siteHost ?: 'localhost');
+if (!isset($_SERVER['HTTP_HOST'])) {
+    $siteHost = $siteUrl ? parse_url($siteUrl, PHP_URL_HOST) : null;
+    $_SERVER['HTTP_HOST'] = $siteHost ?: 'localhost';
+}
+
 $_SERVER['SERVER_NAME'] = $_SERVER['SERVER_NAME'] ?? $_SERVER['HTTP_HOST'];
 $_SERVER['REQUEST_URI'] = $_SERVER['REQUEST_URI'] ?? '/';
 $_SERVER['REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'] ?? 'GET';
