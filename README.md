@@ -59,6 +59,12 @@ Log files path: `wp-content/uploads/wc-logs/PlacetoPay-xxx.log`
 
 Cron task path: `wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php`
 
+If the cron does not process orders on your server, pass the site URL as an argument:
+
+```bash
+php wp-content/plugins/woocommerce-gateway-placetopay/cron/ProcessPendingOrderCron.php https://my-store.com
+```
+
 ### Notification Example
 
 1. Do a purchase
