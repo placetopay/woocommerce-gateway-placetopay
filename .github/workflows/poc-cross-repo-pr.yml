@@ -1,0 +1,62 @@
+# PoC: una pipeline en el fork modifica un archivo y abre un PR en otro repositorio.
+# Valida la opción "usuario con permisos": la credencial es un token guardado como secreto.
+name: PoC publicación cruzada
+
+on:
+  push:
+    branches: [poc/release-pipeline]
+    paths: [.github/workflows/poc-cross-repo-pr.yml, poc/pipeline-poc.txt]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  UPSTREAM_REPO: placetopay/woocommerce-gateway-placetopay
+  UPSTREAM_BASE: master
+  POC_FILE: poc/pipeline-poc.txt
+
+jobs:
+  pr-to-upstream:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar el token
+        env:
+          POC_UPSTREAM_TOKEN: ${{ secrets.POC_UPSTREAM_TOKEN }}
+        run: |
+          if [ -z "$POC_UPSTREAM_TOKEN" ]; then
+            echo "::error::Falta el secreto POC_UPSTREAM_TOKEN en el fork (Settings → Secrets and variables → Actions)."
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Modificar una línea
+        run: |
+          sed -i "s|^Última ejecución:.*|Última ejecución: $(date -u +'%Y-%m-%d %H:%M UTC') · run ${GITHUB_RUN_ID}|" "$POC_FILE"
+          cat "$POC_FILE"
+
+      - name: Commit y push de una rama nueva en el fork
+        id: branch
+        run: |
+          BRANCH="poc/auto-${GITHUB_RUN_ID}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git commit -am "PoC: actualización automática (run ${GITHUB_RUN_ID})"
+          git push origin "$BRANCH"
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Abrir PR en borrador en el repositorio base
+        env:
+          GH_TOKEN: ${{ secrets.POC_UPSTREAM_TOKEN }}
+        run: |
+          gh pr create \
+            --repo "$UPSTREAM_REPO" \
+            --base "$UPSTREAM_BASE" \
+            --head "${GITHUB_REPOSITORY_OWNER}:${{ steps.branch.outputs.name }}" \
+            --draft \
+            --title "[PoC] Pipeline de publicación automática · no mergear" \
+            --body "PR creado automáticamente por la pipeline del fork ${GITHUB_REPOSITORY} (run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}). Prueba de concepto: valida que una pipeline puede modificar código y publicarlo en otro repositorio con una credencial guardada. Se cierra sin mergear."
