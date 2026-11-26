@@ -7,6 +7,9 @@
 - Fix the block checkout compatibility declaration, it used a wrong plugin file.
 - Log warnings and errors in production, they failed because the logger was only created in test mode.
 - Process in the cron task only the pending orders of this gateway, when several white label plugins are installed each one queried the orders of the others.
+- Register the payment hooks once, the order pay page queried the session once per gateway instance.
+- Remove the amount validation of the payment result, it compared the amount sent in the session request and never stopped the payment.
+- Show one row per authorization code of partial payments in my account orders.
 - Validate the classic checkout fields only when this gateway is the selected payment method.
 - Use `wp_add_inline_script` for the redirection script, `wc_enqueue_js` is deprecated since WooCommerce 10.4.
 - Split the gateway class into services: settings, order meta and queries, checkout validation, payment request, payment result, notification and cron.
