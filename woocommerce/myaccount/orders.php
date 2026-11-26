@@ -63,7 +63,7 @@ if ($has_orders) : ?>
                 $authorizationCodes = OrderMeta::get($order, OrderMeta::AUTHORIZATION);
                 $metaStatus = OrderMeta::get($order, OrderMeta::STATUS);
 
-                if (!$metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
+                if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
                     $authorizationCodes = explode(',', $authorizationCodes);
                 else
                     $authorizationCodes = [$authorizationCodes];
