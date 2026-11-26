@@ -33,6 +33,11 @@ class WC_Gateway_PlacetoPay
     public $plugin_url;
 
     /**
+     * @var string
+     */
+    private $plugin_file;
+
+    /**
      * Unique instance of self
      * @var WC_Gateway_PlacetoPay
      */
@@ -52,7 +57,10 @@ class WC_Gateway_PlacetoPay
             return;
         }
 
+        $this->plugin_file = $file;
         $this->migrateSettings();
+
+        add_action('before_woocommerce_init', [$this, 'declareFeaturesCompatibility']);
 
         add_filter('woocommerce_payment_gateways', [$this, 'addPlacetoPayGatewayMethod']);
         add_filter('plugin_action_links_' . plugin_basename($file), [$this, 'actionLinksPlacetopay']);
@@ -74,7 +82,6 @@ class WC_Gateway_PlacetoPay
         if ($gateway_full_class::validateVersionSupportBlocks()) {
             add_action('plugins_loaded', [$this, 'blocks_woocommerce_my_gateway'], 0);
             add_action('woocommerce_blocks_loaded', [$this, 'blocks_register_gateway_method_adapter']);
-            add_action('before_woocommerce_init', [$this, 'blocks_declare_cart_checkout_blocks_compatibility']);
             add_action(
                 'woocommerce_blocks_payment_method_type_registration',
                 function( PaymentMethodRegistry $payment_method_registry ) use ($gateway_blocks_full_class, $client_id) {
@@ -277,15 +284,14 @@ class WC_Gateway_PlacetoPay
         include(plugin_dir_path(__FILE__) . $client_class_name . '.php');
     }
 
-    public function blocks_declare_cart_checkout_blocks_compatibility(): void
+    public function declareFeaturesCompatibility(): void
     {
-        if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
-            $client_id = CountryConfig::CLIENT_ID;
-            $plugin_file = plugin_dir_path(__FILE__) . 'woocommerce-gateway-' . $client_id . '.php';
-            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
-                'cart_checkout_blocks',
-                $plugin_file,
-            );
+        if (!class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+            return;
+        }
+
+        foreach (['cart_checkout_blocks', 'custom_order_tables'] as $feature) {
+            \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility($feature, $this->plugin_file, true);
         }
     }
 

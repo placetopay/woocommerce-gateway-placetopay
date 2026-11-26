@@ -24,6 +24,26 @@ http://127.0.0.1:6969/wp-login.php
 ```
 
 
+### Code structure
+`src/GatewayMethod.php` is the gateway registered in WooCommerce: it holds the settings and receives the
+WooCommerce entry points, the work is done by the services:
+
+| Path | Responsibility |
+|---|---|
+| `src/GatewaySettings.php` | Resolved gateway configuration used by the services |
+| `src/Order/OrderMeta.php` | Payment meta keys and HPOS-safe reads (fallback to meta written by versions <= 3.2.x) |
+| `src/Order/OrderRepository.php` | Order queries through `wc_get_order` / `wc_get_orders` |
+| `src/Checkout/CheckoutValidator.php` | Buyer data, amount limits and pending orders validation |
+| `src/Checkout/RedirectionScript.php` | Redirection or lightbox script on the order pay page |
+| `src/Payment/PaymentRequestFactory.php` | Session request of an order (buyer, amount, taxes, discounts) |
+| `src/Payment/PaymentResultHandler.php` | Applies a session result to the order (return, notification and cron) |
+| `src/Notification/NotificationHandler.php` | Notification endpoint: signature validation and processing |
+| `src/Cron/PendingOrdersProcessor.php` | Queries the sessions of the orders still waiting for payment |
+
+Orders must only be accessed with the order CRUD (`wc_get_order()`, `$order->get_meta()`,
+`$order->update_meta_data()`, `$order->save()`), never with `get_post_meta()`/`update_post_meta()`,
+so the plugin works with HPOS and with the posts storage.
+
 ### Useful file paths
 Log for the plugin in development or testing environment
 > wp-content/uploads/wc-logs/PlacetoPay-xxx.log

@@ -24,6 +24,7 @@ if (!defined('ABSPATH')) {
 }
 
 use PlacetoPay\PaymentMethod\GatewayMethod;
+use PlacetoPay\PaymentMethod\Order\OrderMeta;
 
 do_action('woocommerce_before_account_orders', $has_orders);
 
@@ -59,10 +60,10 @@ if ($has_orders) : ?>
                 $order = wc_get_order($customer_order);
                 $item_count = $order->get_item_count();
                 $status = $statuses[$order->get_status()] ?? wc_get_order_status_name($order->get_status());
-                $authorizationCodes = get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS, true);
-                $metaStatus = get_post_meta($order->get_id(), GatewayMethod::META_STATUS, true);
+                $authorizationCodes = OrderMeta::get($order, OrderMeta::AUTHORIZATION);
+                $metaStatus = OrderMeta::get($order, OrderMeta::STATUS);
 
-                if (!$metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
+                if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending')
                     $authorizationCodes = explode(',', $authorizationCodes);
                 else
                     $authorizationCodes = [$authorizationCodes];
@@ -107,7 +108,7 @@ if ($has_orders) : ?>
                                         $item_count,
                                         'woocommerce-gateway-placetopay'
                                     ),
-                                    wc_price(get_post_meta($order->get_id(), '_order_total_partial', true)),
+                                    wc_price(OrderMeta::get($order, OrderMeta::TOTAL_PARTIAL)),
                                     $order->get_formatted_order_total(),
                                     $item_count
                                 ); ?>

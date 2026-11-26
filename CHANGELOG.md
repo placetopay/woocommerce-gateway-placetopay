@@ -1,6 +1,18 @@
 ## Changelog
 
 [Unreleased]
+- Support WooCommerce High-Performance Order Storage (HPOS): order data is read and written through the order CRUD and the plugin declares `custom_order_tables` compatibility.
+- Read the payment meta written by previous versions in `wp_postmeta` on HPOS stores and move it to the order on the next save.
+- Save the internal reference of the approved payment as the order transaction id.
+- Fix the block checkout compatibility declaration, it used a wrong plugin file.
+- Log warnings and errors in production, they failed because the logger was only created in test mode.
+- Process in the cron task only the pending orders of this gateway, when several white label plugins are installed each one queried the orders of the others.
+- Register the payment hooks once, the order pay page queried the session once per gateway instance.
+- Remove the amount validation of the payment result, it compared the amount sent in the session request and never stopped the payment.
+- Show one row per authorization code of partial payments in my account orders.
+- Validate the classic checkout fields only when this gateway is the selected payment method.
+- Use `wp_add_inline_script` for the redirection script, `wc_enqueue_js` is deprecated since WooCommerce 10.4.
+- Split the gateway class into services: settings, order meta and queries, checkout validation, payment request, payment result, notification and cron.
 
 ## [3.2.7] - 2026-10-07
 - Support host in cron process pending orders.

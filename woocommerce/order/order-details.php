@@ -69,11 +69,11 @@ if ( $show_downloads ) {
 
             <tfoot>
             <?php
-            $metaStatus = get_post_meta($order->get_id(), \PlacetoPay\PaymentMethod\GatewayMethod::META_STATUS, true );
+            $metaStatus = \PlacetoPay\PaymentMethod\Order\OrderMeta::get($order, \PlacetoPay\PaymentMethod\Order\OrderMeta::STATUS);
 
             if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
-                $total = get_post_meta($order->get_id(), '_order_total', true);
-                $balance = get_post_meta($order->get_id(), '_order_total_partial', true);
+                $total = $order->get_total();
+                $balance = \PlacetoPay\PaymentMethod\Order\OrderMeta::get($order, \PlacetoPay\PaymentMethod\Order\OrderMeta::TOTAL_PARTIAL);
                 ?>
                 <tr>
                     <th scope="row"><?php _e('Total Paid:', 'woocommerce-gateway-placetopay'); ?></th>

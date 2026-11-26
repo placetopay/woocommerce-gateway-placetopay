@@ -20,11 +20,12 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+use PlacetoPay\PaymentMethod\CountryConfig;
 use PlacetoPay\PaymentMethod\GatewayMethod;
-
-$gateway = new GatewayMethod();
+use PlacetoPay\PaymentMethod\Order\OrderMeta;
 
 /** @var WC_Order $order */
+$authorizationCode = $order ? OrderMeta::get($order, OrderMeta::AUTHORIZATION) : '';
 ?>
 
 <div class="woocommerce-order">
@@ -39,8 +40,7 @@ $gateway = new GatewayMethod();
                 <br>
 
                 <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
-                <strong><?php echo get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS,
-                        true); ?></strong>
+                <strong><?php echo esc_html($authorizationCode); ?></strong>
             </p>
 
             <p class="woocommerce-notice woocommerce-notice--error woocommerce-thankyou-order-failed-actions">
@@ -74,7 +74,7 @@ $gateway = new GatewayMethod();
                         __('Refunded transaction.', 'woocommerce-gateway-placetopay'), $order);
                 endif;
 
-                $processUrl = get_post_meta($order->get_id(), GatewayMethod::META_PROCESS_URL, true);
+                $processUrl = OrderMeta::get($order, OrderMeta::PROCESS_URL);
 
                 if (!empty($processUrl)) { ?>
 
@@ -82,7 +82,7 @@ $gateway = new GatewayMethod();
                         __('<br>For more information about the status of your order: <a href="%s" target="_blank">view order detail in %s</a>',
                             'woocommerce-gateway-placetopay'),
                         urldecode($processUrl),
-                        $gateway->getClient(),
+                        CountryConfig::CLIENT,
                     ); ?>
 
                 <?php } ?>
@@ -106,15 +106,11 @@ $gateway = new GatewayMethod();
                 </li>
 
                 <?php
-                $metaStatus = get_post_meta(
-                    $order->get_id(),
-                    GatewayMethod::META_STATUS,
-                    true
-                );
+                $metaStatus = OrderMeta::get($order, OrderMeta::STATUS);
 
                 if ($metaStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
-                    $total = get_post_meta($order->get_id(), '_order_total', true);
-                    $balance = get_post_meta($order->get_id(), '_order_total_partial', true);
+                    $total = $order->get_total();
+                    $balance = OrderMeta::get($order, OrderMeta::TOTAL_PARTIAL);
                 ?>
 
                     <li class="woocommerce-order-overview__total total">
@@ -144,16 +140,12 @@ $gateway = new GatewayMethod();
 
                 <?php endif; ?>
 
-                <?php if (get_post_meta($order->get_id(), GatewayMethod::META_AUTHORIZATION_CUS, true)) : ?>
+                <?php if ($authorizationCode) : ?>
 
                     <li class="order">
                         <?php _e('Authorization/CUS', 'woocommerce-gateway-placetopay'); ?>
                         <strong>
-                            <?php echo get_post_meta(
-                                $order->get_id(),
-                                GatewayMethod::META_AUTHORIZATION_CUS,
-                                true
-                            ); ?>
+                            <?php echo esc_html($authorizationCode); ?>
                         </strong>
                     </li>
 

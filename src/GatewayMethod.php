@@ -6,40 +6,40 @@ if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly
 }
 
-use Dnetix\Redirection\Entities\PaymentModifier;
 use Dnetix\Redirection\Entities\Status;
-use Dnetix\Redirection\Entities\Transaction;
 use Dnetix\Redirection\Exceptions\PlacetoPayServiceException;
-use Dnetix\Redirection\Message\Notification;
 use Dnetix\Redirection\Message\RedirectInformation;
 use Dnetix\Redirection\PlacetoPay;
 use Exception;
+use PlacetoPay\PaymentMethod\Checkout\CheckoutValidator;
+use PlacetoPay\PaymentMethod\Checkout\RedirectionScript;
 use PlacetoPay\PaymentMethod\Constants\Country;
 use PlacetoPay\PaymentMethod\Constants\Discount;
 use PlacetoPay\PaymentMethod\Constants\Environment;
-use PlacetoPay\PaymentMethod\Constants\Rules;
-use PlacetoPay\PaymentMethod\Logger\WCLoggerAdapter;
-use stdClass;
+use PlacetoPay\PaymentMethod\Cron\PendingOrdersProcessor;
+use PlacetoPay\PaymentMethod\Logger\GatewayLogger;
+use PlacetoPay\PaymentMethod\Notification\NotificationHandler;
+use PlacetoPay\PaymentMethod\Order\OrderMeta;
+use PlacetoPay\PaymentMethod\Order\OrderRepository;
+use PlacetoPay\PaymentMethod\Payment\PaymentNoteFormatter;
+use PlacetoPay\PaymentMethod\Payment\PaymentRequestFactory;
+use PlacetoPay\PaymentMethod\Payment\PaymentResultHandler;
+use PlacetoPay\PaymentMethod\Payment\TaxResolver;
 use WC_HTTPS;
 use WC_Order;
 use WC_Payment_Gateway;
 
-/**
- * Class GatewayMethod.
- */
 class GatewayMethod extends WC_Payment_Gateway
 {
     const VERSION = '3.2.1';
 
-    const META_AUTHORIZATION_CUS = '_p2p_authorization';
+    const META_AUTHORIZATION_CUS = OrderMeta::AUTHORIZATION;
 
-    const META_REQUEST_ID = '_p2p_request_id';
+    const META_REQUEST_ID = OrderMeta::REQUEST_ID;
 
-    const META_STATUS = '_p2p_status';
+    const META_STATUS = OrderMeta::STATUS;
 
-    const META_STOCK_RESTORED = '_p2p_stock_restored:%s';
-
-    const META_PROCESS_URL = '_p2p_process_url';
+    const META_PROCESS_URL = OrderMeta::PROCESS_URL;
 
     /**
      * URI endpoint namespace via wordpress for the notification of the service
@@ -60,71 +60,40 @@ class GatewayMethod extends WC_Payment_Gateway
 
     const EXPIRATION_TIME_MINUTES_LIMIT = 2880;
 
-    const ALLOWED_SIGNATURE_ALGORITHMS = ['sha1', 'sha256'];
+    const ALLOWED_SIGNATURE_ALGORITHMS = NotificationHandler::ALLOWED_SIGNATURE_ALGORITHMS;
+
+    /**
+     * @var GatewaySettings
+     */
+    private $gatewaySettings;
+
+    /**
+     * @var GatewayLogger
+     */
+    private $gatewayLogger;
 
     /**
      * Instance of placetopay to manage the connection with the webservice
-     * @var PlacetoPay
+     * @var PlacetoPay|null
      */
     private $placetopay;
 
     /**
-     * Transactional key for connection with web services placetopay
-     * @var string
+     * @var OrderRepository
      */
-    private $tran_key;
+    private $orders;
 
     /**
-     * @var \WC_Logger
+     * @var PaymentResultHandler|null
      */
-    private $logger;
-
-    /**
-     * @var ?Psr\Log\LoggerInterface
-     */
-    private $loggerAdapter;
-
-    private $expiration_time_minutes;
-
-    private $currency;
-
-    private $enviroment_mode;
-
-    private $fill_buyer_information;
-
-    private $login;
-
-    private $redirect_page_id;
-
-    private $testmode;
-
-    private $merchant_email;
-
-    private $uri_service;
-
-    private $taxes;
-
-    private $minimum_amount;
-
-    private $maximum_amount;
-
-    private $allow_to_pay_with_pending_orders;
-
-    private $allow_partial_payments;
-
-    private $skip_result;
-
-    private $custom_connection_url;
+    private $resultHandler;
 
     private $payment_button_image;
 
-    private $version = self::VERSION;
-
-    private $use_lightbox;
-
-    private $endpoint;
-
-    private $form_method;
+    /**
+     * @var bool
+     */
+    private static $paymentHooksRegistered = false;
 
     /**
      * GatewayMethod constructor.
@@ -133,7 +102,6 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         $this->configPaymentMethod();
         $this->init();
-        $this->initPlacetoPay();
     }
 
     /**
@@ -151,31 +119,32 @@ class GatewayMethod extends WC_Payment_Gateway
         $this->initFormFields();
         $this->settings['endpoint'] = home_url('/wp-json/') . self::getPaymentEndpoint();
 
-        $this->endpoint = $this->settings['endpoint'];
-
-        $this->enviroment_mode = $this->get_option('enviroment_mode');
         $this->description = sprintf(__('Pay securely through %s.', 'woocommerce-gateway-translations'), $this->getClient());
-        $this->login = $this->get_option('login');
-        $this->tran_key = $this->get_option('tran_key');
-        $this->redirect_page_id = $this->get_option('redirect_page_id');
-        $this->form_method = $this->get_option('form_method');
-
-        $this->use_lightbox = $this->get_option('use_lightbox') === 'yes';
-        $this->skip_result = $this->get_option('skip_result') === "yes";
-        $this->custom_connection_url = $this->get_option('custom_connection_url');
         $this->payment_button_image = $this->get_option('payment_button_image');
-        $this->merchant_email = get_option('woocommerce_email_from_address');
         $this->icon = $this->getImageUrl();
-        $this->currency = get_woocommerce_currency();
-        $this->currency ??= 'COP';
 
-        $configurations = CountryConfig::getConfiguration($this);
+        $environmentMode = $this->get_option('enviroment_mode');
+        $testMode = in_array($environmentMode, [Environment::TEST, Environment::DEV, Environment::UAT], true)
+            || (defined('WP_DEBUG') && WP_DEBUG);
 
-        foreach ($configurations as $key => $value) {
-            $this->$key = $value;
-        }
+        $this->gatewaySettings = new GatewaySettings(array_merge(CountryConfig::getConfiguration($this), [
+            'client' => $this->getClient(),
+            'country_code' => $this->getCountry(),
+            'currency' => get_woocommerce_currency() ?? 'COP',
+            'login' => $this->get_option('login'),
+            'tran_key' => $this->get_option('tran_key'),
+            'service_url' => $this->resolveServiceUrl($environmentMode),
+            'test_mode' => $testMode,
+            'skip_result' => $this->get_option('skip_result') === 'yes',
+            'use_lightbox' => $this->get_option('use_lightbox') === 'yes',
+            'redirect_page_id' => $this->get_option('redirect_page_id'),
+            'discount' => $this->get_option('discount'),
+            'invoice' => $this->get_option('invoice'),
+            'merchant_email' => get_option('woocommerce_email_from_address'),
+        ]));
 
-        $this->configureEnvironment();
+        $this->gatewayLogger = new GatewayLogger(CountryConfig::CLIENT_ID, $testMode);
+        $this->orders = new OrderRepository();
     }
 
     public function getScheduleTaskPath(): string
@@ -189,17 +158,18 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function init()
     {
-        add_action('woocommerce_receipt_' . $this->id, [$this, 'receiptPage']);
-        add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
-        add_action('placetopay_init', [$this, 'successfulRequest']);
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
 
-        if (self::wooCommerceVersionCompare('2.0.0')) {
-            add_action('woocommerce_update_options_payment_gateways_' . $this->id, [&$this, 'process_admin_options']);
-
+        // The gateway is instantiated several times per request, the payment hooks must run only once.
+        if (self::$paymentHooksRegistered) {
             return;
         }
 
-        add_action('woocommerce_update_options_payment_gateways', [&$this, 'process_admin_options']);
+        self::$paymentHooksRegistered = true;
+
+        add_action('woocommerce_receipt_' . $this->id, [$this, 'receiptPage']);
+        add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
+        add_action('placetopay_init', [$this, 'successfulRequest']);
     }
 
     /**
@@ -271,145 +241,15 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function endpointPlacetoPay(\WP_REST_Request $req)
     {
-        $message = null;
-        $success = false;
-        $data = $req->get_params();
-        $requestId = $data['requestId'] ?? null;
-
-        $this->logger(
-            'Received notification',
-            'notification',
-            'info',
-            [
-                'event' => 'notification.received',
-                'params' => $data,
-                'request_id' => $requestId,
-            ]
+        $handler = new NotificationHandler(
+            $this->gatewaySettings,
+            $this->gatewayLogger,
+            $this->orders,
+            $this->resultHandler(),
+            [$this, 'client']
         );
 
-        if (!empty($data['signature']) && !empty($requestId)) {
-            $expectedSignature = sprintf(
-                '%s%s%s%s',
-                $requestId,
-                $data['status']['status'],
-                $data['status']['date'],
-                $this->tran_key,
-            );
-
-            if (strpos($data['signature'], ':') === false) {
-                $data['signature'] = 'sha1:' . $data['signature'];
-            }
-
-            [$algo, $signature] = explode(':', $data['signature'], 2);
-            $algo = strtolower(trim($algo));
-
-            $this->logger(
-                'Signature algorithm parsed',
-                'notification',
-                'info',
-                [
-                    'event' => 'notification.signature_algorithm',
-                    'algorithm' => $algo,
-                    'request_id' => $requestId,
-                ]
-            );
-
-            if (!in_array($algo, self::ALLOWED_SIGNATURE_ALGORITHMS, true)) {
-                $this->logger(
-                    'Unsupported notification signature algorithm',
-                    'notification',
-                    'warning',
-                    [
-                        'event' => 'notification.unsupported_algorithm',
-                        'algorithm' => $algo,
-                        'request_id' => $requestId,
-                    ]
-                );
-
-                return [
-                    'success' => $success,
-                    'message' => $message,
-                ];
-            }
-
-            if (!hash_equals(hash($algo, $expectedSignature), (string)$signature)) {
-                $this->logger(
-                    'Invalid notification signature',
-                    'notification',
-                    'warning',
-                    [
-                        'event' => 'notification.invalid_signature',
-                        'request_id' => $requestId,
-                        'status' => $data['status']['status'] ?? null,
-                    ]
-                );
-
-                return [
-                    'success' => $success,
-                    'message' => $message,
-                ];
-            }
-
-            $transactionInfo = $this->placetopay->query($requestId);
-
-            switch ($transactionInfo->status()->status()) {
-                case Status::ST_FAILED:
-                case Status::ST_ERROR:
-                    $message = $transactionInfo->status()->message();
-
-                    $this->logger(
-                        'Notification status failed',
-                        'notification',
-                        'warning',
-                        [
-                            'event' => 'notification.status_failed',
-                            'status' => $transactionInfo->status()->status(),
-                            'message' => $transactionInfo->status()->message(),
-                            'request_id' => $requestId,
-                        ]
-                    );
-
-                    break;
-                default:
-                    $fields = $transactionInfo->request()->fieldsToKeyValue();
-
-                    if (!isset($fields['orderKey'])) {
-                        $message = 'Not orderKey in response for notificationUrl';
-
-                        $this->logger(
-                            'Missing orderKey in notification response',
-                            'notification',
-                            'warning',
-                            [
-                                'event' => 'notification.missing_order_key',
-                                'request_id' => $requestId,
-                            ]
-                        );
-                    } else {
-                        $this->returnProcess(['key' => $fields['orderKey']], $transactionInfo, true);
-
-                        $message = $transactionInfo->status()->message();
-                        $success = true;
-
-                        $this->logger(
-                            'Notification processed successfully',
-                            'notification',
-                            'info',
-                            [
-                                'event' => 'notification.processed',
-                                'request_id' => $requestId,
-                            ]
-                        );
-                    }
-
-                    break;
-            }
-        }
-
-        return [
-            'success' => $success,
-            'message' => $message,
-        ];
+        return $handler->handle($req->get_params());
     }
 
     public static function validateVersionSupportBlocks(): bool
@@ -423,67 +263,11 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutFieldProcess()
     {
-        $this->validateFields($_POST);
-    }
-
-    /**
-     * @return array|stdClass|WC_Order[]
-     */
-    private function getPendingOrders($order)
-    {
-        $userId = $order->get_customer_id();
-
-        if (!$userId) {
-            return [];
+        if (($_POST['payment_method'] ?? '') !== $this->id) {
+            return;
         }
 
-        return wc_get_orders([
-            'customer_id' => $userId,
-            'status' => ['wc-pending', 'wc-on-hold'],
-            'limit' => 1,
-        ]);
-    }
-
-    private function validateBlocksFields($order)
-    {
-        if (!$this->allow_to_pay_with_pending_orders && !empty($this->getPendingOrders($order))) {
-            throw new Exception(__(
-                '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
-                'woocommerce-gateway-translations'
-            ));
-        }
-
-        if (!preg_match(Rules::PATTERN_NAME, trim($order->get_billing_first_name()))) {
-            throw new Exception(__('<strong>First Name</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
-        }
-
-        if (!preg_match(Rules::PATTERN_NAME, trim($order->get_billing_last_name()))) {
-            throw new Exception(__('<strong>Last Name</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
-        }
-
-        if (!preg_match(Rules::PATTERN_PHONE, trim($order->get_billing_phone()))) {
-            throw new Exception(__('<strong>Phone</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
-        }
-
-        if (!preg_match(Rules::PATTERN_EMAIL, trim($order->get_billing_email()))) {
-            throw new Exception(__('<strong>Email</strong>, does not have a valid format', 'woocommerce-gateway-translations'));
-        }
-
-        if ($this->minimum_amount != null && $order->get_total() < $this->minimum_amount) {
-            throw new Exception(sprintf(__(
-                '<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.'
-                , 'woocommerce-gateway-translations'), number_format($this->minimum_amount, 2, '.', ',')
-            ));
-        }
-
-        if ($this->maximum_amount != null && $order->get_total() > $this->maximum_amount) {
-            throw new Exception(sprintf(__(
-                '<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.'
-                , 'woocommerce-gateway-translations'), number_format($this->maximum_amount, 2, '.', ',')
-            ));
-        }
-
-        return true;
+        $this->checkoutValidator()->validateCheckoutRequest($_POST, (float) WC()->cart->total);
     }
 
     /**
@@ -494,97 +278,27 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function process_payment($orderId)
     {
-        $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
-        $order = new WC_Order($orderId);
-
-        $paymentStatus = get_post_meta($orderId, self::META_STATUS, true);
+        $order = wc_get_order($orderId);
+        $requestId = OrderMeta::get($order, OrderMeta::REQUEST_ID);
+        $paymentStatus = OrderMeta::get($order, OrderMeta::STATUS);
 
         if (self::validateVersionSupportBlocks()) {
-            $this->validateBlocksFields($order);
+            $this->checkoutValidator()->validateOrder($order);
         }
 
-        if ($paymentStatus && $paymentStatus == 'APPROVED_PARTIAL' && $order->get_status() == 'pending') {
-            $processUrl = get_post_meta($order->get_id(), GatewayMethod::META_PROCESS_URL, true);
-
+        if ($paymentStatus === Status::ST_APPROVED_PARTIAL && $order->get_status() === 'pending') {
             return [
                 'result' => 'success',
-                'redirect' => urldecode($processUrl)
+                'redirect' => urldecode((string) OrderMeta::get($order, OrderMeta::PROCESS_URL))
             ];
         }
 
-        $timeExpiration = $this->expiration_time_minutes
-            ? $this->expiration_time_minutes . ' minutes'
-            : '30 minutes';
-
-        $orderNumber = self::getOrderNumber($order);
-
-        $req = [
-            'locale' => get_locale(),
-            'expiration' => date('c', strtotime($timeExpiration)),
-            'returnUrl' => $this->getPaymentReturnUrl($order),
-            'noBuyerFill' => !$this->fill_buyer_information,
-            'ipAddress' => (new RemoteAddress())->getIpAddress(),
-            'userAgent' => $_SERVER['HTTP_USER_AGENT'],
-            'skipResult' => $this->skip_result,
-            'buyer' => [
-                'name' => $order->get_billing_first_name(),
-                'surname' => $order->get_billing_last_name(),
-                'email' => $order->get_billing_email(),
-                'company' => $order->get_billing_company(),
-                'mobile' => $order->get_billing_phone(),
-                'address' => [
-                    'street' => $order->get_billing_address_1() . ' ' . $order->get_billing_address_2(),
-                    'city' => $order->get_billing_city(),
-                    'state' => $order->get_billing_state(),
-                    'country' => $order->get_billing_country(),
-                    'postalCode' => $order->get_billing_postcode()
-                ]
-            ],
-            'payment' => [
-                'reference' => $orderNumber,
-                'description' => sprintf(__('Payment on %s No: %s', 'woocommerce-gateway-translations'), $this->getClient(), $orderNumber),
-                'amount' => [
-                    'currency' => $this->currency,
-                    'total' => $order->get_total()
-                ],
-                'allowPartial' => $this->allow_partial_payments
-            ],
-            'fields' => [
-                [
-                    'keyword' => 'orderKey',
-                    'value' => $order->get_order_key(),
-                    'displayOn' => 'none',
-                ],
-            ],
-        ];
-
-        if ($this->getCountry() === Country::UY) {
-            $discountCode = $this->get_option('discount');
-
-            if ($discountCode !== Discount::UY_NONE) {
-                $req['payment']['modifiers'] = [
-                    new PaymentModifier([
-                        'type' => PaymentModifier::TYPE_FEDERAL_GOVERNMENT,
-                        'code' => $discountCode,
-                        'additional' => [
-                            'invoice' => $this->get_option('invoice')
-                        ]
-                    ])
-                ];
-            }
-        }
-
-        if (count($order->get_taxes()) > 0) {
-            $taxes = $this->getOrderTaxes($order);
-
-            if (!empty($taxes)) {
-                $req['payment']['amount']['taxes'] = $taxes;
-            }
-        }
+        $request = (new PaymentRequestFactory($this->gatewaySettings, new TaxResolver($this->gatewaySettings)))
+            ->create($order, $this->getPaymentReturnUrl($order));
 
         try {
             $this->logger(
-                'Sending payment request to: ' . $this->uri_service,
+                'Sending payment request to: ' . $this->gatewaySettings->serviceUrl(),
                 'request',
                 'info',
                 [
@@ -593,17 +307,18 @@ class GatewayMethod extends WC_Payment_Gateway
                 ]
             );
 
-            $response = $this->placetopay->request($req);
+            $response = $this->client()->request($request);
 
             if ($response->isSuccessful()) {
-                update_post_meta($order->get_id(), self::META_REQUEST_ID, $response->requestId());
-                update_post_meta($order->get_id(), self::META_STATUS, $response->status()->status());
-
                 // Redirect the client to the processUrl or display it on the JS extension
                 $processUrl = urlencode($response->processUrl());
-                update_post_meta($order->get_id(), self::META_PROCESS_URL, $processUrl);
 
-                if (!$requestId || !static::isPendingStatusOrder($order->get_id())) {
+                $order->update_meta_data(OrderMeta::REQUEST_ID, $response->requestId());
+                $order->update_meta_data(OrderMeta::STATUS, $response->status()->status());
+                $order->update_meta_data(OrderMeta::PROCESS_URL, $processUrl);
+                $order->save();
+
+                if (!$requestId || !OrderMeta::hasPendingPayment($order)) {
                     // Reduce stock levels tempory
                     wc_reduce_stock_levels($order->get_id());
                 }
@@ -651,82 +366,6 @@ class GatewayMethod extends WC_Payment_Gateway
     }
 
     /**
-     * @param $items
-     * @return float
-     */
-    public function calculateSubtotalTax($items)
-    {
-        $subtotal = 0.00;
-
-        foreach ($items as $item) {
-            $data = $item->get_data();
-
-            if ($data['total_tax'] !== '0') {
-                $subtotal += $data['total'];
-            }
-        }
-
-        return $subtotal;
-    }
-
-    private function normalizeTaxRateIds($value): array
-    {
-        if (!is_array($value)) {
-            return [];
-        }
-
-        return array_values(array_filter(array_map('intval', $value)));
-    }
-
-    public function getOrderTaxes(WC_Order $order): array
-    {
-        $valueAddedTaxType = $this->normalizeTaxRateIds($this->taxes['taxes_others'] ?? null);
-        $exciseDutyType = $this->normalizeTaxRateIds($this->taxes['taxes_ico'] ?? null);
-        $iceType = $this->normalizeTaxRateIds($this->taxes['taxes_ice'] ?? null);
-
-        if (!$valueAddedTaxType && !$exciseDutyType && !$iceType) {
-            return [];
-        }
-
-        $subTotal = $this->calculateSubtotalTax($order->get_items());
-        $taxForP2P = [];
-
-        foreach ($order->get_taxes() as $tax) {
-            $taxData = $tax->get_data();
-
-            if (in_array($taxData['rate_id'], $valueAddedTaxType)) {
-                $shippingTax = (float)$order->get_shipping_tax();
-                $totalTax = $shippingTax + $taxData['tax_total'];
-                $totalBase = $shippingTax > 0 ? ((float)$order->get_shipping_total() + $subTotal) : $subTotal;
-
-                $taxForP2P[] = [
-                    'kind' => 'valueAddedTax',
-                    'amount' => $totalTax,
-                    'base' => $totalBase,
-                ];
-            }
-
-            if (in_array($taxData['rate_id'], $exciseDutyType)) {
-                $taxForP2P[] = [
-                    'kind' => 'exciseDuty',
-                    'amount' => floatval($taxData['tax_total']),
-                    'base' => $subTotal,
-                ];
-            }
-
-            if (in_array($taxData['rate_id'], $iceType)) {
-                $taxForP2P[] = [
-                    'kind' => 'ice',
-                    'amount' => floatval($taxData['tax_total']),
-                    'base' => $subTotal,
-                ];
-            }
-        }
-
-        return $taxForP2P;
-    }
-
-    /**
      * After of process_payment, generate the payment block modal with form datas to sending
      *
      * @param $orderId
@@ -734,39 +373,37 @@ class GatewayMethod extends WC_Payment_Gateway
     public function receiptPage($orderId): void
     {
         try {
-            $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
-            $transactionInfo = $this->placetopay->query($requestId);
+            $order = $this->orders->find($orderId);
 
-            if (!is_null($transactionInfo->payment())) {
-                $authorizationCode = count($transactionInfo->payment()) > 0
-                    ? array_map(function (Transaction $trans) {
-                        return $trans->authorization();
-                    }, $transactionInfo->payment())
-                    : [];
+            if (!$order) {
+                return;
+            }
 
-                // Payment Details
-                if ($authorizationCode !== []) {
-                    $this->logger(
-                        'Authorization codes captured',
-                        'receipt',
-                        'info',
-                        [
-                            'event' => 'payment.authorization_saved',
-                            'order_id' => $orderId,
-                        ]
-                    );
+            $transactionInfo = $this->client()->query((string) OrderMeta::get($order, OrderMeta::REQUEST_ID));
+            $authorizationCodes = array_map(function ($transaction) {
+                return $transaction->authorization();
+            }, $transactionInfo->payment() ?? []);
 
-                    update_post_meta($orderId, self::META_AUTHORIZATION_CUS, implode(',', $authorizationCode));
-                }
+            // Payment Details
+            if ($authorizationCodes !== []) {
+                $this->logger(
+                    'Authorization codes captured',
+                    'receipt',
+                    'info',
+                    [
+                        'event' => 'payment.authorization_saved',
+                        'order_id' => $orderId,
+                    ]
+                );
+
+                $order->update_meta_data(OrderMeta::AUTHORIZATION, implode(',', $authorizationCodes));
             }
 
             // Add information to the order to notify that exit to payment
             // and invalidates the shopping cart
-            $order = new WC_Order($orderId);
             $order->update_status('on-hold', sprintf(__('Redirecting to %s', 'woocommerce-gateway-translations'), $this->getClient()));
 
-            $this->resolveWebCheckout($order);
-
+            $this->enqueueRedirectionScript($order);
         } catch (Exception $ex) {
             $this->logger(
                 'Receipt page exception',
@@ -806,13 +443,16 @@ class GatewayMethod extends WC_Payment_Gateway
     {
         // When the user is returned to the page specified by redirectUrl
         if (!empty($params['key']) && !empty($params['wc-api']) && !empty($params['order_id'])) {
-            $requestId = get_post_meta($params['order_id'], self::META_REQUEST_ID, true);
-            $transactionInfo = $this->placetopay->query($requestId);
+            $order = $this->orders->find($params['order_id']);
+            $requestId = $order ? OrderMeta::get($order, OrderMeta::REQUEST_ID) : '';
 
-            $this->returnProcess($params, $transactionInfo);
+            if ($requestId) {
+                $transactionInfo = $this->client()->query((string) $requestId);
+
+                $this->returnProcess($params, $transactionInfo);
+            }
         }
 
-        // For WooCommerce 2.0
         $redirectUrl = add_query_arg([
             'msg' => urlencode(__(
                 'There was an error on the request. please contact the website administrator.',
@@ -826,255 +466,16 @@ class GatewayMethod extends WC_Payment_Gateway
         exit;
     }
 
-    /**
-     * Process page of response
-     */
     public function returnProcess(array $params, RedirectInformation $transactionInfo, $isNotificationRequest = false)
     {
-        $order = $this->getOrder($params);
-        $sessionStatusInstance = $transactionInfo->status();
-        $status = $sessionStatusInstance->status();
-        $authorizationCode = [];
-        $currentPaymentStatus = get_post_meta($order->get_id(), self::META_STATUS, true);
+        $order = $this->findReturnOrder($params);
 
-        if ($isNotificationRequest && $currentPaymentStatus === Status::ST_APPROVED) {
-            $this->logger(
-                'Return already processed for order',
-                'response',
-                'info',
-                [
-                    'event' => 'order.already_processed',
-                    'order_id' => $order->get_id(),
-                    'payment_status' => $currentPaymentStatus,
-                ]
-            );
-
+        if (!$order) {
             return;
         }
 
-        // Register status payment for the order
-        update_post_meta($order->get_id(), self::META_STATUS, $status);
+        $result = $this->resultHandler()->handle($order, $transactionInfo, (bool) $isNotificationRequest);
 
-        $this->logger(
-            'Processing order status update',
-            'response',
-            'info',
-            [
-                'event' => 'order.processing',
-                'order_id' => $order->get_id(),
-                'status' => $status,
-            ]
-        );
-
-        if ($sessionStatusInstance->status() !== $sessionStatusInstance::ST_PENDING) {
-            $authorizationCode = $this->getAuthorizationCode($transactionInfo);
-            $authorizationCode = is_array($authorizationCode)
-                ? implode(',', $authorizationCode)
-                : $authorizationCode;
-        }
-
-        // Payment Details
-        if ($status === Status::ST_APPROVED || $status === Status::ST_APPROVED_PARTIAL) {
-            update_post_meta(
-                $order->get_id(),
-                self::META_AUTHORIZATION_CUS,
-                $authorizationCode
-            );
-        }
-
-        $paymentFirstStatus = $transactionInfo->payment() !== []
-            ? $transactionInfo->payment()[0]->status()
-            : null;
-
-        // Get order updated with metas refreshed
-        $order = wc_get_order($order->get_id());
-
-        // We are here so lets check status and do actions
-        switch ($status) {
-            case $sessionStatusInstance::ST_APPROVED:
-            case $sessionStatusInstance::ST_APPROVED_PARTIAL:
-            case $sessionStatusInstance::ST_PENDING:
-                // Check order not already completed
-                if ($order->get_status() == 'completed') {
-                    $this->logger(
-                        'Order already complete, aborting return',
-                        'response',
-                        'info',
-                        [
-                            'event' => 'order.abort_complete',
-                            'order_id' => $order->get_id(),
-                        ]
-                    );
-
-                    if ($isNotificationRequest) {
-                        return;
-                    }
-
-                    exit;
-                }
-
-                $totalAmount = $transactionInfo->request()->payment()->amount()->total();
-
-                // We add a field to store the order total for partial payment
-                update_post_meta($order->get_id(), '_order_total_partial', $totalAmount);
-
-                if ($status == $sessionStatusInstance::ST_APPROVED_PARTIAL && in_array($order->get_status(), ['pending', 'on-hold'])) {
-                    $pendingAmount = 0;
-
-                    foreach ($transactionInfo->payment() as $transaction) {
-                        if ($transaction->status()->status() == $sessionStatusInstance::ST_APPROVED) {
-                            $pendingAmount += $transaction->amount()->from()->total();
-                        }
-                    }
-
-                    $totalAmount -= $pendingAmount;
-
-                    update_post_meta($order->get_id(), '_order_total_partial', $totalAmount);
-                }
-
-                $payerEmail = $transactionInfo->request()->payer()
-                    ? $transactionInfo->request()->payer()->email()
-                    : null;
-
-                if (!is_null($transactionInfo->payment())) {
-                    $paymentMethodName = $transactionInfo->payment() !== []
-                        ? array_map(function (Transaction $trans) {
-                            return $trans->paymentMethodName();
-                        }, $transactionInfo->payment())
-                        : [];
-
-                    if ($paymentMethodName !== []) {
-                        update_post_meta(
-                            $order->get_id(),
-                            __('Payment type', 'woocommerce-gateway-translations'),
-                            implode(",", $paymentMethodName)
-                        );
-                    }
-                }
-
-                // Validate Amount
-                if ($order->get_total() != floatval($totalAmount)) {
-                    $message = sprintf(
-                        __('Validation error: %s amounts do not match (gross %s).', 'woocommerce-gateway-translations'),
-                        $this->getClient(),
-                        $totalAmount
-                    );
-
-                    $order->update_status('on-hold', $message);
-                }
-
-                if (!empty($payerEmail)) {
-                    update_post_meta(
-                        $order->get_id(),
-                        sprintf(__('Payer %s email', 'woocommerce-gateway-translations'), $this->getClient()),
-                        $payerEmail
-                    );
-                }
-
-                if ($status == $sessionStatusInstance::ST_APPROVED) {
-                    if ($currentPaymentStatus !== Status::ST_APPROVED) {
-                        $payment = $transactionInfo->lastApprovedTransaction();
-
-                        if ($this->isRefunded($payment)) {
-                            $this->resolveRefundedPayment($order);
-
-                        } else {
-                            $order->add_order_note($this->getOrderNote($order->get_id(), $payment, $status, $totalAmount));
-                            $order->add_meta_data('placetopay_response', json_encode($payment->toArray()));
-                            $order->payment_complete();
-
-                            $this->logger(
-                                'Payment approved',
-                                'response',
-                                'info',
-                                [
-                                    'event' => 'order.payment_approved',
-                                    'order_id' => $order->get_id(),
-                                    'status' => $status,
-                                ]
-                            );
-                        }
-                    }
-                } else {
-                    if ($paymentFirstStatus && $paymentFirstStatus->status() === $paymentFirstStatus::ST_APPROVED) {
-                        if ($this->isRefunded($transactionInfo->lastApprovedTransaction())) {
-                            $this->resolveRefundedPayment($order);
-                        } else {
-                            update_post_meta(
-                                $order->get_id(),
-                                self::META_STATUS,
-                                $sessionStatusInstance::ST_APPROVED_PARTIAL
-                            );
-
-                            $order->update_status(
-                                'pending',
-                                __('Payment pending', 'woocommerce-gateway-translations') . ': ' . $status
-                            );
-                        }
-
-                        break;
-                    }
-
-                    $order->add_order_note(__('Payment pending', 'woocommerce-gateway-translations'));
-
-                }
-
-                break;
-            case $sessionStatusInstance::ST_REJECTED:
-                $order->update_status(
-                    'cancelled',
-                    sprintf(__('Payment rejected.', 'woocommerce-gateway-translations'), $status)
-                );
-
-                if ($paymentFirstStatus) {
-                    $this->logger(
-                        'Payment rejected',
-                        'response',
-                        'warning',
-                        [
-                            'event' => 'order.payment_rejected',
-                            'order_id' => $order->get_id(),
-                            'status' => $status,
-                            'message' => $paymentFirstStatus->message(),
-                        ]
-                    );
-                }
-
-                if (!self::versionCheck()) {
-                    $this->restoreOrderStock($order->get_id());
-                }
-
-                break;
-            case $sessionStatusInstance::ST_FAILED:
-                update_post_meta($order->get_id(), self::META_STATUS, $sessionStatusInstance::ST_PENDING);
-
-                $this->logger(
-                    'Payment failed set as pending to allow retry',
-                    'response',
-                    'warning',
-                    [
-                        'event' => 'order.payment_failed',
-                        'order_id' => $order->get_id(),
-                        'status' => $status,
-                    ]
-                );
-
-                break;
-            case $sessionStatusInstance::ST_ERROR:
-            default:
-                $order->update_status(
-                    'failed',
-                    sprintf(__('Payment rejected.', 'woocommerce-gateway-translations'), $status)
-                );
-
-                if (!self::versionCheck()) {
-                    $this->restoreOrderStock($order->get_id());
-                }
-
-                break;
-        }
-
-        // Is notification request
         if ($isNotificationRequest) {
             $this->logger(
                 'Return completed for notification',
@@ -1083,151 +484,22 @@ class GatewayMethod extends WC_Payment_Gateway
                 [
                     'event' => 'return.completed',
                     'order_id' => $order->get_id(),
-                    'status' => $status,
+                    'status' => $transactionInfo->status()->status(),
+                    'result' => $result,
                 ]
             );
+
             return;
         }
 
-        $redirectUrl = $this->getRedirectUrl($order);
-
-        //For wooCoomerce 2.0
         $redirectUrl = add_query_arg([
             'order_key' => $order->get_order_key(),
-            'payment_method' => 'placetopay'
-        ], $redirectUrl);
+            'payment_method' => CountryConfig::CLIENT_ID,
+        ], $this->getRedirectUrl($order));
 
         wp_redirect($redirectUrl);
 
         exit;
-    }
-
-    private function getOrderNote($id, Transaction $payment, string $status, $total)
-    {
-        $installmentType = $this->getInstallments($payment->additionalData()) > 0
-            ? sprintf(__('%s installments', 'woocommerce-gateway-translations'), $this->getInstallments($payment->additionalData()))
-            : __('No installments', 'woocommerce-gateway-translations');
-        $message = '<p>' . __('Payment approved', 'woocommerce-gateway-translations') . '</p>';
-
-        $details = [
-            [
-                'key' => __('Buying order: ', 'woocommerce-gateway-translations'),
-                'value' => $id,
-            ],
-            [
-                'key' => __('Status: ', 'woocommerce-gateway-translations'),
-                'value' => $status,
-            ],
-            [
-                'key' => __('Receipt: ', 'woocommerce-gateway-translations'),
-                'value' => $payment->receipt(),
-            ],
-            [
-                'key' => __('Authorization Code: ', 'woocommerce-gateway-translations'),
-                'value' => $payment->authorization(),
-            ],
-            [
-                'key' => __('Card last Digits: ', 'woocommerce-gateway-translations'),
-                'value' => str_replace('*', '', $payment->additionalData()['lastDigits']),
-            ],
-            [
-                'key' => __('Amount: ', 'woocommerce-gateway-translations'),
-                'value' => '$' . number_format($total, '0', ',', '.'),
-            ],
-            [
-                'key' => __('Response code: ', 'woocommerce-gateway-translations'),
-                'value' => $payment->status()->reason(),
-            ],
-            [
-                'key' => __('Payment Type: ', 'woocommerce-gateway-translations'),
-                'value' => $payment->paymentMethodName(),
-            ],
-            [
-                'key' => __('Installments Type: ', 'woocommerce-gateway-translations'),
-                'value' => $installmentType,
-            ],
-            [
-                'key' => __('Installments: ', 'woocommerce-gateway-translations'),
-                'value' => $this->getInstallments($payment->additionalData()),
-            ],
-            [
-                'key' => __('Transaction Date: ', 'woocommerce-gateway-translations'),
-                'value' => $payment->status()->date(),
-            ],
-            [
-                'key' => __('Internal id: ', 'woocommerce-gateway-translations'),
-                'value' => $payment->internalReference(),
-            ],
-        ];
-
-        $body = '';
-
-        foreach ($details as $detail) {
-            $body .= "<strong>{$detail['key']}</strong>{$detail['value']}<br/>";
-        }
-
-        return "
-            <div class='placetopay-order-datails'>
-                <p><h3>{$message}</h3></p>
-
-                {$body}
-            </div>
-        ";
-    }
-
-    /**
-     * @return array|string
-     */
-    private function getAuthorizationCode(RedirectInformation $transaction)
-    {
-        if (!$this->allow_partial_payments && $transaction->payment() !== []) {
-            return $transaction->payment()[0]->authorization();
-        }
-
-        $transactions = $transaction->payment();
-
-        return $transactions !== []
-            ? array_map(function (Transaction $trans) {
-                return $trans->authorization();
-            }, $transactions)
-            : [];
-    }
-
-    /**
-     *  Get order instance with a given order key
-     *
-     * @param mixed $request
-     */
-    public function getOrder($request): WC_Order
-    {
-        $orderId = isset($request['order_id']) ? (int)$request['order_id'] : null;
-        $key = $request['key'] ?? '';
-        $orderKey = explode('-', $key);
-        $orderKey = $orderKey[0] ?: $orderKey;
-
-        $order = new WC_Order($orderId);
-
-        if (!$order->get_id() || $order->get_id() === 0) {
-            $orderId = wc_get_order_id_by_order_key($orderKey);
-            $order = new WC_Order($orderId);
-        }
-
-        // Validate key
-        if ($key && $order->get_order_key() !== $orderKey) {
-            $this->logger(
-                'Order Key does not match invoice.',
-                'response',
-                'error',
-                [
-                    'event' => 'order.key_mismatch',
-                    'order_id' => $order->get_id(),
-                ]
-            );
-
-            exit;
-        }
-
-        return $order;
     }
 
     /**
@@ -1236,7 +508,7 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function checkoutMessage()
     {
-        $order = $this->getLastPendingOrder();
+        $order = $this->checkoutValidator()->findLastPendingOrder(get_current_user_id());
 
         if (!$order) {
             return;
@@ -1250,7 +522,7 @@ class GatewayMethod extends WC_Payment_Gateway
                 'woocommerce-gateway-translations'
             ),
             (string)$order->get_id(),
-            $this->merchant_email
+            $this->gatewaySettings->merchantEmail()
         );
 
         echo "<div class='shop_table order_details'>
@@ -1265,80 +537,22 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function is_available()
     {
-        global $woocommerce;
-
-        if ($this->enabled == 'yes') {
-            if ($woocommerce->version < '1.5.8') {
-                return false;
-            }
-
-            if ($this->testmode !== 'yes' && (!$this->login || !$this->tran_key)) {
-                return false;
-            }
-
-            return true;
+        if ($this->enabled !== 'yes') {
+            return false;
         }
 
-        return false;
+        if (!$this->gatewaySettings->isTestMode()
+            && (!$this->gatewaySettings->login() || !$this->gatewaySettings->tranKey())
+        ) {
+            return false;
+        }
+
+        return true;
     }
 
-    /**
-     * Manage the log instance if the debug is actived else nothing happen baby
-     */
     public function logger(string $message, string $type, string $level = 'info', array $context = []): void
     {
-        if ($this->testmode !== 'yes' && !in_array($level, ['warning', 'error'], true)) {
-            return;
-        }
-
-        if (!empty($context)) {
-            $message .= ' | Context: ' . json_encode($context, JSON_UNESCAPED_UNICODE);
-        }
-
-        $this->logger->add(
-            CountryConfig::CLIENT_ID,
-            strtoupper($level) . ($type ? " ($type): " : ': ') . $message
-        );
-    }
-
-    /**
-     * @param $orderId
-     */
-    public function restoreOrderStock($orderId)
-    {
-        $order = new WC_Order($orderId);
-
-        if (!get_option('woocommerce_manage_stock') == 'yes' && !count($order->get_items()) > 0) {
-            return;
-        }
-
-        $requestId = get_post_meta($orderId, self::META_REQUEST_ID, true);
-
-        if ($requestId) {
-            $stockReduced = get_post_meta($orderId, self::META_STOCK_RESTORED . $requestId, true);
-
-            if ($stockReduced === 'yes') {
-                return;
-            }
-        }
-
-        /** @var \WC_Order_Item_Product $item */
-        foreach ($order->get_items() as $item) {
-            if ($item['product_id'] <= 0) {
-                continue;
-            }
-
-            /** @var \WC_Product $product */
-            $product = $item->get_product();
-
-            if (!$product || !$product->exists() || !$product->managing_stock()) {
-                continue;
-            }
-
-            do_action('woocommerce_auto_stock_restored', $product, $item);
-        }
-
-        update_post_meta($orderId, self::META_STOCK_RESTORED . $requestId, 'yes');
+        $this->gatewayLogger->log($message, $type, $level, $context);
     }
 
     /**
@@ -1349,28 +563,28 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function getRedirectUrl($order)
     {
-        if ($this->redirect_page_id == 'default' || !$this->redirect_page_id) {
+        $redirectPageId = $this->gatewaySettings->redirectPageId();
+
+        if ($redirectPageId == 'default' || !$redirectPageId) {
             return $order->get_checkout_order_received_url();
         }
 
-        if ($this->redirect_page_id === 'my-orders') {
+        if ($redirectPageId === 'my-orders') {
             return wc_get_account_endpoint_url(get_option('woocommerce_myaccount_orders_endpoint', 'orders'));
         }
 
-        return get_permalink($this->redirect_page_id);
+        return get_permalink($redirectPageId);
     }
 
     /**
-     * @param $orderId
+     * @param int|WC_Order $order
      * @return bool
      */
-    public static function isPendingStatusOrder($orderId)
+    public static function isPendingStatusOrder($order)
     {
-        $statusP2P = get_post_meta($orderId, self::META_STATUS, true);
+        $order = $order instanceof WC_Order ? $order : wc_get_order($order);
 
-        return Status::ST_PENDING === $statusP2P
-            || Status::ST_OK === $statusP2P
-            || empty($statusP2P);
+        return $order instanceof WC_Order && OrderMeta::hasPendingPayment($order);
     }
 
     /**
@@ -1392,6 +606,11 @@ class GatewayMethod extends WC_Payment_Gateway
         return $order->get_order_number();
     }
 
+    public static function processPendingOrders(): void
+    {
+        (new self())->pendingOrdersProcessor()->processAll();
+    }
+
     /**
      * @param $orderId
      * @param $requestId
@@ -1399,20 +618,11 @@ class GatewayMethod extends WC_Payment_Gateway
     public static function processPendingOrder($orderId, $requestId)
     {
         $gatewayMethod = new self();
-        $gatewayMethod->initPlacetoPay();
+        $order = $gatewayMethod->orders->find($orderId);
 
-        $transactionInfo = $gatewayMethod->placetopay->query($requestId);
-        $gatewayMethod->returnProcess(['order_id' => $orderId], $transactionInfo, true);
-        $gatewayMethod->logger(
-            'Processed pending order',
-            'cron',
-            'info',
-            [
-                'event' => 'cron.processed_pending_order',
-                'order_id' => $orderId,
-                'request_id' => $requestId,
-            ]
-        );
+        if ($order) {
+            $gatewayMethod->pendingOrdersProcessor()->process($order, (string) $requestId);
+        }
     }
 
     /**
@@ -1542,32 +752,37 @@ class GatewayMethod extends WC_Payment_Gateway
         return CountryConfig::COUNTRY_CODE;
     }
 
-    private function getHeaders(): array
+    /**
+     * @param $version
+     * @param string $operator
+     * @return bool
+     */
+    public static function wooCommerceVersionCompare($version, $operator = '>=')
     {
-        $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
-
-        return [
-            'User-Agent' => "woocommerce-gateway-placetopay/{$this->version} (origin:$domain; vr:" . WOOCOMMERCE_VERSION . ')',
-            'X-Source-Platform' => 'woocommerce',
-        ];
+        return defined('WC_VERSION') && version_compare(
+                WC_VERSION,
+                $version,
+                $operator
+            );
     }
 
     /**
-     * Instantiates a PlacetoPay object providing the login and tranKey,
-     * also the url that will be used for the service
+     * @throws Exception When the credentials or the service url are not configured.
      */
-    private function initPlacetoPay()
+    public function client(): PlacetoPay
     {
-        $settings = [
-            'login' => $this->login,
-            'tranKey' => $this->tran_key,
-            'baseUrl' => $this->uri_service,
-            'headers' => $this->getHeaders(),
-            'logger' => $this->loggerAdapter,
-        ];
+        if ($this->placetopay instanceof PlacetoPay) {
+            return $this->placetopay;
+        }
 
         try {
-            $this->placetopay = new PlacetoPay($settings);
+            $this->placetopay = new PlacetoPay([
+                'login' => $this->gatewaySettings->login(),
+                'tranKey' => $this->gatewaySettings->tranKey(),
+                'baseUrl' => $this->gatewaySettings->serviceUrl(),
+                'headers' => $this->getHeaders(),
+                'logger' => $this->gatewayLogger->sdkLogger(),
+            ]);
         } catch (Exception $ex) {
             $this->logger(
                 'PlacetoPay initialization failed',
@@ -1578,7 +793,36 @@ class GatewayMethod extends WC_Payment_Gateway
                     'message' => $ex->getMessage(),
                 ]
             );
+
+            throw $ex;
         }
+
+        return $this->placetopay;
+    }
+
+    private function getHeaders(): array
+    {
+        $domain = $_SERVER['HTTP_HOST'] ?? ($_SERVER['SERVER_NAME'] ?? 'localhost');
+        $version = self::VERSION;
+        $wooCommerceVersion = defined('WC_VERSION') ? WC_VERSION : '';
+
+        return [
+            'User-Agent' => "woocommerce-gateway-placetopay/{$version} (origin:$domain; vr:" . $wooCommerceVersion . ')',
+            'X-Source-Platform' => 'woocommerce',
+        ];
+    }
+
+    private function resolveServiceUrl(string $environmentMode): ?string
+    {
+        if ($environmentMode === Environment::CUSTOM) {
+            $customUrl = $this->get_option('custom_connection_url');
+
+            return empty($customUrl) ? null : $customUrl;
+        }
+
+        $environments = CountryConfig::getEndpoints();
+
+        return $environments[$environmentMode] ?? $environments[Environment::TEST] ?? null;
     }
 
     /**
@@ -1592,250 +836,29 @@ class GatewayMethod extends WC_Payment_Gateway
         return str_replace("\\", "_", $lowercase ? strtolower(get_class($this)) : get_class($this));
     }
 
-    private function validateFields($request)
+    private function findReturnOrder(array $params): ?WC_Order
     {
-        $isValid = true;
+        $orderKey = explode('-', (string) ($params['key'] ?? ''))[0];
+        $order = $this->orders->find($params['order_id'] ?? null) ?: $this->orders->findByOrderKey($orderKey);
 
-        if (!$this->allow_to_pay_with_pending_orders && $this->getLastPendingOrder() !== null) {
-            wc_add_notice(__(
-                '<strong>Pending order</strong>, the payment could not be continued because a pending order has been found.',
-                'woocommerce-gateway-translations'
-            ), 'error');
-
-            $isValid = false;
+        if ($order && ($orderKey === '' || $order->get_order_key() === $orderKey)) {
+            return $order;
         }
 
-
-        if (preg_match(Rules::PATTERN_NAME, trim($request['billing_first_name'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>First Name</strong>, does not have a valid format',
-                'woocommerce-gateway-translations'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(Rules::PATTERN_NAME, trim($request['billing_last_name'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Last Name</strong>, does not have a valid format',
-                'woocommerce-gateway-translations'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(Rules::PATTERN_PHONE, trim($request['billing_phone'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Phone</strong>, does not have a valid format',
-                'woocommerce-gateway-translations'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if (preg_match(Rules::PATTERN_EMAIL, trim($request['billing_email'])) !== 1) {
-            wc_add_notice(__(
-                '<strong>Email</strong>, does not have a valid format',
-                'woocommerce-gateway-translations'
-            ), 'error');
-
-            $isValid = false;
-        }
-
-        if ($this->minimum_amount != null && WC()->cart->total < $this->minimum_amount) {
-            wc_add_notice(sprintf(__(
-                '<strong>Minimum amount</strong>, does not meet the minimum amount to process the order, the minimum amount must be greater or equal to %s to use this payment gateway.',
-                'woocommerce-gateway-translations'
-            ), number_format($this->minimum_amount, 2, '.', ',')), 'error');
-
-            $isValid = false;
-        }
-
-        if ($this->maximum_amount != null && WC()->cart->total > $this->maximum_amount) {
-            wc_add_notice(sprintf(__(
-                '<strong>Maximum amount</strong>, exceeds the maximum amount allowed to process the order, it must be less or equal to %s to use this payment gateway.',
-                'woocommerce-gateway-translations'
-            ), number_format($this->maximum_amount, 2, '.', ',')), 'error');
-
-            $isValid = false;
-        }
-
-        return $isValid;
-    }
-
-    /**
-     * @param $version
-     * @param string $operator
-     * @return bool
-     */
-    public static function wooCommerceVersionCompare($version, $operator = '>=')
-    {
-        return defined('WOOCOMMERCE_VERSION') && version_compare(
-                WOOCOMMERCE_VERSION,
-                $version,
-                $operator
-            );
-    }
-
-    private function configureEnvironment()
-    {
-        $environments = CountryConfig::getEndpoints();
-
-        $nonProductionModes = [Environment::TEST, Environment::DEV, Environment::UAT];
-        $this->testmode = in_array($this->enviroment_mode, $nonProductionModes, true) || (defined('WP_DEBUG') && WP_DEBUG)
-            ? 'yes'
-            : 'no';
-
-        if ($this->testmode === 'yes') {
-            $this->logger = self::wooCommerceVersionCompare('2.1')
-                ? new \WC_Logger()
-                : WC()->logger();
-
-            $this->loggerAdapter = new WCLoggerAdapter($this->logger, CountryConfig::CLIENT_ID);
-        }
-
-        if ($this->enviroment_mode === Environment::CUSTOM) {
-            $this->uri_service = empty($this->custom_connection_url) ? null : $this->custom_connection_url;
-        } else {
-            $mode = $this->enviroment_mode;
-            $this->uri_service = $environments[$mode] ?? $environments[Environment::TEST] ?? null;
-        }
-    }
-
-    /**
-     * @return null|WC_Order
-     */
-    private function getLastPendingOrder()
-    {
-        $userId = get_current_user_id();
-
-        if (!$userId) {
-            return null;
-        }
-
-        // Getting the last client's order to view if he has one pending
-        $customerOrders = wc_get_orders(apply_filters('woocommerce_my_account_my_orders_query', [
-            'numberposts' => 5,
-            'limit' => 5,
-            'meta_key' => '_customer_user',
-            'meta_value' => $userId,
-            'customer' => $userId,
-            'status' => [
-                'wc-pending',
-                'wc-on-hold',
-            ],
-            'shop_order_status' => 'on-hold'
-        ]));
-
-        if ($customerOrders) {
-            foreach ($customerOrders as $_order) {
-                $order = new WC_Order($_order);
-
-                if (!self::isPendingStatusOrder($order->get_id())) {
-                    continue;
-                }
-
-                if ($order->get_status() == 'pending' || $order->get_status() == 'on-hold') {
-                    return $order;
-                }
-            }
-        }
+        $this->logger(
+            'Order Key does not match invoice.',
+            'response',
+            'error',
+            [
+                'event' => 'order.key_mismatch',
+                'order_id' => $order ? $order->get_id() : null,
+            ]
+        );
 
         return null;
     }
 
-    public static function versionCheck(string $version = '3.0'): bool
-    {
-        if (class_exists('WooCommerce')) {
-            global $woocommerce;
-
-            if (version_compare($woocommerce->version, $version, ">=")) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private function getInstallments(array $additionalData): int
-    {
-        $installmentKeys = ['installments', 'installment'];
-
-        foreach ($installmentKeys as $key) {
-            if (isset($additionalData[$key]) && is_numeric($additionalData[$key])) {
-                return (int) $additionalData[$key];
-            }
-        }
-
-        if (isset($additionalData['processorFields']) && is_array($additionalData['processorFields'])) {
-            foreach ($additionalData['processorFields'] as $field) {
-                if (isset($field['value']) && is_array($field['value'])) {
-                    foreach ($installmentKeys as $key) {
-                        if (isset($field['value'][$key]) && is_numeric($field['value'][$key])) {
-                            return (int) $field['value'][$key];
-                        }
-                    }
-                }
-            }
-        }
-
-        foreach ($additionalData as $value) {
-            if (is_array($value)) {
-                foreach ($installmentKeys as $key) {
-                    if (isset($value[$key]) && is_numeric($value[$key])) {
-                        return (int) $value[$key];
-                    }
-                }
-            }
-        }
-
-        return 0;
-    }
-
-    private function isRefunded(Transaction $payment): bool
-    {
-        return $payment->refunded();
-    }
-
-    private function resolveRefundedPayment(WC_Order $order): void
-    {
-        $order->update_status('refunded', __('Payment refunded', 'woocommerce-gateway-translations'));
-
-        $this->logger(
-            'Payment refunded',
-            'response',
-            'info',
-            [
-                'event' => 'payment.refunded',
-                'order_id' => $order->get_id(),
-            ]
-        );
-    }
-
-    private function resolveWebCheckout(WC_Order $order)
-    {
-        static $codeCalled = false;
-
-        if ($codeCalled) {
-            return;
-        }
-
-        $code = $this->getWebCheckoutScript($order);
-
-        if ($code === '') {
-            return;
-        }
-
-        if (self::wooCommerceVersionCompare('2.1')) {
-            wc_enqueue_js($code);
-        } else {
-            WC()->add_inline_js($code);
-        }
-
-        $codeCalled = true;
-    }
-
-    private function getWebCheckoutScript(WC_Order $order): string
+    private function enqueueRedirectionScript(WC_Order $order): void
     {
         $processUrl = $this->getProcessUrl($order);
 
@@ -1850,48 +873,15 @@ class GatewayMethod extends WC_Payment_Gateway
                 ]
             );
 
-            return '';
+            return;
         }
 
-        if ($this->use_lightbox) {
-            wp_enqueue_script('lightbox-script', $this->getLightboxScriptSource(), [], null);
-
-            return '
-                P.init("' . $processUrl . '", { opacity: 0.4 });
-
-                P.on(\'response\', function() {
-                    window.location = "' . esc_url_raw($this->getPaymentReturnUrl($order)) . '"
-                });';
-        }
-
-
-        return 'jQuery("body").block({
-                message: "' . esc_js(sprintf(__(
-                'We are now redirecting you to %s to make payment, if you are not redirected please press the bottom.',
-                'woocommerce-gateway-translations'
-            ), $this->getClient())) . '",
-                baseZ: 99999,
-                overlayCSS: { background: "#fff", opacity: 0.6 },
-                css: {
-                    padding:        "20px",
-                    zindex:         "9999999",
-                    textAlign:      "center",
-                    color:          "#555",
-                    border:         "3px solid #aaa",
-                    backgroundColor:"#fff",
-                    cursor:         "wait",
-                    lineHeight:		"24px",
-                }
-            });
-
-            setTimeout( function() {
-                window.location.href = "' . $processUrl . '";
-            }, 1000 );';
+        (new RedirectionScript($this->gatewaySettings))->enqueue($processUrl, $this->getPaymentReturnUrl($order));
     }
 
     private function getProcessUrl(WC_Order $order): string
     {
-        $processUrl = urldecode((string) get_post_meta($order->get_id(), self::META_PROCESS_URL, true));
+        $processUrl = urldecode((string) OrderMeta::get($order, OrderMeta::PROCESS_URL));
 
         if ($processUrl === '' || !filter_var($processUrl, FILTER_VALIDATE_URL)) {
             return '';
@@ -1906,11 +896,6 @@ class GatewayMethod extends WC_Payment_Gateway
         return esc_url_raw($processUrl);
     }
 
-    private function getLightboxScriptSource(): string
-    {
-        return 'https://checkout.placetopay.com/lightbox.min.js';
-    }
-
     private function getPaymentReturnUrl(WC_Order $order): string
     {
         $redirectUrl = $this->getRedirectUrl($order);
@@ -1920,5 +905,34 @@ class GatewayMethod extends WC_Payment_Gateway
             'order_id' => $order->get_id(),
             'key' => $order->get_order_key(),
         ], $redirectUrl);
+    }
+
+    private function checkoutValidator(): CheckoutValidator
+    {
+        return new CheckoutValidator($this->gatewaySettings, $this->orders);
+    }
+
+    private function resultHandler(): PaymentResultHandler
+    {
+        if ($this->resultHandler === null) {
+            $this->resultHandler = new PaymentResultHandler(
+                $this->gatewaySettings,
+                $this->gatewayLogger,
+                new PaymentNoteFormatter()
+            );
+        }
+
+        return $this->resultHandler;
+    }
+
+    private function pendingOrdersProcessor(): PendingOrdersProcessor
+    {
+        return new PendingOrdersProcessor(
+            $this->orders,
+            $this->resultHandler(),
+            $this->gatewayLogger,
+            [$this, 'client'],
+            $this->id
+        );
     }
 }
