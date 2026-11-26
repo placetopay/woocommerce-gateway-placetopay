@@ -154,14 +154,6 @@ class PaymentResultHandler
             );
         }
 
-        if ($order->get_total() != floatval($totalAmount)) {
-            $order->update_status('on-hold', sprintf(
-                __('Validation error: %s amounts do not match (gross %s).', 'woocommerce-gateway-translations'),
-                $this->settings->client(),
-                $totalAmount
-            ));
-        }
-
         if ($status === Status::ST_APPROVED) {
             if ($currentPaymentStatus !== Status::ST_APPROVED) {
                 $this->applyApproved($order, $transactionInfo, $status, $totalAmount);
