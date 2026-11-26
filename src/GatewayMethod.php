@@ -91,6 +91,11 @@ class GatewayMethod extends WC_Payment_Gateway
     private $payment_button_image;
 
     /**
+     * @var bool
+     */
+    private static $paymentHooksRegistered = false;
+
+    /**
      * GatewayMethod constructor.
      */
     public function __construct()
@@ -153,10 +158,18 @@ class GatewayMethod extends WC_Payment_Gateway
      */
     public function init()
     {
+        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
+
+        // The gateway is instantiated several times per request, the payment hooks must run only once.
+        if (self::$paymentHooksRegistered) {
+            return;
+        }
+
+        self::$paymentHooksRegistered = true;
+
         add_action('woocommerce_receipt_' . $this->id, [$this, 'receiptPage']);
         add_action('woocommerce_api_' . $this->getClassName(true), [$this, 'checkResponse']);
         add_action('placetopay_init', [$this, 'successfulRequest']);
-        add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
     }
 
     /**
